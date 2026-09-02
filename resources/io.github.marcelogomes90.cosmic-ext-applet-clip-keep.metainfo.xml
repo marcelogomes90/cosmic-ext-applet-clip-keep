@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.marcelogomes90.cosmic-ext-applet-clip-keep</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <project_group>COSMIC</project_group>
+  <developer id="io.github.marcelogomes90">
+    <name>marcelogomes90</name>
+  </developer>
+  <name>Clip Keep</name>
+  <summary>Everything you copied, one click away</summary>
+  <description>
+    <p>Clip Keep is a clipboard history applet for the COSMIC desktop. It keeps what you copy in a searchable list behind a panel button, so a snippet you copied twenty minutes ago is still there when you need it. Type to narrow the list and press Enter to make an earlier item available on the clipboard again.</p>
+    <p>A clipboard manager sits between every application on the desktop and has to be trusted with what passes through. Clip Keep is organised around three things going wrong:</p>
+    <ul>
+      <li>Reading a selection must never hold up the application that owns it. Only the formats worth keeping are ever requested, every transfer has a timeout and a size ceiling, and the reads run alongside the event loop rather than blocking it, so copying a large image out of a browser cannot freeze the browser.</li>
+      <li>History has to stay small in memory. The list holds only what it draws, images are stored as pre-scaled thumbnails, and a full image is loaded when it is previewed and dropped when it is not.</li>
+      <li>Some things should never be recorded. Entries carrying a password manager hint can be discarded, private mode pauses capture, and the history file is readable only by you.</li>
+    </ul>
+    <p>Capture uses the COSMIC compositor's data-control protocol and stays on the local machine.</p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/history-popup.png</image>
+      <caption>Pinned entries above the rest of the history, each row one click from the clipboard</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/search.png</image>
+      <caption>Typing narrows the list, and the popup shrinks to what is left</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/settings.png</image>
+      <caption>Retention, entry limit, image capture, password hints, and private mode</caption>
+    </screenshot>
+  </screenshots>
+  <launchable type="desktop-id">io.github.marcelogomes90.cosmic-ext-applet-clip-keep.desktop</launchable>
+  <url type="homepage">https://github.com/marcelogomes90/cosmic-ext-applet-clip-keep</url>
+  <url type="bugtracker">https://github.com/marcelogomes90/cosmic-ext-applet-clip-keep/issues</url>
+  <url type="vcs-browser">https://github.com/marcelogomes90/cosmic-ext-applet-clip-keep</url>
+  <provides>
+    <id>com.system76.CosmicApplet</id>
+    <binary>cosmic-clip-keep</binary>
+  </provides>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </supports>
+  <categories>
+    <category>Utility</category>
+  </categories>
+  <keywords>
+    <keyword>COSMIC</keyword>
+    <keyword>Applet</keyword>
+    <keyword>Clipboard</keyword>
+    <keyword>History</keyword>
+    <keyword>Copy</keyword>
+    <keyword>Paste</keyword>
+    <keyword>Panel</keyword>
+  </keywords>
+  <releases>
+    <release type="stable" version="1.0.0" date="2026-09-02">
+      <description>
+        <p>First release.</p>
+        <ul>
+          <li>Keeps a searchable history of the text, files, and images you copy, and puts any entry back on the clipboard with one click.</li>
+          <li>Pins the entries worth keeping. A pinned entry sits in its own section and survives the entry limit, the age limit, and clearing the history.</li>
+          <li>Shows images as thumbnails and loads a full one only while it is on screen, so a history full of screenshots is not a history full of screenshots in memory.</li>
+          <li>Reads a selection without holding up the application that owns it: only the formats worth keeping are requested, and every transfer has a timeout and a size ceiling.</li>
+          <li>Skips entries an application marked as a password, and pauses recording entirely in private mode.</li>
+          <li>Runs one instance per monitor, as COSMIC panels do, and keeps every list in step with the others.</li>
+          <li>Drives the whole list from the keyboard, and shrinks the popup to whatever it is showing.</li>
+          <li>Translated into English, Brazilian Portuguese, Dutch, French, German, Italian, Russian, Simplified Chinese, Spanish, and Ukrainian.</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1" />
+</component>

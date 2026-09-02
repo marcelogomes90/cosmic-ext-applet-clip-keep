@@ -1,0 +1,9 @@
+/target
+/vendor
+/vendor.tar
+/.cargo
+/build
+/.flatpak-builder
+/repo
+/dist
+/flatpak/*/local-test.json

@@ -1,0 +1,75 @@
+[package]
+name = "cosmic-clip-keep"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.93"
+license = "GPL-3.0-only"
+description = "Clipboard history for the COSMIC desktop"
+repository = "https://github.com/marcelogomes90/cosmic-ext-applet-clip-keep"
+homepage = "https://github.com/marcelogomes90/cosmic-ext-applet-clip-keep"
+readme = "README.md"
+
+[lib]
+name = "cosmic_clip_keep"
+path = "src/lib.rs"
+
+[[bin]]
+name = "cosmic-clip-keep"
+path = "src/main.rs"
+
+[[bin]]
+name = "cosmic-clip-keep-dump"
+path = "src/bin/clip_dump.rs"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+doc_markdown = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+return_self_not_must_use = "allow"
+
+[dependencies]
+futures = "0.3"
+i18n-embed-fl = "0.10"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "bmp", "gif"] }
+rusqlite = { version = "0.40", features = ["bundled"] }
+rustix = { version = "0.38", features = ["fs", "time"] }
+
+calloop = "0.14"
+calloop-wayland-source = "0.4"
+wayland-client = "0.31"
+wayland-protocols = { version = "0.32", features = ["client", "staging"] }
+wayland-protocols-wlr = { version = "0.3", features = ["client"] }
+rust-embed = "8"
+serde = { version = "1", features = ["derive"] }
+sha2 = "0.11"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dependencies.cosmic-protocols]
+git = "https://github.com/pop-os/cosmic-protocols"
+rev = "32283d7"
+default-features = false
+features = ["client"]
+
+[dependencies.i18n-embed]
+version = "0.16"
+features = ["fluent-system", "desktop-requester"]
+
+[dependencies.libcosmic]
+git = "https://github.com/pop-os/libcosmic"
+default-features = false
+features = [
+    "applet",
+    "dbus-config",
+    "multi-window",
+    "tokio",
+    "wayland",
+    "winit",
+]
+
+[profile.release]
+lto = "thin"
+opt-level = 2

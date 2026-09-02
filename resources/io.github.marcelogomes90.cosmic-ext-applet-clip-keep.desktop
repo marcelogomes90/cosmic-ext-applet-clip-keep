@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Clip Keep
+Comment=Clipboard history for the COSMIC desktop
+Type=Application
+Exec=cosmic-clip-keep
+Icon=io.github.marcelogomes90.cosmic-ext-applet-clip-keep-symbolic
+Terminal=false
+Categories=COSMIC;
+Keywords=COSMIC;Applet;Clipboard;History;Copy;Paste;Clip;
+NoDisplay=true
+StartupNotify=true
+X-CosmicApplet=true
+X-HostWaylandDisplay=true
+X-OverflowPriority=80
+X-OverflowMinSize=1
