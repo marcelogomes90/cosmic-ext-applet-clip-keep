@@ -195,9 +195,15 @@ reading, earns a line.
 
 Every glyph the applet names must exist in the COSMIC icon theme, which is narrower than Adwaita:
 `window-pin-symbolic`, `window-unpin-symbolic` and `view-reveal-symbolic` do not, and a machine
-running a fuller icon theme will hide that from you. The applet ships no icons of its own beyond
-its own app icon, so a new glyph should be checked against `/usr/share/icons/Cosmic` and against
-the theme bundled in `com.system76.Cosmic.BaseApp`, which is what the Flatpak actually sees.
+running a fuller icon theme will hide that from you. A new glyph has to be checked against
+`/usr/share/icons/Cosmic` *and* against the theme bundled in `com.system76.Cosmic.BaseApp`, which
+is what the Flatpak actually sees.
+
+`resources/icons/preview-symbolic.svg` is the one glyph the applet draws itself, embedded with
+`include_bytes!` rather than installed. The theme carries no plain eye — its only one,
+`image-red-eye-symbolic`, is struck through and therefore means *hidden*, the opposite of the
+action. `icon::from_svg_bytes(..).symbolic(true)` sets the same flag a themed `-symbolic` name
+gets, so the colour in the file is ignored and the glyph follows the panel ink like every other.
 
 ## Packaging
 

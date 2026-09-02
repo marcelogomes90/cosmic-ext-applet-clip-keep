@@ -21,6 +21,8 @@ const GAP: u16 = 8;
 const GAP_TIGHT: u16 = 4;
 
 const PREVIEW_HEIGHT: f32 = 180.0;
+
+const PREVIEW_ICON: &[u8] = include_bytes!("../../../resources/icons/preview-symbolic.svg");
 const THUMBNAIL_HEIGHT: u16 = 32;
 
 pub(crate) static SEARCH_ID: LazyLock<widget::Id> =
@@ -218,14 +220,7 @@ fn row<'a>(app: &'a ClipKeep, index: usize, entry: &'a EntryMeta) -> Element<'a,
 
     if worth_previewing(entry) {
         let showing = app.preview().is_some_and(|(id, _)| id == entry.id);
-        controls.push(action(
-            if showing {
-                "go-up-symbolic"
-            } else {
-                "go-down-symbolic"
-            },
-            Message::TogglePreview(entry.id),
-        ));
+        controls.push(preview_action(showing, Message::TogglePreview(entry.id)));
     }
 
     controls.push(action_toggle(
@@ -291,6 +286,13 @@ fn accented(
     } else {
         text
     }
+}
+
+fn preview_action(showing: bool, message: Message) -> Element<'static, Message> {
+    widget::button::icon(widget::icon::from_svg_bytes(PREVIEW_ICON).symbolic(true))
+        .class(cosmic::theme::Button::Icon)
+        .on_press_maybe((!showing).then_some(message))
+        .into()
 }
 
 fn action(glyph: &str, message: Message) -> Element<'_, Message> {
@@ -365,7 +367,25 @@ fn divider<'a>() -> Element<'a, Message> {
 }
 
 fn preview_panel(app: &ClipKeep) -> Option<Element<'_, Message>> {
-    let (_, content) = app.preview()?;
+    let (id, content) = app.preview()?;
+
+    let label = app
+        .snapshot()
+        .entries
+        .iter()
+        .find(|entry| entry.id == id)
+        .map(label_for)
+        .unwrap_or_default();
+
+    let header = widget::row::with_children(vec![
+        widget::text::caption(label)
+            .ellipsize(Ellipsize::End(EllipsizeHeightLimit::Lines(1)))
+            .width(Length::Fill)
+            .into(),
+        action("go-up-symbolic", Message::TogglePreview(id)),
+    ])
+    .spacing(GAP_TIGHT)
+    .align_y(Alignment::Center);
 
     let body: Element<'_, Message> = match content {
         Preview::Text(text) => scroll(widget::text::body(text.as_str()))
@@ -376,7 +396,13 @@ fn preview_panel(app: &ClipKeep) -> Option<Element<'_, Message>> {
             .into(),
     };
 
-    Some(widget::container(body).padding([GAP, PAD, PAD, PAD]).into())
+    Some(
+        widget::container(
+            widget::column::with_children(vec![header.into(), body]).spacing(GAP_TIGHT),
+        )
+        .padding([GAP, PAD, PAD, PAD])
+        .into(),
+    )
 }
 
 fn settings_page(app: &ClipKeep) -> Element<'_, Message> {

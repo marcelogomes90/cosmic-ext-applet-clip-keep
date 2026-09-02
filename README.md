@@ -29,7 +29,7 @@ the clipboard, ready to paste.
 - Drives the whole list from the keyboard: arrows and <kbd>Enter</kbd> to pick,
   <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd> to jump straight to a row, <kbd>Alt</kbd>+<kbd>P</kbd>
   to pin, <kbd>Alt</kbd>+<kbd>Backspace</kbd> to delete, <kbd>Ctrl</kbd>+<kbd>Space</kbd> to
-  preview, and <kbd>Esc</kbd> to close.
+  preview, and <kbd>Esc</kbd> to collapse an open preview, then to close.
 - Discards entries an application marked as a password, honouring the
   `x-kde-passwordManagerHint` convention that password managers already publish.
 - Pauses recording entirely in private mode, which the panel button shows at a glance.

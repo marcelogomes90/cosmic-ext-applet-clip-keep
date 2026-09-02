@@ -138,8 +138,11 @@ impl Drop for Toplevels {
 
 fn states(bytes: &[u8]) -> impl Iterator<Item = u32> + '_ {
     bytes
-        .chunks_exact(4)
-        .map(|chunk| u32::from_ne_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]))
+        .as_chunks::<4>()
+        .0
+        .iter()
+        .copied()
+        .map(u32::from_ne_bytes)
 }
 
 fn is_activated(bytes: &[u8]) -> bool {
