@@ -13,7 +13,7 @@ The panel shows one button. Clicking it opens a searchable list of what you have
 files, and images — with the entries you pinned kept above the rest. Pick one and it goes back on
 the clipboard, ready to paste.
 
-<img src="resources/screenshots/history-popup.png" alt="The Clip Keep popup open on the COSMIC panel, pinned entries above the recent history" />
+<img src="resources/screenshots/details-card.png" alt="The Clip Keep popup open on the COSMIC panel, pinned entries above the recent history" />
 
 ## Features
 
