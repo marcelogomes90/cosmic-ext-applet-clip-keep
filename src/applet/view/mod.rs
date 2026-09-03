@@ -4,7 +4,7 @@ use cosmic::Element;
 use cosmic::cctk::sctk::reexports::protocols::xdg::shell::client::xdg_positioner::{
     Anchor, Gravity,
 };
-use cosmic::iced::advanced::text::{Ellipsize, EllipsizeHeightLimit};
+use cosmic::iced::advanced::text::{Ellipsize, EllipsizeHeightLimit, Wrapping};
 use cosmic::iced::platform_specific::runtime::wayland::popup::{SctkPopupSettings, SctkPositioner};
 use cosmic::iced::{Alignment, Length, Limits, Rectangle, window};
 use cosmic::widget;
@@ -12,7 +12,7 @@ use cosmic::widget::wayland::tooltip::widget::Tooltip;
 
 use super::ClipKeep;
 use super::message::Message;
-use crate::clip::model::{CaptureState, EntryKind, EntryMeta, Timestamp};
+use crate::clip::model::{CaptureState, EntryKind, EntryMeta, Timestamp, truncate_chars};
 use crate::clip::search;
 use crate::clip::settings::{MAX_ENTRIES_CEILING, Settings};
 use crate::fl;
@@ -28,6 +28,7 @@ const THUMBNAIL_HEIGHT: u16 = 32;
 
 const CARD_ENABLED: bool = true;
 const CARD_WIDTH: f32 = 300.0;
+const CARD_CHARS: usize = 200;
 const CARD_LABEL_WIDTH: f32 = 96.0;
 const CARD_DELAY: std::time::Duration = std::time::Duration::from_millis(400);
 
@@ -333,7 +334,7 @@ struct Card {
 impl Card {
     fn of(entry: &EntryMeta) -> Self {
         Self {
-            text: label_for(entry),
+            text: truncate_chars(&label_for(entry), CARD_CHARS),
             source_app: entry.source_app.clone(),
             created_at: entry.created_at,
             last_used_at: entry.last_used_at,
@@ -349,7 +350,11 @@ impl Card {
         let mut rows: Vec<Element<'static, cosmic::Action<Message>>> = Vec::new();
 
         if self.image_size.is_none() {
-            rows.push(widget::text::body(self.text).into());
+            rows.push(
+                widget::text::body(self.text)
+                    .wrapping(Wrapping::WordOrGlyph)
+                    .into(),
+            );
             rows.push(widget::divider::horizontal::default().into());
         }
 
@@ -477,7 +482,7 @@ fn content<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> 
         .into();
     }
 
-    widget::text::body(label_for(entry))
+    widget::text::body(one_line(&label_for(entry)))
         .ellipsize(Ellipsize::End(EllipsizeHeightLimit::Lines(1)))
         .width(Length::Fill)
         .into()
@@ -551,6 +556,10 @@ fn scroll<'a>(
 
 fn pixels(value: u32) -> f32 {
     f32::from(u16::try_from(value).unwrap_or(u16::MAX))
+}
+
+fn one_line(text: &str) -> String {
+    text.lines().next().unwrap_or_default().to_owned()
 }
 
 fn label_for(entry: &EntryMeta) -> String {

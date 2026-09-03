@@ -87,10 +87,10 @@ mod tests {
 
     #[test]
     fn a_long_body_takes_several_pumps() {
-        let payload = vec![b'z'; CHUNK * 3];
+        let payload: Arc<[u8]> = vec![b'z'; BURST + CHUNK].into();
         let (mut reader, writer) = std::io::pipe().unwrap();
         set_nonblocking(&writer);
-        let mut outgoing = Outgoing::new(Arc::from(payload.clone()));
+        let mut outgoing = Outgoing::new(Arc::clone(&payload));
 
         let received = std::thread::spawn(move || {
             let mut buffer = Vec::new();
@@ -98,15 +98,30 @@ mod tests {
             buffer
         });
 
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
         let mut pumps = 0;
-        while outgoing.pump(&writer) == Progress::Writing {
-            pumps += 1;
-            assert!(pumps < 10_000, "the pump made no progress");
+        loop {
+            match outgoing.pump(&writer) {
+                Progress::Finished => break,
+                Progress::Writing => {
+                    pumps += 1;
+                    assert!(
+                        std::time::Instant::now() < deadline,
+                        "transfer timed out with {} bytes remaining",
+                        outgoing.remaining()
+                    );
+                    std::thread::yield_now();
+                }
+                Progress::Abandoned => panic!("the receiver stayed open"),
+            }
         }
         drop(writer);
 
         assert_eq!(received.join().unwrap().len(), payload.len());
-        assert!(pumps >= 2, "a body this size cannot go out in one chunk");
+        assert!(
+            pumps >= 1,
+            "a body larger than one burst needs another pump"
+        );
     }
 
     #[test]
