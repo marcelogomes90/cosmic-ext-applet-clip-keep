@@ -1,14 +1,18 @@
 use std::sync::LazyLock;
 
 use cosmic::Element;
+use cosmic::cctk::sctk::reexports::protocols::xdg::shell::client::xdg_positioner::{
+    Anchor, Gravity,
+};
 use cosmic::iced::advanced::text::{Ellipsize, EllipsizeHeightLimit};
-use cosmic::iced::{Alignment, Length};
+use cosmic::iced::platform_specific::runtime::wayland::popup::{SctkPopupSettings, SctkPositioner};
+use cosmic::iced::{Alignment, Length, Limits, Rectangle, window};
 use cosmic::widget;
+use cosmic::widget::wayland::tooltip::widget::Tooltip;
 
 use super::ClipKeep;
-use super::Preview;
 use super::message::Message;
-use crate::clip::model::{CaptureState, EntryKind, EntryMeta, PREVIEW_CHARS};
+use crate::clip::model::{CaptureState, EntryKind, EntryMeta, Timestamp};
 use crate::clip::search;
 use crate::clip::settings::{MAX_ENTRIES_CEILING, Settings};
 use crate::fl;
@@ -20,10 +24,15 @@ const PAD_ROW_H: u16 = 12;
 const GAP: u16 = 8;
 const GAP_TIGHT: u16 = 4;
 
-const PREVIEW_HEIGHT: f32 = 180.0;
-
-const PREVIEW_ICON: &[u8] = include_bytes!("../../../resources/icons/preview-symbolic.svg");
 const THUMBNAIL_HEIGHT: u16 = 32;
+
+const CARD_ENABLED: bool = true;
+const CARD_WIDTH: f32 = 300.0;
+const CARD_LABEL_WIDTH: f32 = 96.0;
+const CARD_DELAY: std::time::Duration = std::time::Duration::from_millis(400);
+
+static CARD_WINDOW_ID: LazyLock<window::Id> = LazyLock::new(window::Id::unique);
+static CARD_ID: LazyLock<widget::Id> = LazyLock::new(|| widget::Id::new("clip-keep-card"));
 
 pub(crate) static SEARCH_ID: LazyLock<widget::Id> =
     LazyLock::new(|| widget::Id::new("clip-keep-search"));
@@ -38,7 +47,7 @@ pub fn visible(app: &ClipKeep) -> Vec<&EntryMeta> {
 }
 
 pub const SURFACE_WIDTH: f32 = 360.0;
-const SURFACE_MAX_HEIGHT: f32 = 660.0;
+const SURFACE_MAX_HEIGHT: f32 = 588.0;
 
 static SURFACE_ID: LazyLock<widget::Id> = LazyLock::new(|| widget::Id::new("clip-keep-popup"));
 
@@ -51,22 +60,7 @@ pub fn popup(app: &ClipKeep) -> Element<'_, Message> {
 
     let surface = widget::container(body)
         .width(Length::Fixed(SURFACE_WIDTH))
-        .style(|theme: &cosmic::Theme| {
-            let cosmic = theme.cosmic();
-            let background = cosmic.background(theme.transparent);
-            widget::container::Style {
-                text_color: Some(background.on.into()),
-                icon_color: Some(background.on.into()),
-                background: Some(cosmic::iced::Color::from(background.base).into()),
-                border: cosmic::iced::Border {
-                    radius: cosmic.corner_radii.radius_m.into(),
-                    width: 1.0,
-                    color: background.divider.into(),
-                },
-                shadow: cosmic::iced::Shadow::default(),
-                snap: true,
-            }
-        });
+        .style(surface_style);
 
     widget::autosize::autosize(surface, SURFACE_ID.clone())
         .limits(
@@ -77,6 +71,24 @@ pub fn popup(app: &ClipKeep) -> Element<'_, Message> {
                 .max_height(SURFACE_MAX_HEIGHT),
         )
         .into()
+}
+
+fn surface_style(theme: &cosmic::Theme) -> widget::container::Style {
+    let cosmic = theme.cosmic();
+    let background = cosmic.background(theme.transparent);
+
+    widget::container::Style {
+        text_color: Some(background.on.into()),
+        icon_color: Some(background.on.into()),
+        background: Some(cosmic::iced::Color::from(background.base).into()),
+        border: cosmic::iced::Border {
+            radius: cosmic.corner_radii.radius_m.into(),
+            width: 1.0,
+            color: background.divider.into(),
+        },
+        shadow: cosmic::iced::Shadow::default(),
+        snap: true,
+    }
 }
 
 fn history_page(app: &ClipKeep) -> Element<'_, Message> {
@@ -122,8 +134,8 @@ fn history_page(app: &ClipKeep) -> Element<'_, Message> {
         let mut pinned = Vec::new();
         let mut regular = Vec::new();
 
-        for (index, entry) in rows.into_iter().enumerate() {
-            let item = row(app, index, entry);
+        for entry in rows {
+            let item = row(app, entry);
             if entry.pinned.is_some() {
                 pinned.push(item);
             } else {
@@ -133,7 +145,7 @@ fn history_page(app: &ClipKeep) -> Element<'_, Message> {
 
         let mut sections = Vec::new();
         if !pinned.is_empty() {
-            sections.push(list_section(fl!("section-pinned"), pinned));
+            sections.push(list_section("pin-symbolic", fl!("section-pinned"), pinned));
         }
         if !regular.is_empty() {
             if !sections.is_empty() {
@@ -144,33 +156,48 @@ fn history_page(app: &ClipKeep) -> Element<'_, Message> {
                         .into(),
                 );
             }
-            sections.push(list_section(fl!("section-recent"), regular));
+            sections.push(list_section(
+                "document-open-recent-symbolic",
+                fl!("section-recent"),
+                regular,
+            ));
         }
 
         let list = widget::container(widget::column::with_children(sections))
             .padding([0, 0, PAD, 0])
             .width(Length::Fill);
 
-        let mut list = widget::container(scroll(list)).width(Length::Fill);
-        if app.preview().is_some() {
-            list = list.height(Length::Fill);
-        }
-
-        children.push(list.into());
-    }
-
-    if let Some(panel) = preview_panel(app) {
-        children.push(divider());
-        children.push(panel);
+        children.push(
+            widget::container(
+                scroll(list).on_scroll(|viewport| Message::Scrolled(viewport.absolute_offset().y)),
+            )
+            .width(Length::Fill)
+            .into(),
+        );
     }
 
     widget::column::with_children(children).into()
 }
 
-fn list_section(title: String, rows: Vec<Element<'_, Message>>) -> Element<'_, Message> {
-    let heading = widget::container(widget::text::heading(title))
-        .padding([GAP, PAD, GAP_TIGHT, PAD + PAD_ROW_H])
-        .width(Length::Fill);
+fn list_section<'a>(
+    glyph: &'a str,
+    title: String,
+    rows: Vec<Element<'a, Message>>,
+) -> Element<'a, Message> {
+    let heading = widget::container(
+        widget::row::with_children(vec![
+            widget::icon::from_name(glyph)
+                .size(14)
+                .symbolic(true)
+                .icon()
+                .into(),
+            widget::text::heading(title).into(),
+        ])
+        .spacing(GAP)
+        .align_y(Alignment::Center),
+    )
+    .padding([GAP, PAD, GAP, PAD + PAD_ROW_H])
+    .width(Length::Fill);
     let mut children: Vec<Element<'_, Message>> = vec![heading.into()];
     children.extend(rows);
     widget::column::with_children(children).into()
@@ -207,40 +234,232 @@ fn empty_state(app: &ClipKeep) -> Element<'_, Message> {
         .into()
 }
 
-fn row<'a>(app: &'a ClipKeep, index: usize, entry: &'a EntryMeta) -> Element<'a, Message> {
-    let highlighted = index == app.highlight();
+fn row<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
+    let active = app.hovered() == Some(entry.id);
 
-    let button = widget::button::custom(content(app, entry, highlighted))
+    let button = widget::button::custom(content(app, entry))
         .class(quiet())
         .padding([GAP, PAD_ROW_H])
         .width(Length::Fill)
         .on_press(Message::Confirm(entry.id));
 
-    let mut controls: Vec<Element<'a, Message>> = vec![button.into()];
+    let actions = widget::row::with_children(vec![
+        action_toggle(
+            "pin-symbolic",
+            entry.pinned.is_some(),
+            Message::TogglePin(entry.id),
+        ),
+        action_toggle("user-trash-symbolic", false, Message::Delete(entry.id)),
+    ])
+    .align_y(Alignment::Center);
 
-    if worth_previewing(entry) {
-        let showing = app.preview().is_some_and(|(id, _)| id == entry.id);
-        controls.push(preview_action(showing, Message::TogglePreview(entry.id)));
-    }
+    let controls: Vec<Element<'a, Message>> = vec![button.into(), actions.into()];
 
-    controls.push(action_toggle(
-        "pin-symbolic",
-        entry.pinned.is_some(),
-        Message::TogglePin(entry.id),
-    ));
-    controls.push(action("window-close-symbolic", Message::Delete(entry.id)));
-
-    widget::container(
+    let inner = widget::container(
         widget::row::with_children(controls)
             .spacing(GAP_TIGHT)
             .align_y(Alignment::Center),
     )
-    .padding([0, PAD])
     .width(Length::Fill)
+    .class(if active {
+        active_row()
+    } else {
+        cosmic::theme::Container::Transparent
+    });
+
+    let row = widget::container(inner)
+        .padding([0, PAD])
+        .width(Length::Fill);
+
+    let hover = widget::mouse_area(row)
+        .on_enter(Message::Hover(entry.id))
+        .on_exit(Message::Unhover(entry.id));
+
+    let Some(parent) = app.popup_id().filter(|_| CARD_ENABLED) else {
+        return hover.into();
+    };
+
+    let card = Card::of(entry);
+    let scrolled = app.scroll();
+
+    Tooltip::new(
+        hover,
+        Some(move |bounds: Rectangle| SctkPopupSettings {
+            parent,
+            id: *CARD_WINDOW_ID,
+            grab: false,
+            input_zone: Some(vec![Rectangle::new(
+                cosmic::iced::Point::new(-1000., -1000.),
+                cosmic::iced::Size::default(),
+            )]),
+            positioner: SctkPositioner {
+                size: None,
+                size_limits: Limits::NONE.min_width(1.).min_height(1.),
+                anchor_rect: Rectangle {
+                    x: whole(bounds.x),
+                    y: whole((bounds.y - scrolled).clamp(0.0, SURFACE_MAX_HEIGHT - bounds.height)),
+                    width: whole(bounds.width),
+                    height: whole(bounds.height),
+                },
+                anchor: Anchor::Left,
+                gravity: Gravity::Left,
+                constraint_adjustment: 15,
+                offset: (-i32::from(GAP), 0),
+                reactive: true,
+            },
+            parent_size: None,
+            close_with_children: true,
+        }),
+        move || card.clone().view(),
+        Message::Surface(cosmic::surface::Action::DestroyPopup(*CARD_WINDOW_ID)),
+        Message::Surface,
+    )
+    .width(Length::Fill)
+    .delay(CARD_DELAY)
     .into()
 }
 
-fn content<'a>(app: &'a ClipKeep, entry: &'a EntryMeta, highlighted: bool) -> Element<'a, Message> {
+#[derive(Clone)]
+struct Card {
+    text: String,
+    source_app: Option<String>,
+    created_at: Timestamp,
+    last_used_at: Timestamp,
+    use_count: u32,
+    byte_size: u64,
+    image_size: Option<(u32, u32)>,
+}
+
+impl Card {
+    fn of(entry: &EntryMeta) -> Self {
+        Self {
+            text: label_for(entry),
+            source_app: entry.source_app.clone(),
+            created_at: entry.created_at,
+            last_used_at: entry.last_used_at,
+            use_count: entry.use_count,
+            byte_size: entry.byte_size,
+            image_size: (entry.kind == EntryKind::Image)
+                .then_some(entry.image_size)
+                .flatten(),
+        }
+    }
+
+    fn view(self) -> Element<'static, cosmic::Action<Message>> {
+        let mut rows: Vec<Element<'static, cosmic::Action<Message>>> = Vec::new();
+
+        if self.image_size.is_none() {
+            rows.push(widget::text::body(self.text).into());
+            rows.push(widget::divider::horizontal::default().into());
+        }
+
+        rows.push(
+            widget::column::with_children(
+                [
+                    self.source_app
+                        .map(|app| detail(fl!("card-source"), application(&app))),
+                    self.image_size
+                        .map(|(w, h)| detail(fl!("card-size"), format!("{w} × {h}"))),
+                    Some(detail(fl!("card-copied"), moment(self.created_at))),
+                    Some(detail(fl!("card-used"), moment(self.last_used_at))),
+                    Some(detail(fl!("card-copies"), self.use_count.to_string())),
+                    Some(detail(fl!("card-bytes"), bytes(self.byte_size))),
+                ]
+                .into_iter()
+                .flatten()
+                .collect::<Vec<_>>(),
+            )
+            .spacing(GAP_TIGHT)
+            .into(),
+        );
+
+        widget::autosize::autosize(
+            widget::container(
+                widget::column::with_children(rows)
+                    .spacing(GAP)
+                    .width(Length::Fixed(CARD_WIDTH)),
+            )
+            .padding(PAD)
+            .style(surface_style),
+            CARD_ID.clone(),
+        )
+        .limits(
+            Limits::NONE
+                .min_width(1.0)
+                .min_height(1.0)
+                .max_width(CARD_WIDTH)
+                .max_height(SURFACE_MAX_HEIGHT),
+        )
+        .into()
+    }
+}
+
+fn detail(name: String, value: String) -> Element<'static, cosmic::Action<Message>> {
+    widget::row::with_children(vec![
+        widget::text::caption(name)
+            .width(Length::Fixed(CARD_LABEL_WIDTH))
+            .into(),
+        widget::text::caption(value).width(Length::Fill).into(),
+    ])
+    .into()
+}
+
+fn moment(at: Timestamp) -> String {
+    jiff::Timestamp::from_millisecond(at)
+        .map(|stamp| {
+            stamp
+                .to_zoned(jiff::tz::TimeZone::system())
+                .strftime(&fl!("card-moment-format"))
+                .to_string()
+        })
+        .unwrap_or_default()
+}
+
+fn application(id: &str) -> String {
+    let tail = id.rsplit('.').next().unwrap_or(id);
+    let mut name = String::with_capacity(tail.len() + 4);
+
+    for (index, character) in tail.chars().enumerate() {
+        if index == 0 {
+            name.extend(character.to_uppercase());
+            continue;
+        }
+
+        if character.is_uppercase() && !name.ends_with(' ') {
+            name.push(' ');
+        }
+        name.push(character);
+    }
+
+    name
+}
+
+fn bytes(size: u64) -> String {
+    const UNITS: [&str; 4] = ["B", "kB", "MB", "GB"];
+
+    let mut whole = size;
+    let mut remainder = 0;
+    let mut unit = 0;
+
+    while whole >= 1024 && unit + 1 < UNITS.len() {
+        remainder = whole % 1024;
+        whole /= 1024;
+        unit += 1;
+    }
+
+    if unit == 0 {
+        format!("{whole} {}", UNITS[0])
+    } else {
+        format!("{whole}.{} {}", remainder * 10 / 1024, UNITS[unit])
+    }
+}
+
+#[allow(clippy::cast_possible_truncation)]
+fn whole(value: f32) -> i32 {
+    value.round() as i32
+}
+
+fn content<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
     if entry.kind == EntryKind::Image
         && let Some(handle) = app.thumbs().get(entry.id)
     {
@@ -258,7 +477,7 @@ fn content<'a>(app: &'a ClipKeep, entry: &'a EntryMeta, highlighted: bool) -> El
         .into();
     }
 
-    accented(widget::text::body(label_for(entry)), highlighted)
+    widget::text::body(label_for(entry))
         .ellipsize(Ellipsize::End(EllipsizeHeightLimit::Lines(1)))
         .width(Length::Fill)
         .into()
@@ -277,62 +496,47 @@ fn quiet() -> cosmic::theme::Button {
     }
 }
 
-fn accented(
-    text: widget::Text<'_, cosmic::Theme>,
-    highlighted: bool,
-) -> widget::Text<'_, cosmic::Theme> {
-    if highlighted {
-        text.class(cosmic::theme::Text::Accent)
-    } else {
-        text
-    }
-}
-
-fn preview_action(showing: bool, message: Message) -> Element<'static, Message> {
-    widget::button::icon(widget::icon::from_svg_bytes(PREVIEW_ICON).symbolic(true))
-        .class(cosmic::theme::Button::Icon)
-        .on_press_maybe((!showing).then_some(message))
-        .into()
-}
-
-fn action(glyph: &str, message: Message) -> Element<'_, Message> {
-    action_toggle(glyph, false, message)
+fn active_row<'a>() -> cosmic::theme::Container<'a> {
+    cosmic::theme::Container::Custom(Box::new(|theme: &cosmic::Theme| {
+        let cosmic = theme.cosmic();
+        widget::container::Style {
+            background: Some(
+                cosmic::iced::Color::from(cosmic.primary(theme.transparent).component.hover).into(),
+            ),
+            border: cosmic::iced::Border {
+                radius: cosmic.corner_radii.radius_m.into(),
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    }))
 }
 
 fn action_toggle(glyph: &str, selected: bool, message: Message) -> Element<'_, Message> {
     widget::button::icon(widget::icon::from_name(glyph).size(14).symbolic(true))
-        .class(if selected {
-            accent_icon()
-        } else {
-            cosmic::theme::Button::Icon
-        })
+        .class(flat_icon(selected))
         .on_press(message)
         .into()
 }
 
-fn accent_icon() -> cosmic::theme::Button {
-    use cosmic::widget::button::{Catalog, Style};
+fn flat_icon(selected: bool) -> cosmic::theme::Button {
+    fn paint(theme: &cosmic::Theme, selected: bool) -> cosmic::widget::button::Style {
+        let mut style = cosmic::widget::button::Style::new();
 
-    const BASE: cosmic::theme::Button = cosmic::theme::Button::Icon;
+        if selected {
+            let accent = theme.cosmic().accent_text_color().into();
+            style.icon_color = Some(accent);
+            style.text_color = Some(accent);
+        }
 
-    fn tint(theme: &cosmic::Theme, mut style: Style) -> Style {
-        let accent = theme.cosmic().accent_text_color().into();
-        style.icon_color = Some(accent);
-        style.text_color = Some(accent);
         style
     }
 
     cosmic::theme::Button::Custom {
-        active: Box::new(|focused, theme| {
-            tint(theme, Catalog::active(theme, focused, true, &BASE))
-        }),
-        disabled: Box::new(|theme| Catalog::disabled(theme, &BASE)),
-        hovered: Box::new(|focused, theme| {
-            tint(theme, Catalog::hovered(theme, focused, true, &BASE))
-        }),
-        pressed: Box::new(|focused, theme| {
-            tint(theme, Catalog::pressed(theme, focused, true, &BASE))
-        }),
+        active: Box::new(move |_, theme| paint(theme, selected)),
+        disabled: Box::new(move |theme| paint(theme, selected)),
+        hovered: Box::new(move |_, theme| paint(theme, selected)),
+        pressed: Box::new(move |_, theme| paint(theme, selected)),
     }
 }
 
@@ -358,51 +562,8 @@ fn label_for(entry: &EntryMeta) -> String {
     }
 }
 
-fn worth_previewing(entry: &EntryMeta) -> bool {
-    entry.kind != EntryKind::Image && entry.preview.chars().count() >= PREVIEW_CHARS
-}
-
 fn divider<'a>() -> Element<'a, Message> {
     widget::divider::horizontal::default().into()
-}
-
-fn preview_panel(app: &ClipKeep) -> Option<Element<'_, Message>> {
-    let (id, content) = app.preview()?;
-
-    let label = app
-        .snapshot()
-        .entries
-        .iter()
-        .find(|entry| entry.id == id)
-        .map(label_for)
-        .unwrap_or_default();
-
-    let header = widget::row::with_children(vec![
-        widget::text::caption(label)
-            .ellipsize(Ellipsize::End(EllipsizeHeightLimit::Lines(1)))
-            .width(Length::Fill)
-            .into(),
-        action("go-up-symbolic", Message::TogglePreview(id)),
-    ])
-    .spacing(GAP_TIGHT)
-    .align_y(Alignment::Center);
-
-    let body: Element<'_, Message> = match content {
-        Preview::Text(text) => scroll(widget::text::body(text.as_str()))
-            .height(Length::Fixed(PREVIEW_HEIGHT))
-            .into(),
-        Preview::Unavailable => widget::container(widget::text::body(fl!("no-results")))
-            .center_x(Length::Fill)
-            .into(),
-    };
-
-    Some(
-        widget::container(
-            widget::column::with_children(vec![header.into(), body]).spacing(GAP_TIGHT),
-        )
-        .padding([GAP, PAD, PAD, PAD])
-        .into(),
-    )
 }
 
 fn settings_page(app: &ClipKeep) -> Element<'_, Message> {

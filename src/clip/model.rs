@@ -101,7 +101,14 @@ impl EntryMeta {
     }
 }
 
-pub const PREVIEW_CHARS: usize = 200;
+pub const PREVIEW_CHARS: usize = 2000;
+
+pub fn truncate_chars(text: &str, max: usize) -> String {
+    match text.char_indices().nth(max) {
+        Some((cut, _)) => text[..cut].to_owned(),
+        None => text.to_owned(),
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Backend {

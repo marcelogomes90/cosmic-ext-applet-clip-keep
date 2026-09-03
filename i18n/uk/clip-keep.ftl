@@ -8,6 +8,14 @@ section-recent = Історія
 
 item-image = Зображення { $width } × { $height }
 
+card-source = Скопійовано з
+card-size = Розміри
+card-copied = Перша копія
+card-used = Останнє використання
+card-copies = Кількість копій
+card-bytes = Розмір
+card-moment-format = %d.%m.%Y %H:%M
+
 section-privacy = Приватність
 section-history = Історія
 section-behaviour = Поведінка

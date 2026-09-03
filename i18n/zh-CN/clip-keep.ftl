@@ -8,6 +8,14 @@ section-recent = 历史记录
 
 item-image = 图像 { $width } × { $height }
 
+card-source = 复制自
+card-size = 尺寸
+card-copied = 首次复制
+card-used = 最后使用
+card-copies = 复制次数
+card-bytes = 大小
+card-moment-format = %Y-%m-%d %H:%M
+
 section-privacy = 隐私
 section-history = 历史记录
 section-behaviour = 行为

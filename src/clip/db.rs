@@ -2,10 +2,14 @@ use std::path::{Path, PathBuf};
 
 use rusqlite::{Connection, OptionalExtension, params};
 
-use super::model::{EntryId, EntryKind, EntryMeta, Flavor, PREVIEW_CHARS, Thumbnail, Timestamp};
+use super::model::{
+    EntryId, EntryKind, EntryMeta, Flavor, PREVIEW_CHARS, Thumbnail, Timestamp, truncate_chars,
+};
 use super::settings::Settings;
 
 const SCHEMA_VERSION: i64 = 1;
+
+const ECHO_WINDOW: Timestamp = 500;
 
 const SCHEMA: &str = "
 CREATE TABLE IF NOT EXISTS entries (
@@ -146,19 +150,21 @@ impl Db {
     pub fn store(&mut self, entry: &NewEntry<'_>, now: Timestamp) -> rusqlite::Result<Stored> {
         let tx = self.conn.transaction()?;
 
-        let existing: Option<i64> = tx
+        let existing: Option<(i64, Timestamp)> = tx
             .query_row(
-                "SELECT id FROM entries WHERE hash = ?1",
+                "SELECT id, last_used_at FROM entries WHERE hash = ?1",
                 params![entry.hash],
-                |row| row.get(0),
+                |row| Ok((row.get(0)?, row.get(1)?)),
             )
             .optional()?;
 
-        if let Some(id) = existing {
-            tx.execute(
-                "UPDATE entries SET last_used_at = ?2, use_count = use_count + 1 WHERE id = ?1",
-                params![id, now],
-            )?;
+        if let Some((id, last_used_at)) = existing {
+            if now.saturating_sub(last_used_at) >= ECHO_WINDOW {
+                tx.execute(
+                    "UPDATE entries SET last_used_at = ?2, use_count = use_count + 1 WHERE id = ?1",
+                    params![id, now],
+                )?;
+            }
             tx.commit()?;
             return Ok(Stored::Repeated(EntryId(id)));
         }
@@ -176,7 +182,7 @@ impl Db {
             params![
                 entry.hash,
                 entry.kind as i64,
-                truncate_preview(entry.preview),
+                truncate_chars(entry.preview, PREVIEW_CHARS),
                 byte_size,
                 entry.source_app,
                 now,
@@ -385,13 +391,6 @@ pub fn default_path() -> PathBuf {
         .unwrap_or_else(std::env::temp_dir);
 
     base.join("cosmic-clip-keep").join("history.db")
-}
-
-fn truncate_preview(preview: &str) -> String {
-    match preview.char_indices().nth(PREVIEW_CHARS) {
-        Some((cut, _)) => preview[..cut].to_owned(),
-        None => preview.to_owned(),
-    }
 }
 
 #[cfg(unix)]

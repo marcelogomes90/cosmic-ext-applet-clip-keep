@@ -21,7 +21,11 @@
   </description>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/history-popup.png</image>
+      <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/details-card.png</image>
+      <caption>Resting on an entry opens a card with its text and where it came from</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/history.png</image>
       <caption>Pinned entries above the rest of the history, each row one click from the clipboard</caption>
     </screenshot>
     <screenshot>
@@ -61,6 +65,21 @@
     <keyword>Panel</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.1.0" date="2026-09-02">
+      <description>
+        <p>Resting on an entry now tells you everything about it, and the list itself is quieter.</p>
+        <ul>
+          <li>Opens a card beside the popup when the pointer rests on an entry, holding much more of its text along with the application it was copied from, when it was first copied and last used, how many times, and its size or pixel dimensions.</li>
+          <li>Keeps the line breaks and the indentation of what you copied, so a snippet of code reads as code instead of one long paragraph, and remembers ten times as much of it.</li>
+          <li>Replaces the expanding preview panel at the foot of the popup, which sat far from the entry it belonged to.</li>
+          <li>Marks the entry under the pointer, and labels the pinned and history sections with an icon.</li>
+          <li>Writes dates the way the interface language does, and names the source application readably rather than by its reverse-domain identifier.</li>
+          <li>Counts a paste once instead of once per monitor.</li>
+          <li>Fixes a crash that made the panel button vanish and return when the popup was opened and closed quickly.</li>
+          <li>Removes the keyboard shortcuts, which never reached the popup.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.0.0" date="2026-09-02">
       <description>
         <p>First release.</p>

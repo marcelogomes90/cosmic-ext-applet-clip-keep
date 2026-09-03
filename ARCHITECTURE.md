@@ -149,11 +149,15 @@ creation. Content bodies live in a separate `contents` table keyed by mime, thum
 pins in a fourth, all cascading on delete.
 
 The list the applet renders is `EntryMeta` — id, kind, a truncated preview string, byte size,
-source, timestamps, and thumbnail dimensions. **No body ever reaches the applet as part of a
-snapshot.** A full image is loaded only while it is previewed, over `ClipCommand::Thumbnail` and
-`ClipCommand::Load`, and dropped when the preview closes. This is what keeps a hundred-entry
-history of screenshots from being a hundred screenshots in memory. Thumbnails are generated once at
-capture, capped at `thumbnail::MAX_EDGE` (256 px).
+source, timestamps, and thumbnail dimensions. **No body ever reaches the applet.** The only thing
+the applet fetches is a thumbnail, over `ClipCommand::Thumbnail`, which is what keeps a
+hundred-entry history of screenshots from being a hundred screenshots in memory. Thumbnails are
+generated once at capture, capped at `thumbnail::MAX_EDGE` (256 px).
+
+`PREVIEW_CHARS` (2000) is what the hover card reads, so `dedup::summarise` has to produce something
+worth reading: it collapses runs of spaces *within* a line and runs of blank lines, but keeps line
+breaks and up to eight columns of indentation. Flattening a snippet to one line, which is what it
+used to do, is invisible at 200 characters and ruins any code at 2000.
 
 Pins are the exception to every limit. `Db::list` orders by `(not pinned, pin position, last used,
 id)` and raises its own `LIMIT` by the number of pins; `Db::prune` excludes pinned rows from both
@@ -163,15 +167,19 @@ a statement that this entry should outlive the policy, so no policy may quietly 
 ## The popup
 
 `view::popup` builds one surface, sized by `autosize` with `max_height(SURFACE_MAX_HEIGHT)` and a
-minimum of one pixel, so the popup is as tall as its content and no taller. Everything inside is `Length::Shrink`
-for the same reason — with one deliberate exception.
+minimum of one pixel, so the popup is as tall as its content and no taller. Everything inside is
+`Length::Shrink` for the same reason.
 
-**When a preview is open the list reclaims `Length::Fill`.** iced's flex layout lays out non-fill
-children in order, each seeing what the previous ones left, so an all-`Shrink` column lets a long
-history consume the entire height and lays the preview panel out with nothing. Making the list the
-fill child puts it last in the layout order and the fixed-height preview gets its space back. The
-popup then sits at its maximum for as long as a preview is open, which is also steadier than having
-it resize under the pointer as previews are toggled.
+Pin and delete are always on the row, but through `flat_icon` rather than `Button::Icon`: their
+class paints nothing in any state, so the only hover the row shows is its own. Two overlapping
+highlights — a chip behind the glyph inside a band behind the row — read as a mistake.
+`flat_icon` also carries the accent colour for a pinned row, because `Button::Icon` computes that
+colour for its selected state and then discards it (libcosmic leaves `icon_color` unset unless the
+button is disabled).
+
+The hover background sits on a container *inside* the row's horizontal padding, not on the padded
+container itself, so the highlight stops short of the popup edges, and it takes `radius_m` to match
+the popup's own corner.
 
 Two things in the popup work around gaps in libcosmic rather than expressing a preference:
 
@@ -179,10 +187,6 @@ Two things in the popup work around gaps in libcosmic rather than expressing a p
   and both paint a thumb; there is no transparent variant to select. `view::scroll` sets
   `scrollbar_width`, `scroller_width` and `scrollbar_padding` to zero instead, which keeps wheel and
   touch scrolling and paints nothing.
-- **A pinned row's glyph is coloured by hand.** `Button::Icon` computes an accent colour for its
-  selected state and then discards it — libcosmic leaves `icon_color` unset unless the button is
-  disabled — so `.selected(true)` shows up only on hover. `view::accent_icon` borrows the stock
-  icon appearance through the `Catalog` trait and overrides the two colour fields.
 
 Padding lives on the children of each page rather than on a wrapper around it. That is what lets a
 scrollable span the full width, so its content keeps the same margins while the scroll area itself
@@ -199,11 +203,37 @@ running a fuller icon theme will hide that from you. A new glyph has to be check
 `/usr/share/icons/Cosmic` *and* against the theme bundled in `com.system76.Cosmic.BaseApp`, which
 is what the Flatpak actually sees.
 
-`resources/icons/preview-symbolic.svg` is the one glyph the applet draws itself, embedded with
-`include_bytes!` rather than installed. The theme carries no plain eye — its only one,
-`image-red-eye-symbolic`, is struck through and therefore means *hidden*, the opposite of the
-action. `icon::from_svg_bytes(..).symbolic(true)` sets the same flag a themed `-symbolic` name
-gets, so the colour in the file is ignored and the glyph follows the panel ink like every other.
+## The hover card
+
+Resting on a row opens a card beside the popup carrying the entry's text and the details
+`EntryMeta` already holds — where it was copied from, when it was first copied and last used, how
+many times, and its size or pixel dimensions.
+
+This is `cosmic::widget::wayland::tooltip`, which every shipped COSMIC applet uses and which creates
+a **real Wayland popup** rather than an overlay. That is the whole reason it can sit beside a 360 px
+surface instead of covering the list. `applet::Context::applet_tooltip` in libcosmic is the worked
+example for the parts that matter: `grab: false` and an `input_zone` pushed off-screen so the card
+never takes a click, and `close_with_children` so it dies with the popup. The positioner here is our
+own — `Anchor::Left` with `Gravity::Left`, and `constraint_adjustment: 15` so the compositor flips
+it to the other side when the panel button sits near a screen edge.
+
+Two constraints shape the code:
+
+- The tooltip's `view` closure is `Fn() -> Element<'static, _>`, so it cannot borrow from the
+  application. `Card::of` copies the handful of fields it needs out of `EntryMeta` when the row is
+  built, and the closure clones that.
+- The card reads **only** what the snapshot already carries. Nothing is fetched on hover, which is
+  why `ClipCommand::Load` no longer exists: `PREVIEW_CHARS` was widened instead so the stored
+  preview is worth reading on its own.
+
+`CARD_DELAY` exists because each card is a Wayland surface. Without it, dragging the pointer down
+the list would create and destroy one per row.
+
+`card-moment-format` is a Fluent message rather than a constant: jiff formats dates but does not
+localise them, so the pattern travels with the translation and each catalogue writes the order its
+readers expect. `view::application` turns a reverse-DNS app id into something readable —
+`com.system76.CosmicTerm` becomes `Cosmic Term` — since that is what the compositor reports as the
+window that owned the selection.
 
 ## Packaging
 

@@ -8,6 +8,14 @@ section-recent = Cronologia
 
 item-image = Immagine { $width } × { $height }
 
+card-source = Copiato da
+card-size = Dimensioni
+card-copied = Prima copia
+card-used = Ultimo utilizzo
+card-copies = Numero di copie
+card-bytes = Dimensione
+card-moment-format = %d/%m/%Y %H:%M
+
 section-privacy = Privacy
 section-history = Cronologia
 section-behaviour = Comportamento

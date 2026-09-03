@@ -295,3 +295,23 @@ fn a_second_connection_sees_the_change_counter_move() {
 
     std::fs::remove_dir_all(dir).ok();
 }
+
+#[test]
+fn a_selection_echoed_back_within_a_moment_is_not_counted_again() {
+    let mut db = Db::in_memory().expect("an in-memory history should open");
+    let capture = text("pasted again");
+
+    let stored = store(&mut db, &capture, T0);
+    db.touch(stored.id(), T0 + 10).expect("a use should record");
+    store(&mut db, &capture, T0 + 20);
+
+    let entries = db.list(&Settings::default()).unwrap();
+    assert_eq!(
+        entries[0].use_count, 2,
+        "the click and the echo another instance captures must count once"
+    );
+
+    store(&mut db, &capture, T0 + 60_000);
+    let entries = db.list(&Settings::default()).unwrap();
+    assert_eq!(entries[0].use_count, 3, "a later copy still counts");
+}

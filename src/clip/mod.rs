@@ -31,11 +31,6 @@ pub enum ClipCommand {
     Offer {
         flavors: Vec<Flavor>,
     },
-    Load {
-        id: EntryId,
-        mime: Option<String>,
-        reply: oneshot::Sender<Option<Flavor>>,
-    },
     Thumbnail {
         id: EntryId,
         reply: oneshot::Sender<Option<Thumbnail>>,
@@ -70,12 +65,6 @@ impl ClipHandle {
         if let Err(error) = self.commands.send(command) {
             tracing::warn!(%error, "the capture thread is gone, dropping a command");
         }
-    }
-
-    pub async fn load(&self, id: EntryId, mime: Option<String>) -> Option<Flavor> {
-        let (reply, answer) = oneshot::channel();
-        self.send(ClipCommand::Load { id, mime, reply });
-        answer.await.ok().flatten()
     }
 
     pub async fn thumbnail(&self, id: EntryId) -> Option<Thumbnail> {

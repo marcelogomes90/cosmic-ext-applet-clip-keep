@@ -901,7 +901,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-clip-keep"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "calloop",
  "calloop-wayland-source",
@@ -910,6 +910,7 @@ dependencies = [
  "i18n-embed",
  "i18n-embed-fl",
  "image",
+ "jiff",
  "libcosmic",
  "rusqlite",
  "rust-embed",
@@ -2246,7 +2247,6 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#caec74c2559924443f12fc6faf97a5bcefe6271d"
 dependencies = [
  "bytemuck",
  "cosmic-text",

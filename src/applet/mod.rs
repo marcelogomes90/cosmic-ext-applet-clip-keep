@@ -1,4 +1,3 @@
-pub mod keys;
 pub mod message;
 pub mod subscription;
 pub mod thumbs;
@@ -40,16 +39,10 @@ pub struct ClipKeep {
     settings: Settings,
     store: SettingsStore,
     query: String,
-    highlight: usize,
+    hovered: Option<EntryId>,
+    scroll: f32,
     showing_settings: bool,
     thumbs: Thumbs,
-    preview: Option<EntryId>,
-    preview_content: Option<Preview>,
-}
-
-pub(crate) enum Preview {
-    Text(String),
-    Unavailable,
 }
 
 pub fn run(clip: ClipHandle) -> cosmic::iced::Result {
@@ -85,11 +78,10 @@ impl cosmic::Application for ClipKeep {
                 settings,
                 store,
                 query: String::new(),
-                highlight: 0,
+                hovered: None,
+                scroll: 0.0,
                 showing_settings: false,
                 thumbs: Thumbs::default(),
-                preview: None,
-                preview_content: None,
             },
             Task::none(),
         )
@@ -107,11 +99,6 @@ impl cosmic::Application for ClipKeep {
         Subscription::batch([
             subscription::snapshots(&self.clip),
             subscription::settings(),
-            if self.popup == PopupState::Closed {
-                Subscription::none()
-            } else {
-                keys::subscription()
-            },
         ])
     }
 
@@ -148,15 +135,6 @@ impl cosmic::Application for ClipKeep {
             }
             Message::Snapshot(snapshot) => {
                 self.snapshot = snapshot;
-                self.clamp_highlight();
-
-                if self
-                    .preview
-                    .is_some_and(|id| !self.snapshot.entries.iter().any(|e| e.id == id))
-                {
-                    self.preview = None;
-                    self.preview_content = None;
-                }
 
                 Task::batch([
                     self.load_thumbnails(),
@@ -171,39 +149,55 @@ impl cosmic::Application for ClipKeep {
             }
             Message::Search(query) => {
                 self.query = query;
-                self.highlight = 0;
                 self.showing_settings = false;
+                Task::none()
+            }
+            Message::Surface(cosmic::surface::Action::Task(task)) => {
+                let Some(parent) = self.popup_id() else {
+                    return Task::none();
+                };
 
-                self.preview = None;
-                self.preview_content = None;
+                task()
+                    .map(move |action| cosmic::Action::App(Message::DelayedSurface(parent, action)))
+            }
+            Message::Surface(action) => cosmic::surface::surface_task(action),
+            Message::DelayedSurface(parent, action) => {
+                if self.popup_id() == Some(parent) {
+                    cosmic::surface::surface_task(action)
+                } else {
+                    Task::none()
+                }
+            }
+            Message::Scrolled(offset) => {
+                self.scroll = offset;
+                Task::none()
+            }
+            Message::Hover(id) => {
+                self.hovered = Some(id);
+                Task::none()
+            }
+            Message::Unhover(id) => {
+                if self.hovered == Some(id) {
+                    self.hovered = None;
+                }
                 Task::none()
             }
             Message::Confirm(id) => self.confirm(id),
             Message::TogglePin(id) => self.toggle_pin(id),
             Message::Delete(id) => self.delete(id),
             Message::Clear => {
-                self.preview = None;
-                self.preview_content = None;
                 self.thumbs.clear();
                 self.clip.send(ClipCommand::Clear {
                     include_pinned: false,
                 });
                 Task::none()
             }
-            Message::TogglePreview(id) => self.toggle_preview(id),
             Message::ThumbnailLoaded(id, thumbnail) => {
                 let handle = thumbnail
                     .map(|thumbnail| cosmic::widget::image::Handle::from_bytes(thumbnail.png));
                 self.thumbs.insert(id, handle);
                 Task::none()
             }
-            Message::PreviewLoaded(id, flavor) => {
-                if self.preview == Some(id) {
-                    self.preview_content = Some(Self::build_preview(flavor));
-                }
-                Task::none()
-            }
-            Message::Key(action) => self.on_key(action),
             Message::ShowSettings(showing) => {
                 self.showing_settings = showing;
                 Task::none()
@@ -240,10 +234,6 @@ impl ClipKeep {
 
     pub(crate) fn query(&self) -> &str {
         &self.query
-    }
-
-    pub(crate) fn highlight(&self) -> usize {
-        self.highlight
     }
 
     pub(crate) fn showing_settings(&self) -> bool {
@@ -288,18 +278,28 @@ impl ClipKeep {
 
     fn reset_view(&mut self) {
         self.query.clear();
-        self.highlight = self.newest();
+        self.hovered = None;
+        self.scroll = 0.0;
         self.showing_settings = false;
-        self.preview = None;
-        self.preview_content = None;
+    }
+
+    pub(crate) fn hovered(&self) -> Option<EntryId> {
+        self.hovered
+    }
+
+    pub(crate) fn scroll(&self) -> f32 {
+        self.scroll
+    }
+
+    pub(crate) fn popup_id(&self) -> Option<window::Id> {
+        match self.popup {
+            PopupState::Open { id, closing: false } => Some(id),
+            PopupState::Open { closing: true, .. } | PopupState::Closed => None,
+        }
     }
 
     pub(crate) fn thumbs(&self) -> &Thumbs {
         &self.thumbs
-    }
-
-    pub(crate) fn preview(&self) -> Option<(EntryId, &Preview)> {
-        self.preview.zip(self.preview_content.as_ref())
     }
 
     fn load_thumbnails(&mut self) -> Task<Message> {
@@ -354,100 +354,7 @@ impl ClipKeep {
     }
 
     fn delete(&mut self, id: EntryId) -> Task<Message> {
-        if self.preview == Some(id) {
-            self.preview = None;
-            self.preview_content = None;
-        }
         self.clip.send(ClipCommand::Delete(id));
         Task::none()
-    }
-
-    fn toggle_preview(&mut self, id: EntryId) -> Task<Message> {
-        if self.preview == Some(id) {
-            self.preview = None;
-            self.preview_content = None;
-            return Task::none();
-        }
-
-        self.preview = Some(id);
-        self.preview_content = None;
-
-        let clip = self.clip.clone();
-        cosmic::task::future(async move {
-            Message::PreviewLoaded(id, clip.load(id, None).await.map(Box::new))
-        })
-    }
-
-    fn build_preview(flavor: Option<Box<crate::clip::model::Flavor>>) -> Preview {
-        flavor.map_or(Preview::Unavailable, |flavor| {
-            Preview::Text(String::from_utf8_lossy(&flavor.body).into_owned())
-        })
-    }
-
-    fn on_key(&mut self, action: keys::Action) -> Task<Message> {
-        let visible: Vec<EntryId> = view::visible(self).iter().map(|entry| entry.id).collect();
-        let last = visible.len().saturating_sub(1);
-
-        match action {
-            keys::Action::Up => {
-                self.highlight = if self.highlight == 0 {
-                    last
-                } else {
-                    self.highlight - 1
-                };
-                Task::none()
-            }
-            keys::Action::Down => {
-                self.highlight = if self.highlight >= last {
-                    0
-                } else {
-                    self.highlight + 1
-                };
-                Task::none()
-            }
-            keys::Action::Dismiss => {
-                if self.preview.is_some() {
-                    self.preview = None;
-                    self.preview_content = None;
-                    Task::none()
-                } else if self.showing_settings {
-                    self.showing_settings = false;
-                    Task::none()
-                } else {
-                    self.close_popup()
-                }
-            }
-            keys::Action::Confirm => self.act_on(self.highlight, &visible, Self::confirm),
-            keys::Action::Pick(index) => self.act_on(index, &visible, Self::confirm),
-            keys::Action::PinHighlighted => self.act_on(self.highlight, &visible, Self::toggle_pin),
-            keys::Action::DeleteHighlighted => self.act_on(self.highlight, &visible, Self::delete),
-            keys::Action::PreviewHighlighted => {
-                self.act_on(self.highlight, &visible, Self::toggle_preview)
-            }
-        }
-    }
-
-    fn act_on(
-        &mut self,
-        index: usize,
-        visible: &[EntryId],
-        action: fn(&mut Self, EntryId) -> Task<Message>,
-    ) -> Task<Message> {
-        match visible.get(index) {
-            Some(id) => action(self, *id),
-            None => Task::none(),
-        }
-    }
-
-    fn clamp_highlight(&mut self) {
-        let visible = view::visible(self).len();
-        self.highlight = self.highlight.min(visible.saturating_sub(1));
-    }
-
-    fn newest(&self) -> usize {
-        view::visible(self)
-            .iter()
-            .position(|entry| entry.pinned.is_none())
-            .unwrap_or(0)
     }
 }

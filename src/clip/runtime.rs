@@ -757,14 +757,6 @@ impl Runtime {
             ClipCommand::SetPinned { id, pinned } => {
                 self.with_db("change a pin", |db| db.set_pinned(id, pinned));
             }
-            ClipCommand::Load { id, mime, reply } => {
-                let flavor = self
-                    .db
-                    .as_ref()
-                    .and_then(|db| db.load(id, mime.as_deref()).ok())
-                    .flatten();
-                let _ = reply.send(flavor);
-            }
             ClipCommand::Thumbnail { id, reply } => {
                 let thumbnail = self
                     .db

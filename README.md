@@ -23,13 +23,10 @@ the clipboard, ready to paste.
   from the middle of a snippet are enough to find it.
 - Pins the entries you keep reaching for. Pinned entries sit in their own section and are never
   removed by the entry limit, the age limit, or **Clear history**.
-- Shows image entries as thumbnails in the list and loads the full image only while it is being
-  previewed.
-- Expands a long text entry inline, without leaving the list.
-- Drives the whole list from the keyboard: arrows and <kbd>Enter</kbd> to pick,
-  <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd> to jump straight to a row, <kbd>Alt</kbd>+<kbd>P</kbd>
-  to pin, <kbd>Alt</kbd>+<kbd>Backspace</kbd> to delete, <kbd>Ctrl</kbd>+<kbd>Space</kbd> to
-  preview, and <kbd>Esc</kbd> to collapse an open preview, then to close.
+- Shows image entries as thumbnails, and never loads a full body into the list.
+- Opens a card beside the popup when you rest on a row, with more of the text and where it came
+  from, when it was first copied and last used, how many times, and how big it is.
+- Keeps each row uncluttered: pin and delete appear only on the row under the pointer.
 - Discards entries an application marked as a password, honouring the
   `x-kde-passwordManagerHint` convention that password managers already publish.
 - Pauses recording entirely in private mode, which the panel button shows at a glance.

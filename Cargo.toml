@@ -1,6 +1,6 @@
 [package]
 name = "cosmic-clip-keep"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
 rust-version = "1.93"
 license = "GPL-3.0-only"
@@ -32,6 +32,7 @@ return_self_not_must_use = "allow"
 [dependencies]
 futures = "0.3"
 i18n-embed-fl = "0.10"
+jiff = "0.2"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "bmp", "gif"] }
 rusqlite = { version = "0.40", features = ["bundled"] }
 rustix = { version = "0.38", features = ["fs", "time"] }
@@ -69,6 +70,9 @@ features = [
     "wayland",
     "winit",
 ]
+
+[patch."https://github.com/pop-os/libcosmic"]
+iced_tiny_skia = { path = "third_party/iced_tiny_skia" }
 
 [profile.release]
 lto = "thin"

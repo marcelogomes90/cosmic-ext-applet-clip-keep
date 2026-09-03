@@ -1,6 +1,8 @@
 use sha2::{Digest, Sha256};
 
-use super::model::{Capture, EntryKind, PREVIEW_CHARS};
+use super::model::{Capture, EntryKind, PREVIEW_CHARS, truncate_chars};
+
+const INDENT_CHARS: usize = 8;
 
 pub fn hash(capture: &Capture) -> [u8; 32] {
     hash_flavors(capture.kind, &capture.flavors)
@@ -47,16 +49,50 @@ fn basename(uri: &str) -> &str {
 }
 
 fn summarise(text: &str) -> String {
-    let mut preview = String::with_capacity(PREVIEW_CHARS);
-    let mut pending_space = false;
+    let mut preview = String::new();
+    let mut taken = 0usize;
+    let mut blank_pending = false;
 
-    for character in text.trim().chars() {
-        if preview.chars().count() >= PREVIEW_CHARS {
-            break;
+    for line in text.trim().lines() {
+        let cleaned = clean_line(line);
+
+        if cleaned.is_empty() {
+            blank_pending = !preview.is_empty();
+            continue;
         }
 
+        if !preview.is_empty() {
+            preview.push('\n');
+            if blank_pending {
+                preview.push('\n');
+            }
+        }
+        blank_pending = false;
+        taken += cleaned.chars().count() + 1;
+        preview.push_str(&cleaned);
+
+        if taken >= PREVIEW_CHARS {
+            break;
+        }
+    }
+
+    truncate_chars(&preview, PREVIEW_CHARS)
+}
+
+fn clean_line(line: &str) -> String {
+    let indent = line
+        .chars()
+        .take_while(|character| *character == ' ' || *character == '\t')
+        .map(|character| if character == '\t' { 4 } else { 1 })
+        .sum::<usize>()
+        .min(INDENT_CHARS);
+
+    let mut cleaned = " ".repeat(indent);
+    let mut pending_space = false;
+
+    for character in line.trim().chars() {
         if character.is_whitespace() {
-            pending_space = !preview.is_empty();
+            pending_space = true;
             continue;
         }
 
@@ -65,13 +101,16 @@ fn summarise(text: &str) -> String {
         }
 
         if pending_space {
-            preview.push(' ');
+            cleaned.push(' ');
             pending_space = false;
         }
-        preview.push(character);
+        cleaned.push(character);
     }
 
-    preview
+    if cleaned.trim().is_empty() {
+        cleaned.clear();
+    }
+    cleaned
 }
 
 #[cfg(test)]
@@ -120,10 +159,27 @@ mod tests {
     }
 
     #[test]
-    fn a_preview_is_one_line_within_budget() {
-        let preview = preview(&text("fn main() {\n    println!(\"hi\");\n}"));
+    fn a_preview_keeps_the_lines_and_the_indentation() {
+        let snippet = "fn main() {\n    println!(\"hi\");\n}";
 
-        assert_eq!(preview, "fn main() { println!(\"hi\"); }");
+        assert_eq!(preview(&text(snippet)), snippet);
+    }
+
+    #[test]
+    fn runs_of_spaces_inside_a_line_collapse() {
+        assert_eq!(preview(&text("one   two\t\tthree")), "one two three");
+    }
+
+    #[test]
+    fn a_run_of_blank_lines_becomes_one() {
+        assert_eq!(preview(&text("first\n\n\n\n\nlast")), "first\n\nlast");
+    }
+
+    #[test]
+    fn deep_indentation_is_capped() {
+        let preview = preview(&text("top\n\t\t\t\tdeep"));
+
+        assert_eq!(preview, "top\n        deep");
     }
 
     #[test]
