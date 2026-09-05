@@ -65,6 +65,16 @@
     <keyword>Panel</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.1.1" date="2026-09-05">
+      <description>
+        <p>The panel button keeps the spacing the rest of the panel keeps, and the installed files carry the name the applet does.</p>
+        <ul>
+          <li>Lets the panel draw the button as tightly as the applets beside it, which had it standing in a wider gap than any of its neighbours.</li>
+          <li>Puts the applet's own icon on the panel button, in place of the stock paste icon that drew lighter than everything beside it.</li>
+          <li>Renames the two binaries to <code>cosmic-ext-applet-clip-keep</code> and <code>cosmic-ext-applet-clip-keep-dump</code>, after the applet id.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.1.0" date="2026-09-02">
       <description>
         <p>Resting on an entry now tells you everything about it, and the list itself is quieter.</p>
