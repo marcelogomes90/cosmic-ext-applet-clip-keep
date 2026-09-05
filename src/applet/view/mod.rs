@@ -21,6 +21,7 @@ pub const VISIBLE_ROWS: usize = 50;
 
 const PAD: u16 = 16;
 const PAD_ROW_H: u16 = 12;
+const LIST_INSET: u16 = 16;
 const GAP: u16 = 8;
 const GAP_TIGHT: u16 = 4;
 
@@ -48,7 +49,7 @@ pub fn visible(app: &ClipKeep) -> Vec<&EntryMeta> {
 }
 
 pub const SURFACE_WIDTH: f32 = 360.0;
-const SURFACE_MAX_HEIGHT: f32 = 588.0;
+const SURFACE_MAX_HEIGHT: f32 = 800.0;
 
 static SURFACE_ID: LazyLock<widget::Id> = LazyLock::new(|| widget::Id::new("clip-keep-popup"));
 
@@ -591,8 +592,8 @@ fn settings_page(app: &ClipKeep) -> Element<'_, Message> {
     .align_y(Alignment::Center);
 
     let sections = widget::column::with_children(vec![
-        section(fl!("section-privacy"), privacy_controls(app)),
         section(fl!("section-history"), history_controls(app)),
+        section(fl!("section-privacy"), privacy_controls(app)),
         section(fl!("section-behaviour"), behaviour_controls(app)),
     ])
     .spacing(PAD);
@@ -603,6 +604,10 @@ fn settings_page(app: &ClipKeep) -> Element<'_, Message> {
         scroll(widget::container(sections).padding(PAD)).into(),
     ])
     .into()
+}
+
+fn card<'a>() -> widget::ListColumn<'a, Message> {
+    widget::list_column().list_item_padding([cosmic::theme::spacing().space_xxs, LIST_INSET])
 }
 
 fn section(title: String, controls: Element<'_, Message>) -> Element<'_, Message> {
@@ -617,38 +622,46 @@ fn edited(app: &ClipKeep, change: impl FnOnce(&mut Settings)) -> Message {
     Message::Setting(Box::new(next))
 }
 
+fn setting_row<'a>(
+    label: String,
+    control: impl Into<Element<'a, Message>>,
+) -> Element<'a, Message> {
+    widget::row::with_children(vec![
+        widget::text::body(label).width(Length::Fill).into(),
+        control.into(),
+    ])
+    .spacing(GAP)
+    .align_y(Alignment::Center)
+    .into()
+}
+
 fn toggle(
     app: &ClipKeep,
     label: String,
-    description: Option<String>,
     value: bool,
     change: fn(&mut Settings, bool),
 ) -> Element<'_, Message> {
     let message = edited(app, |settings| change(settings, !value));
-    let mut item = widget::settings::item::builder(label);
-    if let Some(description) = description {
-        item = item.description(description);
-    }
 
-    item.control(widget::toggler(value).on_toggle(move |_| message.clone()))
-        .into()
+    setting_row(
+        label,
+        widget::toggler(value).on_toggle(move |_| message.clone()),
+    )
 }
 
 fn privacy_controls(app: &ClipKeep) -> Element<'_, Message> {
     let settings = app.settings();
 
-    widget::list_column()
+    card()
         .add(toggle(
             app,
             fl!("setting-private-mode"),
-            None,
             settings.private_mode,
             |settings, value| settings.private_mode = value,
         ))
         .add(toggle(
             app,
             fl!("setting-respect-password-hint"),
-            None,
             settings.respect_password_hint,
             |settings, value| settings.respect_password_hint = value,
         ))
@@ -672,59 +685,41 @@ fn history_controls(app: &ClipKeep) -> Element<'_, Message> {
         },
     );
 
-    widget::list_column()
-        .add(widget::settings::item(fl!("setting-max-entries"), entries))
-        .add(
-            widget::container(choice(
-                app,
-                fl!("setting-max-age"),
-                settings.max_age_days,
-                &retention_options(settings.max_age_days),
-                |settings, value| settings.max_age_days = value,
-            ))
-            .padding([GAP, 0]),
-        )
+    card()
+        .add(setting_row(fl!("setting-max-entries"), entries))
+        .add(retention(app))
         .into()
+}
+
+fn retention(app: &ClipKeep) -> Element<'_, Message> {
+    let current = app.settings().max_age_days;
+    let options = retention_options(current);
+    let selected = options.iter().position(|(days, _)| *days == current);
+    let values: Vec<Option<u32>> = options.iter().map(|(days, _)| *days).collect();
+    let labels: Vec<String> = options.into_iter().map(|(_, label)| label).collect();
+    let base = app.settings().clone();
+
+    setting_row(
+        fl!("setting-max-age"),
+        widget::dropdown(labels, selected, move |index| {
+            let mut next = base.clone();
+            next.max_age_days = values.get(index).copied().unwrap_or(current);
+            Message::Setting(Box::new(next))
+        }),
+    )
 }
 
 fn behaviour_controls(app: &ClipKeep) -> Element<'_, Message> {
     let settings = app.settings();
 
-    widget::list_column()
+    card()
         .add(toggle(
             app,
             fl!("setting-capture-images"),
-            None,
             settings.capture_images,
             |settings, value| settings.capture_images = value,
         ))
         .into()
-}
-
-fn choice<'a, T: Copy + Eq + 'static>(
-    app: &'a ClipKeep,
-    label: String,
-    current: T,
-    options: &[(T, String)],
-    change: fn(&mut Settings, T),
-) -> Element<'a, Message> {
-    let mut rows: Vec<Element<'a, Message>> = vec![widget::text::body(label).into()];
-
-    for (value, name) in options {
-        let value = *value;
-        let message = edited(app, move |settings| change(settings, value));
-        rows.push(
-            widget::radio(
-                widget::text::body(name.clone()),
-                value,
-                Some(current),
-                move |_| message.clone(),
-            )
-            .into(),
-        );
-    }
-
-    widget::column::with_children(rows).spacing(GAP).into()
 }
 
 fn retention_options(current: Option<u32>) -> Vec<(Option<u32>, String)> {
