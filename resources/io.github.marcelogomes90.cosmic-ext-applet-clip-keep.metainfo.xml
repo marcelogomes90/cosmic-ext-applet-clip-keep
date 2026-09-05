@@ -65,6 +65,19 @@
     <keyword>Panel</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.2.0" date="2026-09-05">
+      <description>
+        <p>The history holds five times as much, and the settings fit in the popup instead of scrolling inside it.</p>
+        <ul>
+          <li>Raises the ceiling on the history size from 100 entries to 500.</li>
+          <li>Stops the settings scrolling while their content still fits. The popup stopped growing at 588px and the settings needed a little over 600, so they scrolled from the first line on; both the history and the settings now have 800 to grow into.</li>
+          <li>Replaces the four stacked radio buttons that chose when entries are discarded with a dropdown on the row itself, giving the setting the same shape as every other one.</li>
+          <li>Gives each setting's label the width its row has left over, rather than half of it, which had "History size" wrapping over three lines beside its control on a spacious desktop.</li>
+          <li>Holds the horizontal inset of the settings rows at a single value whatever the density chooses.</li>
+          <li>Puts the history settings above privacy, which also leaves the discard menu the room to open downwards.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.1.1" date="2026-09-05">
       <description>
         <p>The panel button keeps the spacing the rest of the panel keeps, and the installed files carry the name the applet does.</p>
