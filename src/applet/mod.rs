@@ -16,7 +16,7 @@ use crate::clip::settings::Settings;
 use crate::clip::{ClipCommand, ClipHandle};
 use crate::config::SettingsStore;
 
-const PANEL_ICON: &str = "edit-paste-symbolic";
+const PANEL_ICON: &str = "io.github.marcelogomes90.cosmic-ext-applet-clip-keep-symbolic";
 
 const PAUSED_ICON: &str = "changes-prevent-symbolic";
 const UNAVAILABLE_ICON: &str = "dialog-warning-symbolic";
