@@ -43,7 +43,7 @@
   <url type="vcs-browser">https://github.com/marcelogomes90/cosmic-ext-applet-clip-keep</url>
   <provides>
     <id>com.system76.CosmicApplet</id>
-    <binary>cosmic-clip-keep</binary>
+    <binary>cosmic-ext-applet-clip-keep</binary>
   </provides>
   <requires>
     <display_length compare="ge">360</display_length>

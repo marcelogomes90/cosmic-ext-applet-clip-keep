@@ -2,7 +2,7 @@
 Name=Clip Keep
 Comment=Clipboard history for the COSMIC desktop
 Type=Application
-Exec=cosmic-clip-keep
+Exec=cosmic-ext-applet-clip-keep
 Icon=io.github.marcelogomes90.cosmic-ext-applet-clip-keep-symbolic
 Terminal=false
 Categories=COSMIC;

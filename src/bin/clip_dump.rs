@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use cosmic_clip_keep::clip::model::{CaptureState, Flavor, Snapshot};
-use cosmic_clip_keep::clip::{ClipCommand, ClipHandle};
-use cosmic_clip_keep::config::SettingsStore;
-use cosmic_clip_keep::{APP_ID, clip, init_tracing};
+use cosmic_ext_applet_clip_keep::clip::model::{CaptureState, Flavor, Snapshot};
+use cosmic_ext_applet_clip_keep::clip::{ClipCommand, ClipHandle};
+use cosmic_ext_applet_clip_keep::config::SettingsStore;
+use cosmic_ext_applet_clip_keep::{APP_ID, clip, init_tracing};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {

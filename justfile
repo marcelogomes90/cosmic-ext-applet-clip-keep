@@ -1,4 +1,4 @@
-name := 'cosmic-clip-keep'
+name := 'cosmic-ext-applet-clip-keep'
 appid := 'io.github.marcelogomes90.cosmic-ext-applet-clip-keep'
 icon-name := appid + '-symbolic'
 

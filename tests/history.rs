@@ -1,7 +1,7 @@
-use cosmic_clip_keep::clip::db::{Db, NewEntry, Stored};
-use cosmic_clip_keep::clip::model::{Capture, EntryId, EntryKind, Flavor, Thumbnail};
-use cosmic_clip_keep::clip::settings::Settings;
-use cosmic_clip_keep::clip::{dedup, thumbnail};
+use cosmic_ext_applet_clip_keep::clip::db::{Db, NewEntry, Stored};
+use cosmic_ext_applet_clip_keep::clip::model::{Capture, EntryId, EntryKind, Flavor, Thumbnail};
+use cosmic_ext_applet_clip_keep::clip::settings::Settings;
+use cosmic_ext_applet_clip_keep::clip::{dedup, thumbnail};
 
 const T0: i64 = 1_700_000_000_000;
 

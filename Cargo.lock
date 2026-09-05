@@ -900,32 +900,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cosmic-clip-keep"
-version = "1.1.0"
-dependencies = [
- "calloop",
- "calloop-wayland-source",
- "cosmic-protocols",
- "futures",
- "i18n-embed",
- "i18n-embed-fl",
- "image",
- "jiff",
- "libcosmic",
- "rusqlite",
- "rust-embed",
- "rustix 0.38.44",
- "serde",
- "sha2",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "wayland-client",
- "wayland-protocols",
- "wayland-protocols-wlr",
-]
-
-[[package]]
 name = "cosmic-config"
 version = "1.0.0"
 source = "git+https://github.com/pop-os/libcosmic#caec74c2559924443f12fc6faf97a5bcefe6271d"
@@ -953,6 +927,32 @@ source = "git+https://github.com/pop-os/libcosmic#caec74c2559924443f12fc6faf97a5
 dependencies = [
  "quote",
  "syn 2.0.119",
+]
+
+[[package]]
+name = "cosmic-ext-applet-clip-keep"
+version = "1.1.0"
+dependencies = [
+ "calloop",
+ "calloop-wayland-source",
+ "cosmic-protocols",
+ "futures",
+ "i18n-embed",
+ "i18n-embed-fl",
+ "image",
+ "jiff",
+ "libcosmic",
+ "rusqlite",
+ "rust-embed",
+ "rustix 0.38.44",
+ "serde",
+ "sha2",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "wayland-client",
+ "wayland-protocols",
+ "wayland-protocols-wlr",
 ]
 
 [[package]]

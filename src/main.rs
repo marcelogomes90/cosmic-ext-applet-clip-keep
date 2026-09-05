@@ -1,5 +1,5 @@
-use cosmic_clip_keep::config::SettingsStore;
-use cosmic_clip_keep::{APP_ID, applet, clip, i18n, init_tracing};
+use cosmic_ext_applet_clip_keep::config::SettingsStore;
+use cosmic_ext_applet_clip_keep::{APP_ID, applet, clip, i18n, init_tracing};
 
 fn main() -> cosmic::iced::Result {
     init_tracing();

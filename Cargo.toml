@@ -1,5 +1,5 @@
 [package]
-name = "cosmic-clip-keep"
+name = "cosmic-ext-applet-clip-keep"
 version = "1.1.0"
 edition = "2024"
 rust-version = "1.93"
@@ -10,15 +10,15 @@ homepage = "https://github.com/marcelogomes90/cosmic-ext-applet-clip-keep"
 readme = "README.md"
 
 [lib]
-name = "cosmic_clip_keep"
+name = "cosmic_ext_applet_clip_keep"
 path = "src/lib.rs"
 
 [[bin]]
-name = "cosmic-clip-keep"
+name = "cosmic-ext-applet-clip-keep"
 path = "src/main.rs"
 
 [[bin]]
-name = "cosmic-clip-keep-dump"
+name = "cosmic-ext-applet-clip-keep-dump"
 path = "src/bin/clip_dump.rs"
 
 [lints.clippy]

@@ -18,7 +18,7 @@ src/
 │   ├── view/   the popup: history page, settings page, previews
 │   └── keys.rs message.rs subscription.rs thumbs.rs
 ├── config.rs   the settings entry, stored through cosmic_config
-└── bin/        cosmic-clip-keep-dump, a headless clipboard watcher
+└── bin/        cosmic-ext-applet-clip-keep-dump, a headless clipboard watcher
 ```
 
 ## The flow
@@ -44,7 +44,7 @@ Everything crossing the middle is a plain value. `clip` never calls into `applet
 `ClipCommand` (`src/clip/mod.rs`), a small enum whose only replies travel over one-shot channels.
 
 **`src/clip` is free of iced and libcosmic, and that is load-bearing.** It is what lets the whole
-capture path be exercised by `cosmic-clip-keep-dump` with no display server and no iced runtime,
+capture path be exercised by `cosmic-ext-applet-clip-keep-dump` with no display server and no iced runtime,
 which is how every Wayland-facing change in this repository gets tested. The check is mechanical,
 and `just layering` runs it:
 
@@ -247,10 +247,10 @@ provides is therefore useless for a clipboard manager, and the host's real socke
 reachable by path. It is measurable in one command:
 
 ```sh
-flatpak run --command=cosmic-clip-keep-dump io.github.marcelogomes90.cosmic-ext-applet-clip-keep
+flatpak run --command=cosmic-ext-applet-clip-keep-dump io.github.marcelogomes90.cosmic-ext-applet-clip-keep
 #=> clipboard capture is off — no data-control
 
-flatpak run --filesystem=/run/user --command=cosmic-clip-keep-dump io.github.marcelogomes90.cosmic-ext-applet-clip-keep
+flatpak run --filesystem=/run/user --command=cosmic-ext-applet-clip-keep-dump io.github.marcelogomes90.cosmic-ext-applet-clip-keep
 #=> bound data-control protocol="ext_data_control_manager_v1"
 ```
 
@@ -281,7 +281,7 @@ than the graph.
 
 ## How to test
 
-`cosmic-clip-keep-dump` is the tool that matters. It runs the entire capture path headless, prints
+`cosmic-ext-applet-clip-keep-dump` is the tool that matters. It runs the entire capture path headless, prints
 the capture state and the history as it changes, and can put text on the clipboard with `--copy` or
 offer the newest entry back with `--offer-latest`. Pointing it at a throwaway `XDG_DATA_HOME` gives
 a clean database, which is how multi-instance behaviour gets exercised without touching a real
