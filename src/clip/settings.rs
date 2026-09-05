@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-pub const MAX_ENTRIES_CEILING: u32 = 100;
+pub const MAX_ENTRIES_CEILING: u32 = 500;
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Settings {
