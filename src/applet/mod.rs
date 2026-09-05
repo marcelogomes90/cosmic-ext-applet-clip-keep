@@ -103,11 +103,13 @@ impl cosmic::Application for ClipKeep {
     }
 
     fn view(&self) -> Element<'_, Message> {
-        self.core
+        let button = self
+            .core
             .applet
             .icon_button(self.panel_icon())
-            .on_press(Message::TogglePopup)
-            .into()
+            .on_press(Message::TogglePopup);
+
+        self.core.applet.autosize_window(button).into()
     }
 
     fn view_window(&self, id: window::Id) -> Element<'_, Message> {

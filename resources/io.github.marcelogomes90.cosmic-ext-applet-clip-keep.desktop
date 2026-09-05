@@ -10,6 +10,7 @@ Keywords=COSMIC;Applet;Clipboard;History;Copy;Paste;Clip;
 NoDisplay=true
 StartupNotify=true
 X-CosmicApplet=true
+X-CosmicShrinkable=true
 X-HostWaylandDisplay=true
 X-OverflowPriority=80
 X-OverflowMinSize=1
