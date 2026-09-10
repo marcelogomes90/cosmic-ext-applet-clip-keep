@@ -14,7 +14,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install system dependencies
         run: |
@@ -47,7 +47,7 @@ jobs:
     name: Check layering
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: src/clip must not depend on libcosmic or iced
         run: |
@@ -61,7 +61,7 @@ jobs:
     name: Validate metadata
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install validators
         run: |
@@ -88,7 +88,7 @@ jobs:
     name: Validate Flatpak manifest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check manifest and vendored sources parse as JSON
         run: |

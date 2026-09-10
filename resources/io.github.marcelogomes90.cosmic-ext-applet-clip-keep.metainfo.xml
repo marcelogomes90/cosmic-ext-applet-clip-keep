@@ -65,6 +65,18 @@
     <keyword>Panel</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.2.1" date="2026-09-10">
+      <description>
+        <p>Clip Keep is ready for COSMIC Epoch 1.8 and its updated application library.</p>
+        <ul>
+          <li>Updates libcosmic and the panel integration to the revisions shipped with COSMIC Epoch 1.8.</li>
+          <li>Adapts popup surface messages to the new typed surface API.</li>
+          <li>Updates the TinySkia renderer while preserving the protection against transient surface resize failures.</li>
+          <li>Downsamples large images to their drawing size and caches the result, reducing rendering work and memory bandwidth for image previews.</li>
+          <li>Updates Rust dependencies, Flatpak sources, and GitHub Actions.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.2.0" date="2026-09-05">
       <description>
         <p>The history holds five times as much, and the settings fit in the popup instead of scrolling inside it.</p>
