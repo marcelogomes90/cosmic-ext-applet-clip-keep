@@ -28,6 +28,8 @@ const PANEL_ICON: &str = "io.github.marcelogomes90.cosmic-ext-applet-clip-keep-s
 const PAUSED_ICON: &str = "changes-prevent-symbolic";
 const UNAVAILABLE_ICON: &str = "dialog-warning-symbolic";
 
+const REOPEN_GUARD: std::time::Duration = std::time::Duration::from_millis(400);
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 enum PopupState {
     #[default]
@@ -44,6 +46,7 @@ pub struct ClipKeep {
     focused_surface: Option<window::Id>,
     pointer_inside_popup: bool,
     outside_close_armed: bool,
+    dismissed_at: Option<std::time::Instant>,
     settings: Settings,
     store: SettingsStore,
     query: String,
@@ -89,6 +92,7 @@ impl cosmic::Application for ClipKeep {
                 focused_surface: None,
                 pointer_inside_popup: false,
                 outside_close_armed: false,
+                dismissed_at: None,
                 settings,
                 store,
                 query: String::new(),
@@ -288,6 +292,10 @@ impl ClipKeep {
             return self.close_popup();
         }
 
+        if just_dismissed(self.dismissed_at.take(), std::time::Instant::now()) {
+            return Task::none();
+        }
+
         self.open_popup()
     }
 
@@ -301,6 +309,7 @@ impl ClipKeep {
         self.focused_surface = None;
         self.pointer_inside_popup = false;
         self.outside_close_armed = false;
+        self.dismissed_at = None;
 
         self.create_popup()
     }
@@ -401,6 +410,7 @@ impl ClipKeep {
         }
 
         if self.outside_close_armed && !self.pointer_inside_popup {
+            self.dismissed_at = Some(std::time::Instant::now());
             return self.close_popup();
         }
         let Some(popup) = self.popup_id() else {
@@ -419,6 +429,7 @@ impl ClipKeep {
         }
 
         tracing::debug!(?popup, "closing after focus moved outside the popup");
+        self.dismissed_at = Some(std::time::Instant::now());
         self.close_popup()
     }
 
@@ -570,13 +581,20 @@ impl ClipKeep {
 
     fn show_details(&mut self, id: Option<EntryId>) -> Task<Message> {
         self.showing_settings = false;
-        self.details = id.filter(|wanted| {
+
+        let shown = id.and_then(|wanted| {
             self.snapshot
                 .entries
                 .iter()
-                .any(|entry| entry.id == *wanted)
+                .find(|entry| entry.id == wanted)
+                .map(|entry| (entry.id, entry.kind))
         });
-        Task::none()
+        self.details = shown.map(|(id, _)| id);
+
+        match shown {
+            Some((id, EntryKind::Image)) => self.load_thumbnail(id),
+            _ => Task::none(),
+        }
     }
 
     fn step(&mut self, down: bool) -> Task<Message> {
@@ -674,16 +692,23 @@ impl ClipKeep {
 
         let tasks: Vec<Task<Message>> = wanted
             .into_iter()
-            .map(|id| {
-                self.thumbs.mark_pending(id);
-                let clip = self.clip.clone();
-                cosmic::task::future(async move {
-                    Message::ThumbnailLoaded(id, clip.thumbnail(id).await.map(Box::new))
-                })
-            })
+            .map(|id| self.load_thumbnail(id))
             .collect();
 
         Task::batch(tasks)
+    }
+
+    fn load_thumbnail(&mut self, id: EntryId) -> Task<Message> {
+        if !self.thumbs.wants(id) {
+            return Task::none();
+        }
+
+        self.thumbs.mark_pending(id);
+        let clip = self.clip.clone();
+
+        cosmic::task::future(async move {
+            Message::ThumbnailLoaded(id, clip.thumbnail(id).await.map(Box::new))
+        })
     }
 
     fn confirm(&mut self, id: EntryId) -> Task<Message> {
@@ -713,5 +738,40 @@ impl ClipKeep {
         self.restore = self.place(id);
         self.clip.send(ClipCommand::Delete(id));
         Task::none()
+    }
+}
+
+fn just_dismissed(dismissed_at: Option<std::time::Instant>, now: std::time::Instant) -> bool {
+    dismissed_at.is_some_and(|at| now.duration_since(at) < REOPEN_GUARD)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::{Duration, Instant};
+
+    #[test]
+    fn the_click_that_dismissed_the_popup_does_not_reopen_it() {
+        let dismissed_at = Instant::now();
+
+        assert!(just_dismissed(
+            Some(dismissed_at),
+            dismissed_at + Duration::from_millis(80)
+        ));
+    }
+
+    #[test]
+    fn a_later_click_opens_the_popup_again() {
+        let dismissed_at = Instant::now();
+
+        assert!(!just_dismissed(
+            Some(dismissed_at),
+            dismissed_at + REOPEN_GUARD + Duration::from_millis(1)
+        ));
+    }
+
+    #[test]
+    fn a_popup_that_was_never_dismissed_never_guards() {
+        assert!(!just_dismissed(None, Instant::now()));
     }
 }

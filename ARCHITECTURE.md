@@ -63,6 +63,10 @@ focus can move away on an outside click.
 The helper and main popup are tracked as one set of owned surfaces. Focus loss is deferred briefly;
 when focus moves to another client, the popup and helper are destroyed.
 
+Clicking the panel button while the popup is open arrives as that focus loss first, so the popup is
+already gone when the button press itself is delivered. A short guard after such a dismissal keeps
+that press from reopening the popup it just closed, so the second click toggles as everywhere else.
+
 The search field is focused only after the popup reports that it opened. Application-level keyboard
 handling keeps navigation working even when an individual widget consumed the event:
 
@@ -81,6 +85,8 @@ rows have different sizes.
 Details are a normal page of the main popup, never another Wayland surface. The row information
 button and Ctrl+I open the focused entry. The page uses metadata already present in the snapshot:
 preview text, source application, timestamps, use count, byte size and optional image dimensions.
+An image entry shows its thumbnail instead of the preview text, bounded so that the stored
+thumbnail is never scaled up.
 Because the page stays on the main surface, opening it cannot move keyboard focus or interfere with
 outside-click dismissal.
 

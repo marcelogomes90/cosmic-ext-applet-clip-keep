@@ -27,6 +27,9 @@ const DETAILS_CHARS: usize = 400;
 const DETAILS_VERTICAL_PADDING: u16 = 12;
 const DETAILS_LABEL_WIDTH: f32 = 96.0;
 
+const DETAILS_IMAGE_WIDTH: u16 = 256;
+const DETAILS_IMAGE_HEIGHT: u16 = 192;
+
 pub(crate) static SEARCH_ID: LazyLock<widget::Id> =
     LazyLock::new(|| widget::Id::new("clip-keep-search"));
 
@@ -59,7 +62,7 @@ static HINT_POPOVER_ID: LazyLock<widget::Id> =
 
 pub fn popup(app: &ClipKeep) -> Element<'_, Message> {
     let body: Element<'_, Message> = if let Some(entry) = app.details() {
-        details_page(entry)
+        details_page(app, entry)
     } else if app.showing_settings() {
         settings_page(app)
     } else {
@@ -340,10 +343,13 @@ struct Details {
     use_count: u32,
     byte_size: u64,
     image_size: Option<(u32, u32)>,
+    image: Option<widget::image::Handle>,
 }
 
 impl Details {
-    fn of(entry: &EntryMeta) -> Self {
+    fn of(app: &ClipKeep, entry: &EntryMeta) -> Self {
+        let is_image = entry.kind == EntryKind::Image;
+
         Self {
             text: details_text(&label_for(entry)),
             source_app: entry.source_app.clone(),
@@ -351,8 +357,9 @@ impl Details {
             last_used_at: entry.last_used_at,
             use_count: entry.use_count,
             byte_size: entry.byte_size,
-            image_size: (entry.kind == EntryKind::Image)
-                .then_some(entry.image_size)
+            image_size: is_image.then_some(entry.image_size).flatten(),
+            image: is_image
+                .then(|| app.thumbs().get(entry.id).cloned())
                 .flatten(),
         }
     }
@@ -360,16 +367,13 @@ impl Details {
     fn view(self) -> Element<'static, Message> {
         let mut rows: Vec<Element<'static, Message>> = Vec::new();
 
-        if self.image_size.is_none() {
-            rows.push(
-                widget::container(
-                    widget::text::body(self.text)
-                        .wrapping(Wrapping::WordOrGlyph)
-                        .width(Length::Fill),
-                )
-                .padding([DETAILS_VERTICAL_PADDING, PAD])
-                .into(),
-            );
+        let summary = match self.image.zip(self.image_size) {
+            Some((handle, size)) => Some(preview(handle, size)),
+            None => self.image_size.is_none().then(|| excerpt(self.text)),
+        };
+
+        if let Some(summary) = summary {
+            rows.push(summary);
             rows.push(
                 widget::container(widget::divider::horizontal::default())
                     .padding([0, PAD])
@@ -404,6 +408,34 @@ impl Details {
             .width(Length::Fill)
             .into()
     }
+}
+
+fn excerpt(text: String) -> Element<'static, Message> {
+    widget::container(
+        widget::text::body(text)
+            .wrapping(Wrapping::WordOrGlyph)
+            .width(Length::Fill),
+    )
+    .padding([DETAILS_VERTICAL_PADDING, PAD])
+    .into()
+}
+
+fn preview(handle: widget::image::Handle, size: (u32, u32)) -> Element<'static, Message> {
+    let (width, height) = crate::clip::thumbnail::fit_within(
+        size.0,
+        size.1,
+        DETAILS_IMAGE_WIDTH,
+        DETAILS_IMAGE_HEIGHT,
+    );
+
+    widget::container(
+        widget::image(handle)
+            .width(Length::Fixed(pixels(width)))
+            .height(Length::Fixed(pixels(height))),
+    )
+    .center_x(Length::Fill)
+    .padding([DETAILS_VERTICAL_PADDING, PAD])
+    .into()
 }
 
 fn detail(name: String, value: String) -> Element<'static, Message> {
@@ -726,7 +758,7 @@ fn divider<'a>() -> Element<'a, Message> {
     widget::divider::horizontal::default().into()
 }
 
-fn details_page(entry: &EntryMeta) -> Element<'_, Message> {
+fn details_page<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
     let back = widget::button::icon(
         widget::icon::from_name("go-previous-symbolic")
             .size(16)
@@ -744,7 +776,7 @@ fn details_page(entry: &EntryMeta) -> Element<'_, Message> {
     widget::column::with_children(vec![
         widget::container(header).padding(PAD).into(),
         widget::container(divider()).padding([0, PAD]).into(),
-        scroll(Details::of(entry).view()).into(),
+        scroll(Details::of(app, entry).view()).into(),
     ])
     .into()
 }

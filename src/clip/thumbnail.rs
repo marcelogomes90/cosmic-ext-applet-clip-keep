@@ -39,6 +39,17 @@ pub fn fit(width: u32, height: u32, max_height: u16) -> (u32, u32) {
     (u32::try_from(scaled).unwrap_or(u32::MAX).max(1), max_height)
 }
 
+pub fn fit_within(width: u32, height: u32, max_width: u16, max_height: u16) -> (u32, u32) {
+    let (width, height) = fit(width, height, max_height);
+    let max_width = u32::from(max_width);
+    if width <= max_width || width == 0 {
+        return (width, height);
+    }
+
+    let scaled = u64::from(height) * u64::from(max_width) / u64::from(width);
+    (max_width, u32::try_from(scaled).unwrap_or(u32::MAX).max(1))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -102,5 +113,25 @@ mod tests {
     #[test]
     fn a_very_wide_image_still_gets_at_least_one_pixel() {
         assert_eq!(fit(1, 10_000, 48), (1, 48));
+    }
+
+    #[test]
+    fn a_box_bounds_the_taller_side_first() {
+        assert_eq!(fit_within(1000, 2000, 256, 192), (96, 192));
+    }
+
+    #[test]
+    fn a_box_bounds_the_wider_side_too() {
+        assert_eq!(fit_within(1920, 1080, 256, 192), (256, 144));
+    }
+
+    #[test]
+    fn a_box_never_enlarges() {
+        assert_eq!(fit_within(20, 10, 256, 192), (20, 10));
+    }
+
+    #[test]
+    fn a_panoramic_image_still_gets_at_least_one_pixel() {
+        assert_eq!(fit_within(10_000, 1, 256, 192), (256, 1));
     }
 }
