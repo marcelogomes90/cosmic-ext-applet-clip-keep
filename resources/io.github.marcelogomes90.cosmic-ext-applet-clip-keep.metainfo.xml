@@ -214,7 +214,7 @@
     <keyword xml:lang="zh-CN">面板</keyword>
   </keywords>
   <releases>
-    <release type="stable" version="1.3.0" date="2026-09-13">
+    <release type="stable" version="1.4.0" date="2026-09-13">
       <description>
         <p>Clip Keep is now quicker to use from the keyboard and better integrated with COSMIC.</p>
         <ul>
@@ -222,6 +222,8 @@
           <li>Adds keyboard navigation, search, pin, delete, and details shortcuts to the clipboard history.</li>
           <li>Replaces the hover card with a details page, keeping entry actions and information accessible from both keyboard and pointer.</li>
           <li>Adds an option to paste an entry automatically after selecting it.</li>
+          <li>Closes the popup when the panel button is clicked again, instead of dismissing and immediately reopening it.</li>
+          <li>Shows an image entry's thumbnail on its details page, at up to eight times the height it has in the list.</li>
         </ul>
       </description>
     </release>
