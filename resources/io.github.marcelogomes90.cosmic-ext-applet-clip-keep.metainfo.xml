@@ -9,6 +9,22 @@
   </developer>
   <name>Clip Keep</name>
   <summary>Everything you copied, one click away</summary>
+  <summary xml:lang="pl">Jedno kliknięcie dzieci cię od wszystkiego, co skopiowałeś</summary>
+  <description>
+    <p>Clip Keep is a clipboard history applet for the COSMIC desktop. It keeps what you copy in a searchable list behind a panel button, so a snippet you copied twenty minutes ago is still there when you need it. Type to narrow the list and press Enter to make an earlier item available on the clipboard again.</p>
+    <p xml:lang="pl">Clip Keep jest apletem schowka dla środowiska COSMIC. Zachowuje on wszystko co skopiowałeś w łatwym do wyszukiwania formacie w formie przycisku na panelu, więc urywek który skopiowałeś kwadrans temu jest dalej dostępny, gdy go potrzebujesz. Zacznij pisać by zawężyć wyszukiwanie i naciśnij Enter by wcześniejszy element był znowu bezpośrednio w schowku.</p>
+    <p>A clipboard manager sits between every application on the desktop and has to be trusted with what passes through. Clip Keep is organised around three things going wrong:</p>
+    <p xml:lang="pl">Menadżer schowka jest pomiędzy każdą inną aplikacją w systemie, więc musi być godny zaufania nad powierzonymi mu danymi. Clip Keep jest uodporniony na trzy wektory zagrożeń:</p>
+    <ul>
+      <li>Reading a selection must never hold up the application that owns it. Only the formats worth keeping are ever requested, every transfer has a timeout and a size ceiling, and the reads run alongside the event loop rather than blocking it, so copying a large image out of a browser cannot freeze the browser.</li>
+      <li xml:lang="pl">Odczytanie zaznaczenia nigdy nie może blokować aplikacji do której należą dane. Tylko formaty możliwe do skopiowania są żadane, każdy przesył ma limit czasowy i rozmiarowy, i odczytanie zawiera się w cyklu wydarzenia zamiast blokowania go, więc kopiowanie dużych obrazów z przeglądarki ni zawiesza jej.</li>
+      <li>History has to stay small in memory. The list holds only what it draws, images are stored as pre-scaled thumbnails, and a full image is loaded when it is previewed and dropped when it is not.</li>
+      <li xml:lang="pl">Ślad historii w pamięci musi być mały. Lista zawiera tylko to co jest zapisane, obrazy są zapisywane jako miniaturki a duże obrazy są ładowane tylko podczas podglądu i usuwane z pamięci po nim.</li>
+      <li>Some things should never be recorded. Entries carrying a password manager hint can be discarded, private mode pauses capture, and the history file is readable only by you.</li>
+      <li xml:lang="pl">Niektóre rzeczy nigdy nie powinne być zapisywane, Każdy element zawierający sugestię że jest hasłem jest odrzucany, tryb prywatny przerywa zapis i pliki historii są dostępne do odczytu tylko dla ciebie.</li>
+    </ul>
+    <p>Capture uses the COSMIC compositor's data-control protocol and stays on the local machine.</p>
+    <p xml:lang="pl">Kopiowanie używa protokołu data-control kompozytora COSMIC i nie opuszcza fizycznie komputera.</p>
   <summary xml:lang="cs">Vše, co jste zkopírovali, na jedno kliknutí</summary>
   <description>
     <p>Clip Keep is a clipboard history applet for the COSMIC desktop. It keeps what you copy in a searchable list behind a panel button, so a snippet you copied twenty minutes ago is still there when you need it. Type to narrow the list and press Enter to make an earlier item available on the clipboard again.</p>
@@ -30,21 +46,25 @@
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/details-card.png</image>
       <caption>Resting on an entry opens a card with its text and where it came from</caption>
+      <caption xml:lang="pl">Przetrzymanie na wpisie otwiera kartę z tekstem i danymi jego pochodzenia</caption>
       <caption xml:lang="cs">Při najetí na položku se otevře karta s jejím textem a informací o jejím původu</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/history.png</image>
       <caption>Pinned entries above the rest of the history, each row one click from the clipboard</caption>
+      <caption xml:lang="pl">Przypięte wpisy są nad resztą historii, jeden klick od znalezieniu się w schowku</caption>
       <caption xml:lang="cs">Připnuté položky nad ostatními položkami historie, každou lze jedním kliknutím zkopírovat do schránky</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/search.png</image>
       <caption>Typing narrows the list, and the popup shrinks to what is left</caption>
+      <caption xml:lang="pl">Pisanie zawęża wyszukiwanie i wyskakujące okno zmniejsza się do rozmiaru pasujących wpisów</caption>
       <caption xml:lang="cs">Psaní zužuje seznam a vyskakovací okno se zmenší podle zbývajících položek</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/settings.png</image>
       <caption>Retention, entry limit, image capture, password hints, and private mode</caption>
+      <caption xml:lang="pl">Zachowanie pamięci, limit wpisów, zapis obrazów, sugestie haseł i tryp prywatny</caption>
       <caption xml:lang="cs">Doba uchování, limit položek, zachytávání obrázků, upozornění na hesla a soukromý režim</caption>
     </screenshot>
   </screenshots>
@@ -74,6 +94,13 @@
     <keyword>Copy</keyword>
     <keyword>Paste</keyword>
     <keyword>Panel</keyword>
+    <keyword xml:lang="pl">COSMIC</keyword>
+    <keyword xml:lang="pl">Aplet</keyword>
+    <keyword xml:lang="pl">Schowek</keyword>
+    <keyword xml:lang="pl">Historia</keyword>
+    <keyword xml:lang="pl">Kopiuj</keyword>
+    <keyword xml:lang="pl">Wklej</keyword>
+    <keyword xml:lang="pl">Panel</keyword>
     <keyword xml:lang="cs">COSMIC</keyword>
     <keyword xml:lang="cs">Applet</keyword>
     <keyword xml:lang="cs">Schránka</keyword>
