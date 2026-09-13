@@ -3,12 +3,14 @@ use serde::{Deserialize, Serialize};
 pub const MAX_ENTRIES_CEILING: u32 = 500;
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[expect(clippy::struct_excessive_bools)]
 pub struct Settings {
     pub max_entries: u32,
     pub max_age_days: Option<u32>,
     pub capture_images: bool,
     pub private_mode: bool,
     pub respect_password_hint: bool,
+    pub paste_on_use: bool,
 }
 
 impl Default for Settings {
@@ -19,6 +21,7 @@ impl Default for Settings {
             capture_images: true,
             private_mode: false,
             respect_password_hint: true,
+            paste_on_use: false,
         }
     }
 }

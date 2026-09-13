@@ -41,13 +41,18 @@ calloop = "0.14"
 calloop-wayland-source = "0.4"
 wayland-client = "0.31"
 wayland-protocols = { version = "0.32", features = ["client", "staging"] }
+wayland-protocols-misc = { version = "0.3", features = ["client"] }
 wayland-protocols-wlr = { version = "0.3", features = ["client"] }
 rust-embed = "8"
 serde = { version = "1", features = ["derive"] }
 sha2 = "0.11"
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+tokio = { version = "1", features = ["macros", "net", "rt-multi-thread", "sync", "time"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dependencies.cosmic-settings-config]
+git = "https://github.com/pop-os/cosmic-settings-daemon"
+rev = "23f7469"
 
 [dependencies.cosmic-protocols]
 git = "https://github.com/pop-os/cosmic-protocols"

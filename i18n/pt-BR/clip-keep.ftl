@@ -1,29 +1,36 @@
-search-placeholder = Pesquisar…
+search-placeholder = Pesquisar…  { $shortcut }
 empty-history = Nada copiado ainda
 no-results = Nenhum resultado
 capture-unavailable = A captura da área de transferência não está disponível
 settings = Configurações
+details = Detalhes
 section-pinned = Fixados
 section-recent = Histórico
 
 item-image = Imagem { $width } × { $height }
 
-card-source = Copiado de
-card-size = Dimensões
-card-copied = Primeira cópia
-card-used = Último uso
-card-copies = Vezes copiado
-card-bytes = Tamanho
-card-moment-format = %d/%m/%Y %H:%M
+details-source = Copiado de
+details-size = Dimensões
+details-copied = Primeira cópia
+details-used = Último uso
+details-copies = Vezes copiado
+details-bytes = Tamanho
+details-moment-format = %d/%m/%Y %H:%M
 
 section-privacy = Privacidade
 section-history = Histórico
 section-behaviour = Comportamento
 
+action-pin = Fixar
+action-unpin = Desafixar
+action-delete = Excluir
+action-details = Detalhes
+
 setting-max-entries = Tamanho do histórico
 setting-max-age = Descartar após
 setting-max-age-never = Nunca
 setting-capture-images = Salvar imagens
+setting-paste-on-use = Colar automaticamente
 setting-private-mode = Modo privado
 setting-respect-password-hint = Ignorar senhas
 

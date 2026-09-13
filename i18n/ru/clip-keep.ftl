@@ -1,29 +1,36 @@
-search-placeholder = Поиск…
+search-placeholder = Поиск…  { $shortcut }
 empty-history = Пока ничего не скопировано
 no-results = Совпадений нет
 capture-unavailable = Захват буфера обмена недоступен
 settings = Настройки
+details = Подробности
 section-pinned = Закреплённые
 section-recent = История
 
 item-image = Изображение { $width } × { $height }
 
-card-source = Скопировано из
-card-size = Размеры
-card-copied = Первая копия
-card-used = Последнее использование
-card-copies = Число копий
-card-bytes = Размер
-card-moment-format = %d.%m.%Y %H:%M
+details-source = Скопировано из
+details-size = Размеры
+details-copied = Первая копия
+details-used = Последнее использование
+details-copies = Число копий
+details-bytes = Размер
+details-moment-format = %d.%m.%Y %H:%M
 
 section-privacy = Конфиденциальность
 section-history = История
 section-behaviour = Поведение
 
+action-pin = Закрепить
+action-unpin = Открепить
+action-delete = Удалить
+action-details = Подробности
+
 setting-max-entries = Размер истории
 setting-max-age = Удалять через
 setting-max-age-never = Никогда
 setting-capture-images = Сохранять изображения
+setting-paste-on-use = Вставлять автоматически
 setting-private-mode = Приватный режим
 setting-respect-password-hint = Пропускать пароли
 

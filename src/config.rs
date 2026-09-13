@@ -4,6 +4,8 @@ use crate::clip::settings::Settings;
 
 pub const CONFIG_VERSION: u64 = 1;
 
+pub const SHORTCUT_REGISTERED: &str = "shortcut_registered";
+
 macro_rules! settings_entry {
     ($($field:ident),+ $(,)?) => {
         impl CosmicConfigEntry for Settings {
@@ -87,6 +89,7 @@ settings_entry!(
     capture_images,
     private_mode,
     respect_password_hint,
+    paste_on_use,
 );
 
 pub struct SettingsStore {
@@ -120,6 +123,23 @@ impl SettingsStore {
                 );
                 settings
             }
+        }
+    }
+
+    pub fn flag(&self, key: &str) -> bool {
+        self.config
+            .as_ref()
+            .and_then(|config| config.get::<bool>(key).ok())
+            .unwrap_or(false)
+    }
+
+    pub fn set_flag(&self, key: &str, value: bool) {
+        let Some(config) = self.config.as_ref() else {
+            return;
+        };
+
+        if let Err(error) = config.set(key, value) {
+            tracing::warn!(%error, key, "could not remember a one-off decision");
         }
     }
 

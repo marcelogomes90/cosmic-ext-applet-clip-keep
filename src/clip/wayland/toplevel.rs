@@ -4,6 +4,7 @@ use cosmic_protocols::toplevel_info::v1::client::{
     zcosmic_toplevel_handle_v1::{self, State as ToplevelState, ZcosmicToplevelHandleV1},
     zcosmic_toplevel_info_v1::{self, ZcosmicToplevelInfoV1},
 };
+use cosmic_protocols::toplevel_management::v1::client::zcosmic_toplevel_manager_v1::ZcosmicToplevelManagerV1;
 use wayland_client::backend::ObjectId;
 use wayland_client::globals::GlobalList;
 use wayland_client::protocol::wl_seat::WlSeat;
@@ -26,17 +27,20 @@ struct Window {
     cosmic: Option<ZcosmicToplevelHandleV1>,
     app_id: Option<String>,
     activated: bool,
+    outputs: Vec<ObjectId>,
 }
 
 pub struct Toplevels {
     list: ExtForeignToplevelListV1,
     info: Option<ZcosmicToplevelInfoV1>,
+    manager: Option<ZcosmicToplevelManagerV1>,
+    seat: WlSeat,
     windows: HashMap<ObjectId, Window>,
     focused: Option<ObjectId>,
 }
 
 impl Toplevels {
-    pub fn bind(globals: &GlobalList, qh: &QueueHandle<Runtime>, _seat: &WlSeat) -> Option<Self> {
+    pub fn bind(globals: &GlobalList, qh: &QueueHandle<Runtime>, seat: &WlSeat) -> Option<Self> {
         let Ok(list) = globals.bind::<ExtForeignToplevelListV1, _, _>(qh, 1..=1, ()) else {
             tracing::info!("no toplevel list; copies will not be attributed to an application");
             return None;
@@ -49,17 +53,48 @@ impl Toplevels {
             tracing::info!("no toplevel info; focus cannot be tracked");
         }
 
+        let manager = globals
+            .bind::<ZcosmicToplevelManagerV1, _, _>(qh, 1..=4, ())
+            .ok();
+        if manager.is_none() {
+            tracing::info!("no toplevel manager; focus cannot be handed back");
+        }
+
         Some(Self {
             list,
             info,
+            manager,
+            seat: seat.clone(),
             windows: HashMap::new(),
             focused: None,
         })
     }
 
+    pub fn activate_focused(&self) {
+        let Some(manager) = self.manager.as_ref() else {
+            return;
+        };
+
+        let Some(window) = self
+            .focused
+            .as_ref()
+            .and_then(|id| self.windows.get(id))
+            .and_then(|window| window.cosmic.as_ref())
+        else {
+            return;
+        };
+
+        manager.activate(window, &self.seat);
+    }
+
     pub fn focused_app(&self) -> Option<String> {
         let id = self.focused.as_ref()?;
         self.windows.get(id)?.app_id.clone()
+    }
+
+    pub fn focused_output(&self) -> Option<&ObjectId> {
+        let id = self.focused.as_ref()?;
+        self.windows.get(id)?.outputs.first()
     }
 
     fn opened(&mut self, handle: ExtForeignToplevelHandleV1, qh: &QueueHandle<Runtime>) {
@@ -82,6 +117,17 @@ impl Toplevels {
                 ..Window::default()
             },
         );
+    }
+
+    fn entered(&mut self, window: &ObjectId, output: ObjectId, entered: bool) {
+        let Some(entry) = self.windows.get_mut(window) else {
+            return;
+        };
+
+        entry.outputs.retain(|known| *known != output);
+        if entered {
+            entry.outputs.push(output);
+        }
     }
 
     fn named(&mut self, window: &ObjectId, app_id: String) {
@@ -123,6 +169,9 @@ impl Toplevels {
 
 impl Drop for Toplevels {
     fn drop(&mut self) {
+        if let Some(manager) = self.manager.take() {
+            manager.destroy();
+        }
         for (_, window) in self.windows.drain() {
             if let Some(cosmic) = window.cosmic {
                 cosmic.destroy();
@@ -135,6 +184,8 @@ impl Drop for Toplevels {
         self.list.destroy();
     }
 }
+
+wayland_client::delegate_noop!(Runtime: ignore ZcosmicToplevelManagerV1);
 
 fn states(bytes: &[u8]) -> impl Iterator<Item = u32> + '_ {
     bytes
@@ -221,12 +272,21 @@ impl Dispatch<ZcosmicToplevelHandleV1, CosmicData> for Runtime {
         _: &Connection,
         _: &QueueHandle<Self>,
     ) {
-        let zcosmic_toplevel_handle_v1::Event::State { state: reported } = event else {
+        let Some(window) = Toplevels::owner(handle) else {
             return;
         };
 
-        if let Some(window) = Toplevels::owner(handle) {
-            state.on_toplevel_focus(&window, is_activated(&reported));
+        match event {
+            zcosmic_toplevel_handle_v1::Event::State { state: reported } => {
+                state.on_toplevel_focus(&window, is_activated(&reported));
+            }
+            zcosmic_toplevel_handle_v1::Event::OutputEnter { output } => {
+                state.on_toplevel_output(&window, output.id(), true);
+            }
+            zcosmic_toplevel_handle_v1::Event::OutputLeave { output } => {
+                state.on_toplevel_output(&window, output.id(), false);
+            }
+            _ => {}
         }
     }
 }
@@ -263,7 +323,20 @@ impl Runtime {
 
         if changed {
             self.refresh_focused_app();
+            self.refresh_active_output();
         }
+    }
+
+    pub(crate) fn on_toplevel_output(
+        &mut self,
+        window: &ObjectId,
+        output: ObjectId,
+        entered: bool,
+    ) {
+        if let Some(toplevels) = self.toplevels.as_mut() {
+            toplevels.entered(window, output, entered);
+        }
+        self.refresh_active_output();
     }
 
     fn refresh_focused_app(&mut self) {

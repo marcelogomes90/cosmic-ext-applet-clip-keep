@@ -11,6 +11,7 @@
   <summary>Everything you copied, one click away</summary>
   <description>
     <p>Clip Keep is a clipboard history applet for the COSMIC desktop. It keeps what you copy in a searchable list behind a panel button, so a snippet you copied twenty minutes ago is still there when you need it. Type to narrow the list and press Enter to make an earlier item available on the clipboard again.</p>
+    <p>On its first start, Clip Keep tries to register <code>Super+V</code> as its global shortcut. It never replaces an existing shortcut: if that combination is already in use, choose any combination in COSMIC Settings and assign it the command <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. A shortcut created automatically or manually can be changed later in COSMIC Settings.</p>
     <p>A clipboard manager sits between every application on the desktop and has to be trusted with what passes through. Clip Keep is organised around three things going wrong:</p>
     <ul>
       <li>Reading a selection must never hold up the application that owns it. Only the formats worth keeping are ever requested, every transfer has a timeout and a size ceiling, and the reads run alongside the event loop rather than blocking it, so copying a large image out of a browser cannot freeze the browser.</li>
