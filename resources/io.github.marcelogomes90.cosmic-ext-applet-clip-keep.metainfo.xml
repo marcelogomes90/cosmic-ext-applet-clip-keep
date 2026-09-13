@@ -9,33 +9,102 @@
   </developer>
   <name>Clip Keep</name>
   <summary>Everything you copied, one click away</summary>
+  <summary xml:lang="cs">Vše, co jste zkopírovali, na jedno kliknutí</summary>
+  <summary xml:lang="de">Alles Kopierte, einen Klick entfernt</summary>
+  <summary xml:lang="es">Todo lo que copiaste, a un clic de distancia</summary>
+  <summary xml:lang="fr">Tout ce que vous copiez, à portée de clic</summary>
+  <summary xml:lang="it">Tutto ciò che hai copiato, a portata di clic</summary>
+  <summary xml:lang="nl">Alles wat je hebt gekopieerd, binnen één klik bereikbaar</summary>
+  <summary xml:lang="pl">Jedno kliknięcie dzieci cię od wszystkiego, co skopiowałeś</summary>
+  <summary xml:lang="pt-BR">Tudo que você copiou, a um clique de distância</summary>
+  <summary xml:lang="ru">Всё скопированное — в одном клике</summary>
+  <summary xml:lang="uk">Усе скопійоване — за один клік</summary>
+  <summary xml:lang="zh-CN">您复制的所有内容，一键即可获取</summary>
   <description>
     <p>Clip Keep is a clipboard history applet for the COSMIC desktop. It keeps what you copy in a searchable list behind a panel button, so a snippet you copied twenty minutes ago is still there when you need it. Type to narrow the list and press Enter to make an earlier item available on the clipboard again.</p>
     <p>On its first start, Clip Keep tries to register <code>Super+V</code> as its global shortcut. It never replaces an existing shortcut: if that combination is already in use, choose any combination in COSMIC Settings and assign it the command <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. A shortcut created automatically or manually can be changed later in COSMIC Settings.</p>
+    <p xml:lang="pl">Clip Keep jest apletem schowka dla środowiska COSMIC. Zachowuje on wszystko co skopiowałeś w łatwym do wyszukiwania formacie w formie przycisku na panelu, więc urywek który skopiowałeś kwadrans temu jest dalej dostępny, gdy go potrzebujesz. Zacznij pisać by zawężyć wyszukiwanie i naciśnij Enter by wcześniejszy element był znowu bezpośrednio w schowku.</p>
     <p>A clipboard manager sits between every application on the desktop and has to be trusted with what passes through. Clip Keep is organised around three things going wrong:</p>
+    <p xml:lang="pl">Menadżer schowka jest pomiędzy każdą inną aplikacją w systemie, więc musi być godny zaufania nad powierzonymi mu danymi. Clip Keep jest uodporniony na trzy wektory zagrożeń:</p>
     <ul>
       <li>Reading a selection must never hold up the application that owns it. Only the formats worth keeping are ever requested, every transfer has a timeout and a size ceiling, and the reads run alongside the event loop rather than blocking it, so copying a large image out of a browser cannot freeze the browser.</li>
+      <li xml:lang="pl">Odczytanie zaznaczenia nigdy nie może blokować aplikacji do której należą dane. Tylko formaty możliwe do skopiowania są żadane, każdy przesył ma limit czasowy i rozmiarowy, i odczytanie zawiera się w cyklu wydarzenia zamiast blokowania go, więc kopiowanie dużych obrazów z przeglądarki ni zawiesza jej.</li>
       <li>History has to stay small in memory. The list holds only what it draws, images are stored as pre-scaled thumbnails, and a full image is loaded when it is previewed and dropped when it is not.</li>
+      <li xml:lang="pl">Ślad historii w pamięci musi być mały. Lista zawiera tylko to co jest zapisane, obrazy są zapisywane jako miniaturki a duże obrazy są ładowane tylko podczas podglądu i usuwane z pamięci po nim.</li>
       <li>Some things should never be recorded. Entries carrying a password manager hint can be discarded, private mode pauses capture, and the history file is readable only by you.</li>
+      <li xml:lang="pl">Niektóre rzeczy nigdy nie powinne być zapisywane, Każdy element zawierający sugestię że jest hasłem jest odrzucany, tryb prywatny przerywa zapis i pliki historii są dostępne do odczytu tylko dla ciebie.</li>
     </ul>
     <p>Capture uses the COSMIC compositor's data-control protocol and stays on the local machine.</p>
+    <p xml:lang="pl">Kopiowanie używa protokołu data-control kompozytora COSMIC i nie opuszcza fizycznie komputera.</p>
+    <p xml:lang="cs">Clip Keep je applet historie schránky pro prostředí COSMIC. Uchovává zkopírovaný obsah v prohledávatelném seznamu, který otevřete tlačítkem na panelu, takže i úryvek zkopírovaný před dvaceti minutami budete mít stále po ruce. Psaním můžete seznam zúžit a stisknutím klávesy Enter znovu zpřístupnit starší položku ve schránce.</p>
+    <p xml:lang="cs">Mezi všemi aplikacemi v prostředí stojí správce schránky, který musí mít přístup k tomu, co jimi prochází. Clip Keep je navržen s ohledem na tři věci, které se mohou pokazit:</p>
+    <ul>
+      <li xml:lang="cs">Čtení výběru nikdy nesmí zdržovat aplikaci, která jej vlastní. Vyžadovány jsou pouze formáty, které má smysl uchovávat. Každý přenos má časový limit a maximální velikost. Čtení probíhá souběžně se smyčkou událostí, aniž by ji blokovalo, takže kopírování velkého obrázku z prohlížeče nemůže zablokovat samotný prohlížeč.</li>
+      <li xml:lang="cs">Historie musí zůstat paměťově nenáročná. Seznam uchovává pouze to, co zobrazuje. Obrázky jsou uložené jako předem zmenšené náhledy. Celý obrázek se načte při zobrazení náhledu a po jeho zavření se uvolní.</li>
+      <li xml:lang="cs">Některé věci by se nikdy neměly zaznamenávat. Položky označené upozorněním správce hesel lze zahodit, soukromý režim pozastaví zachytávání a soubor s historií můžete číst pouze vy.</li>
+    </ul>
+    <p xml:lang="cs">Zachytávání využívá protokol data-control kompozitoru COSMIC a probíhá pouze na místním počítači.</p>
   </description>
   <screenshots>
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/details-card.png</image>
       <caption>Resting on an entry opens a card with its text and where it came from</caption>
+      <caption xml:lang="pl">Przetrzymanie na wpisie otwiera kartę z tekstem i danymi jego pochodzenia</caption>
+      <caption xml:lang="cs">Při najetí na položku se otevře karta s jejím textem a informací o jejím původu</caption>
+      <caption xml:lang="de">Wenn Sie auf einem Eintrag verweilen, öffnet sich eine Karte mit seinem Text und seiner Herkunft</caption>
+      <caption xml:lang="es">Al detenerse sobre una entrada, se abre una tarjeta con su texto y origen</caption>
+      <caption xml:lang="fr">Survolez une entrée pour ouvrir une carte avec son texte et son origine</caption>
+      <caption xml:lang="it">Soffermandoti su una voce si apre una scheda con il testo e la sua origine</caption>
+      <caption xml:lang="nl">Bij aanwijzen van een item opent een kaart met de tekst en herkomst</caption>
+      <caption xml:lang="pt-BR">Ao passar sobre uma entrada, abre-se um cartão com seu texto e origem</caption>
+      <caption xml:lang="ru">При наведении на запись открывается карточка с её текстом и источником</caption>
+      <caption xml:lang="uk">Наведення на запис відкриває картку з його текстом і джерелом</caption>
+      <caption xml:lang="zh-CN">悬停在条目上会打开显示其文本和来源的卡片</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/history.png</image>
       <caption>Pinned entries above the rest of the history, each row one click from the clipboard</caption>
+      <caption xml:lang="pl">Przypięte wpisy są nad resztą historii, jeden klick od znalezieniu się w schowku</caption>
+      <caption xml:lang="cs">Připnuté položky nad ostatními položkami historie, každou lze jedním kliknutím zkopírovat do schránky</caption>
+      <caption xml:lang="de">Angeheftete Einträge stehen über dem restlichen Verlauf und sind mit einem Klick wieder in der Zwischenablage</caption>
+      <caption xml:lang="es">Las entradas fijadas aparecen sobre el historial y se copian al portapapeles con un clic</caption>
+      <caption xml:lang="fr">Les entrées épinglées sont au-dessus de l'historique et se remettent dans le presse-papiers en un clic</caption>
+      <caption xml:lang="it">Le voci fissate sono sopra il resto della cronologia e tornano negli appunti con un clic</caption>
+      <caption xml:lang="nl">Vastgezette items staan boven de geschiedenis en zijn met één klik weer op het klembord</caption>
+      <caption xml:lang="pt-BR">Entradas fixadas ficam acima do histórico e voltam à área de transferência com um clique</caption>
+      <caption xml:lang="ru">Закреплённые записи находятся над историей и возвращаются в буфер обмена одним щелчком</caption>
+      <caption xml:lang="uk">Закріплені записи розміщені над історією та повертаються в буфер обміну одним клацанням</caption>
+      <caption xml:lang="zh-CN">固定条目位于历史记录上方，单击即可放回剪贴板</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/search.png</image>
       <caption>Typing narrows the list, and the popup shrinks to what is left</caption>
+      <caption xml:lang="pl">Pisanie zawęża wyszukiwanie i wyskakujące okno zmniejsza się do rozmiaru pasujących wpisów</caption>
+      <caption xml:lang="cs">Psaní zužuje seznam a vyskakovací okno se zmenší podle zbývajících položek</caption>
+      <caption xml:lang="de">Tippen grenzt die Liste ein, und das Popup passt sich den übrigen Einträgen an</caption>
+      <caption xml:lang="es">Escribir reduce la lista y la ventana emergente se ajusta a las entradas restantes</caption>
+      <caption xml:lang="fr">La saisie réduit la liste et la fenêtre s'adapte aux entrées restantes</caption>
+      <caption xml:lang="it">La digitazione restringe l'elenco e il popup si adatta alle voci rimaste</caption>
+      <caption xml:lang="nl">Typen beperkt de lijst en het pop-upvenster past zich aan de resterende items aan</caption>
+      <caption xml:lang="pt-BR">Digitar restringe a lista, e o pop-up se ajusta às entradas restantes</caption>
+      <caption xml:lang="ru">Ввод сужает список, а всплывающее окно подстраивается под оставшиеся записи</caption>
+      <caption xml:lang="uk">Введення звужує список, а спливне вікно підлаштовується під решту записів</caption>
+      <caption xml:lang="zh-CN">输入会缩小列表，弹出窗口会调整为剩余条目的大小</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/settings.png</image>
       <caption>Retention, entry limit, image capture, password hints, and private mode</caption>
+      <caption xml:lang="pl">Zachowanie pamięci, limit wpisów, zapis obrazów, sugestie haseł i tryp prywatny</caption>
+      <caption xml:lang="cs">Doba uchování, limit položek, zachytávání obrázků, upozornění na hesla a soukromý režim</caption>
+      <caption xml:lang="de">Aufbewahrung, Eintragslimit, Bildaufzeichnung, Passworthinweise und privater Modus</caption>
+      <caption xml:lang="es">Retención, límite de entradas, captura de imágenes, avisos de contraseña y modo privado</caption>
+      <caption xml:lang="fr">Rétention, limite d'entrées, capture d'images, indications de mot de passe et mode privé</caption>
+      <caption xml:lang="it">Conservazione, limite voci, acquisizione immagini, avvisi per password e modalità privata</caption>
+      <caption xml:lang="nl">Bewaartermijn, itemlimiet, afbeeldingsopname, wachtwoordaanwijzingen en privémodus</caption>
+      <caption xml:lang="pt-BR">Retenção, limite de entradas, captura de imagens, dicas de senha e modo privado</caption>
+      <caption xml:lang="ru">Хранение, лимит записей, захват изображений, подсказки паролей и приватный режим</caption>
+      <caption xml:lang="uk">Зберігання, ліміт записів, захоплення зображень, підказки паролів і приватний режим</caption>
+      <caption xml:lang="zh-CN">保留时间、条目限制、图像捕获、密码提示和隐私模式</caption>
     </screenshot>
   </screenshots>
   <launchable type="desktop-id">io.github.marcelogomes90.cosmic-ext-applet-clip-keep.desktop</launchable>
@@ -64,6 +133,83 @@
     <keyword>Copy</keyword>
     <keyword>Paste</keyword>
     <keyword>Panel</keyword>
+    <keyword xml:lang="pl">COSMIC</keyword>
+    <keyword xml:lang="pl">Aplet</keyword>
+    <keyword xml:lang="pl">Schowek</keyword>
+    <keyword xml:lang="pl">Historia</keyword>
+    <keyword xml:lang="pl">Kopiuj</keyword>
+    <keyword xml:lang="pl">Wklej</keyword>
+    <keyword xml:lang="pl">Panel</keyword>
+    <keyword xml:lang="cs">COSMIC</keyword>
+    <keyword xml:lang="cs">Applet</keyword>
+    <keyword xml:lang="cs">Schránka</keyword>
+    <keyword xml:lang="cs">Historie</keyword>
+    <keyword xml:lang="cs">Kopírovat</keyword>
+    <keyword xml:lang="cs">Vložit</keyword>
+    <keyword xml:lang="cs">Panel</keyword>
+    <keyword xml:lang="de">COSMIC</keyword>
+    <keyword xml:lang="de">Applet</keyword>
+    <keyword xml:lang="de">Zwischenablage</keyword>
+    <keyword xml:lang="de">Verlauf</keyword>
+    <keyword xml:lang="de">Kopieren</keyword>
+    <keyword xml:lang="de">Einfügen</keyword>
+    <keyword xml:lang="de">Panel</keyword>
+    <keyword xml:lang="es">COSMIC</keyword>
+    <keyword xml:lang="es">Applet</keyword>
+    <keyword xml:lang="es">Portapapeles</keyword>
+    <keyword xml:lang="es">Historial</keyword>
+    <keyword xml:lang="es">Copiar</keyword>
+    <keyword xml:lang="es">Pegar</keyword>
+    <keyword xml:lang="es">Panel</keyword>
+    <keyword xml:lang="fr">COSMIC</keyword>
+    <keyword xml:lang="fr">Applet</keyword>
+    <keyword xml:lang="fr">Presse-papiers</keyword>
+    <keyword xml:lang="fr">Historique</keyword>
+    <keyword xml:lang="fr">Copier</keyword>
+    <keyword xml:lang="fr">Coller</keyword>
+    <keyword xml:lang="fr">Panneau</keyword>
+    <keyword xml:lang="it">COSMIC</keyword>
+    <keyword xml:lang="it">Applet</keyword>
+    <keyword xml:lang="it">Appunti</keyword>
+    <keyword xml:lang="it">Cronologia</keyword>
+    <keyword xml:lang="it">Copiare</keyword>
+    <keyword xml:lang="it">Incollare</keyword>
+    <keyword xml:lang="it">Pannello</keyword>
+    <keyword xml:lang="nl">COSMIC</keyword>
+    <keyword xml:lang="nl">Applet</keyword>
+    <keyword xml:lang="nl">Klembord</keyword>
+    <keyword xml:lang="nl">Geschiedenis</keyword>
+    <keyword xml:lang="nl">Kopiëren</keyword>
+    <keyword xml:lang="nl">Plakken</keyword>
+    <keyword xml:lang="nl">Paneel</keyword>
+    <keyword xml:lang="pt-BR">COSMIC</keyword>
+    <keyword xml:lang="pt-BR">Miniaplicativo</keyword>
+    <keyword xml:lang="pt-BR">Área de transferência</keyword>
+    <keyword xml:lang="pt-BR">Histórico</keyword>
+    <keyword xml:lang="pt-BR">Copiar</keyword>
+    <keyword xml:lang="pt-BR">Colar</keyword>
+    <keyword xml:lang="pt-BR">Painel</keyword>
+    <keyword xml:lang="ru">COSMIC</keyword>
+    <keyword xml:lang="ru">Апплет</keyword>
+    <keyword xml:lang="ru">Буфер обмена</keyword>
+    <keyword xml:lang="ru">История</keyword>
+    <keyword xml:lang="ru">Копировать</keyword>
+    <keyword xml:lang="ru">Вставить</keyword>
+    <keyword xml:lang="ru">Панель</keyword>
+    <keyword xml:lang="uk">COSMIC</keyword>
+    <keyword xml:lang="uk">Аплет</keyword>
+    <keyword xml:lang="uk">Буфер обміну</keyword>
+    <keyword xml:lang="uk">Історія</keyword>
+    <keyword xml:lang="uk">Копіювати</keyword>
+    <keyword xml:lang="uk">Вставити</keyword>
+    <keyword xml:lang="uk">Панель</keyword>
+    <keyword xml:lang="zh-CN">COSMIC</keyword>
+    <keyword xml:lang="zh-CN">小程序</keyword>
+    <keyword xml:lang="zh-CN">剪贴板</keyword>
+    <keyword xml:lang="zh-CN">历史记录</keyword>
+    <keyword xml:lang="zh-CN">复制</keyword>
+    <keyword xml:lang="zh-CN">粘贴</keyword>
+    <keyword xml:lang="zh-CN">面板</keyword>
   </keywords>
   <releases>
     <release type="stable" version="1.2.1" date="2026-09-10">
