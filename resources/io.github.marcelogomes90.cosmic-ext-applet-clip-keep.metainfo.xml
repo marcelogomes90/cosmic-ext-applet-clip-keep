@@ -24,6 +24,7 @@
     <p>Clip Keep is a clipboard history applet for the COSMIC desktop. It keeps what you copy in a searchable list behind a panel button, so a snippet you copied twenty minutes ago is still there when you need it. Type to narrow the list and press Enter to make an earlier item available on the clipboard again.</p>
     <p>On its first start, Clip Keep tries to register <code>Super+V</code> as its global shortcut. It never replaces an existing shortcut: if that combination is already in use, choose any combination in COSMIC Settings and assign it the command <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. A shortcut created automatically or manually can be changed later in COSMIC Settings.</p>
     <p xml:lang="pl">Clip Keep jest apletem schowka dla środowiska COSMIC. Zachowuje on wszystko co skopiowałeś w łatwym do wyszukiwania formacie w formie przycisku na panelu, więc urywek który skopiowałeś kwadrans temu jest dalej dostępny, gdy go potrzebujesz. Zacznij pisać by zawężyć wyszukiwanie i naciśnij Enter by wcześniejszy element był znowu bezpośrednio w schowku.</p>
+    <p xml:lang="pl">Przy pierwszym uruchomieniu Clip Keep próbuje zarejestrować <code>Super+V</code> jako globalny skrót. Nigdy nie zastępuje istniejącego skrótu: jeśli ta kombinacja jest już używana, wybierz dowolną kombinację w Ustawieniach COSMIC i przypisz jej polecenie <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Skrót utworzony automatycznie lub ręcznie można później zmienić w Ustawieniach COSMIC.</p>
     <p>A clipboard manager sits between every application on the desktop and has to be trusted with what passes through. Clip Keep is organised around three things going wrong:</p>
     <p xml:lang="pl">Menadżer schowka jest pomiędzy każdą inną aplikacją w systemie, więc musi być godny zaufania nad powierzonymi mu danymi. Clip Keep jest uodporniony na trzy wektory zagrożeń:</p>
     <ul>
@@ -37,6 +38,7 @@
     <p>Capture uses the COSMIC compositor's data-control protocol and stays on the local machine.</p>
     <p xml:lang="pl">Kopiowanie używa protokołu data-control kompozytora COSMIC i nie opuszcza fizycznie komputera.</p>
     <p xml:lang="cs">Clip Keep je applet historie schránky pro prostředí COSMIC. Uchovává zkopírovaný obsah v prohledávatelném seznamu, který otevřete tlačítkem na panelu, takže i úryvek zkopírovaný před dvaceti minutami budete mít stále po ruce. Psaním můžete seznam zúžit a stisknutím klávesy Enter znovu zpřístupnit starší položku ve schránce.</p>
+    <p xml:lang="cs">Při prvním spuštění se Clip Keep pokusí zaregistrovat <code>Super+V</code> jako globální klávesovou zkratku. Nikdy nenahradí existující zkratku: pokud se tato kombinace již používá, zvolte libovolnou kombinaci v Nastavení COSMIC a přiřaďte jí příkaz <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Automaticky nebo ručně vytvořenou zkratku lze později změnit v Nastavení COSMIC.</p>
     <p xml:lang="cs">Mezi všemi aplikacemi v prostředí stojí správce schránky, který musí mít přístup k tomu, co jimi prochází. Clip Keep je navržen s ohledem na tři věci, které se mohou pokazit:</p>
     <ul>
       <li xml:lang="cs">Čtení výběru nikdy nesmí zdržovat aplikaci, která jej vlastní. Vyžadovány jsou pouze formáty, které má smysl uchovávat. Každý přenos má časový limit a maximální velikost. Čtení probíhá souběžně se smyčkou událostí, aniž by ji blokovalo, takže kopírování velkého obrázku z prohlížeče nemůže zablokovat samotný prohlížeč.</li>
@@ -212,6 +214,17 @@
     <keyword xml:lang="zh-CN">面板</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.3.0" date="2026-09-13">
+      <description>
+        <p>Clip Keep is now quicker to use from the keyboard and better integrated with COSMIC.</p>
+        <ul>
+          <li>Opens with a global Super+V shortcut when available, and explains how to configure another shortcut when it is not.</li>
+          <li>Adds keyboard navigation, search, pin, delete, and details shortcuts to the clipboard history.</li>
+          <li>Replaces the hover card with a details page, keeping entry actions and information accessible from both keyboard and pointer.</li>
+          <li>Adds an option to paste an entry automatically after selecting it.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.2.1" date="2026-09-10">
       <description>
         <p>Clip Keep is ready for COSMIC Epoch 1.8 and its updated application library.</p>
