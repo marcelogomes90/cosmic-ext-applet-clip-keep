@@ -1,29 +1,36 @@
-search-placeholder = Suchen…
+search-placeholder = Suchen…  { $shortcut }
 empty-history = Noch nichts kopiert
 no-results = Keine Treffer
 capture-unavailable = Zwischenablage-Aufzeichnung nicht verfügbar
 settings = Einstellungen
+details = Details
 section-pinned = Angeheftet
 section-recent = Verlauf
 
 item-image = Bild { $width } × { $height }
 
-card-source = Kopiert aus
-card-size = Abmessungen
-card-copied = Erstmals kopiert
-card-used = Zuletzt verwendet
-card-copies = Kopiervorgänge
-card-bytes = Größe
-card-moment-format = %d.%m.%Y %H:%M
+details-source = Kopiert aus
+details-size = Abmessungen
+details-copied = Erstmals kopiert
+details-used = Zuletzt verwendet
+details-copies = Kopiervorgänge
+details-bytes = Größe
+details-moment-format = %d.%m.%Y %H:%M
 
 section-privacy = Privatsphäre
 section-history = Verlauf
 section-behaviour = Verhalten
 
+action-pin = Anheften
+action-unpin = Lösen
+action-delete = Löschen
+action-details = Details
+
 setting-max-entries = Verlaufsgröße
 setting-max-age = Verwerfen nach
 setting-max-age-never = Nie
 setting-capture-images = Bilder speichern
+setting-paste-on-use = Automatisch einfügen
 setting-private-mode = Privater Modus
 setting-respect-password-hint = Passwörter überspringen
 

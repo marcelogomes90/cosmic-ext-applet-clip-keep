@@ -19,14 +19,25 @@ the clipboard, ready to paste.
 
 - Records text, file, and image selections, and puts any of them back on the clipboard with one
   click.
+- Opens from anywhere with **Super+V**, on the monitor holding the window you were just using, and
+  accepts typing and keyboard actions immediately without a preparatory click. Clicking outside
+  dismisses it. The shortcut registers itself the first time Clip Keep runs, and never claims the
+  combination if something else already answers it.
+- Drives the list from the keyboard: the arrows walk it and scroll to follow, Enter copies and
+  closes, and Ctrl+I, Ctrl+P, Ctrl+D and Ctrl+F open details, pin, delete, and go back to the search.
+  The search placeholder and row action tooltips keep those shortcuts visible where they apply.
+- Pastes into the window you came from when you pick an entry. Off by default, and nothing is typed
+  when you dismiss the list instead.
 - Filters the list as you type, matching case-insensitively anywhere in an entry, so a few letters
   from the middle of a snippet are enough to find it.
 - Pins the entries you keep reaching for. Pinned entries sit in their own section and are never
   removed by the entry limit, the age limit, or **Clear history**.
 - Shows image entries as thumbnails, and never loads a full body into the list.
-- Opens a card beside the popup when you rest on a row, with more of the text and where it came
-  from, when it was first copied and last used, how many times, and how big it is.
-- Keeps each row uncluttered: pin and delete appear only on the row under the pointer.
+- Opens a details page from each row's information button or Ctrl+I, with more of the text and where
+  it came from, when it was first copied and last used, how many times, and how big it is. Escape
+  returns from details or settings to the list before it closes the popup.
+- Keeps each row uncluttered: pin and delete stand out only on the row you are on, whether you got
+  there with the pointer or the arrows.
 - Discards entries an application marked as a password, honouring the
   `x-kde-passwordManagerHint` convention that password managers already publish.
 - Pauses recording entirely in private mode, which the panel button shows at a glance.
@@ -62,9 +73,8 @@ Then add **Clip Keep** in Settings → Desktop → Panel → Applets.
 ## Contributing
 
 [ARCHITECTURE.md](ARCHITECTURE.md) explains how the capture backend and the applet fit together,
-why the capture thread must never touch the socket the panel hands over, and what each Flatpak
-permission is for. Read it before moving code across the `src/clip` boundary or changing the
-manifest.
+which Wayland connection each half uses, and what each Flatpak permission is for. Read it before
+moving code across the `src/clip` boundary or changing the manifest.
 
 ```sh
 just verify   # fmt, clippy -D warnings, layering, tests, and metadata validation

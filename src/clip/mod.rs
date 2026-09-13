@@ -19,7 +19,10 @@ use self::settings::Settings;
 
 #[derive(Debug)]
 pub enum ClipCommand {
-    Use(EntryId),
+    Use {
+        id: EntryId,
+        paste: bool,
+    },
     Delete(EntryId),
     Clear {
         include_pinned: bool,
@@ -34,6 +37,9 @@ pub enum ClipCommand {
     Thumbnail {
         id: EntryId,
         reply: oneshot::Sender<Option<Thumbnail>>,
+    },
+    TargetOutput {
+        reply: oneshot::Sender<Option<String>>,
     },
     Settings(Box<Settings>),
 }
@@ -70,6 +76,12 @@ impl ClipHandle {
     pub async fn thumbnail(&self, id: EntryId) -> Option<Thumbnail> {
         let (reply, answer) = oneshot::channel();
         self.send(ClipCommand::Thumbnail { id, reply });
+        answer.await.ok().flatten()
+    }
+
+    pub async fn target_output(&self) -> Option<String> {
+        let (reply, answer) = oneshot::channel();
+        self.send(ClipCommand::TargetOutput { reply });
         answer.await.ok().flatten()
     }
 }

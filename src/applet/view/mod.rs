@@ -1,18 +1,13 @@
 use std::sync::LazyLock;
 
 use cosmic::Element;
-use cosmic::cctk::sctk::reexports::protocols::xdg::shell::client::xdg_positioner::{
-    Anchor, Gravity,
-};
 use cosmic::iced::advanced::text::{Ellipsize, EllipsizeHeightLimit, Wrapping};
-use cosmic::iced::platform_specific::runtime::wayland::popup::{SctkPopupSettings, SctkPositioner};
-use cosmic::iced::{Alignment, Length, Limits, Rectangle, window};
+use cosmic::iced::{Alignment, Length, Rectangle};
 use cosmic::widget;
-use cosmic::widget::wayland::tooltip::widget::Tooltip;
 
 use super::ClipKeep;
-use super::message::Message;
-use crate::clip::model::{CaptureState, EntryKind, EntryMeta, Timestamp, truncate_chars};
+use super::message::{Message, RowAction};
+use crate::clip::model::{CaptureState, EntryId, EntryKind, EntryMeta, Timestamp, truncate_chars};
 use crate::clip::search;
 use crate::clip::settings::{MAX_ENTRIES_CEILING, Settings};
 use crate::fl;
@@ -26,18 +21,21 @@ const GAP: u16 = 8;
 const GAP_TIGHT: u16 = 4;
 
 const THUMBNAIL_HEIGHT: u16 = 32;
+const ACTION_HINT_HEIGHT: f32 = 32.0;
 
-const CARD_ENABLED: bool = true;
-const CARD_WIDTH: f32 = 300.0;
-const CARD_CHARS: usize = 200;
-const CARD_LABEL_WIDTH: f32 = 96.0;
-const CARD_DELAY: std::time::Duration = std::time::Duration::from_millis(400);
-
-static CARD_WINDOW_ID: LazyLock<window::Id> = LazyLock::new(window::Id::unique);
-static CARD_ID: LazyLock<widget::Id> = LazyLock::new(|| widget::Id::new("clip-keep-card"));
+const DETAILS_CHARS: usize = 400;
+const DETAILS_VERTICAL_PADDING: u16 = 12;
+const DETAILS_LABEL_WIDTH: f32 = 96.0;
 
 pub(crate) static SEARCH_ID: LazyLock<widget::Id> =
     LazyLock::new(|| widget::Id::new("clip-keep-search"));
+
+pub(crate) static SCROLL_ID: LazyLock<widget::Id> =
+    LazyLock::new(|| widget::Id::new("clip-keep-list"));
+
+pub(crate) fn row_id(entry: EntryId) -> widget::Id {
+    widget::Id::new(format!("clip-keep-row-{}", entry.0))
+}
 
 pub fn visible(app: &ClipKeep) -> Vec<&EntryMeta> {
     let entries = &app.snapshot().entries;
@@ -48,23 +46,60 @@ pub fn visible(app: &ClipKeep) -> Vec<&EntryMeta> {
         .collect()
 }
 
+const KEY_PIN: &str = "Ctrl+P";
+const KEY_DELETE: &str = "Ctrl+D";
+const KEY_INFO: &str = "Ctrl+I";
+const KEY_SEARCH: &str = "Ctrl+F";
 pub const SURFACE_WIDTH: f32 = 360.0;
 const SURFACE_MAX_HEIGHT: f32 = 800.0;
 
 static SURFACE_ID: LazyLock<widget::Id> = LazyLock::new(|| widget::Id::new("clip-keep-popup"));
+static HINT_POPOVER_ID: LazyLock<widget::Id> =
+    LazyLock::new(|| widget::Id::new("clip-keep-action-hint"));
 
 pub fn popup(app: &ClipKeep) -> Element<'_, Message> {
-    let body: Element<'_, Message> = if app.showing_settings() {
+    let body: Element<'_, Message> = if let Some(entry) = app.details() {
+        details_page(entry)
+    } else if app.showing_settings() {
         settings_page(app)
     } else {
         history_page(app)
     };
 
-    let surface = widget::container(body)
+    let surface: Element<'_, Message> = widget::container(body)
         .width(Length::Fixed(SURFACE_WIDTH))
-        .style(surface_style);
+        .style(surface_style)
+        .into();
 
-    widget::autosize::autosize(surface, SURFACE_ID.clone())
+    // Keep the popover in the widget tree even while it has no popup. Swapping the
+    // root widget as the pointer moved reset hover state in the action buttons.
+    let mut content = widget::popover(surface).id(HINT_POPOVER_ID.clone());
+
+    if let Some((id, action, bounds)) = app.action_hint()
+        && app.details().is_none()
+        && !app.showing_settings()
+    {
+        let (label, shortcut) = action_hint_text(app, id, action);
+        let hint = widget::container(
+            widget::row::with_children(vec![
+                widget::text::body(label).into(),
+                widget::text::caption(shortcut).into(),
+            ])
+            .spacing(GAP)
+            .align_y(Alignment::Center),
+        )
+        .padding(cosmic::theme::spacing().space_xxs)
+        .class(cosmic::theme::Container::Tooltip);
+
+        content = content
+            .position(widget::popover::Position::Point(cosmic::iced::Point::new(
+                bounds.x,
+                (bounds.y - ACTION_HINT_HEIGHT).max(0.0),
+            )))
+            .popup(hint);
+    }
+
+    widget::autosize::autosize(content, SURFACE_ID.clone())
         .limits(
             cosmic::iced::Limits::NONE
                 .min_width(1.0)
@@ -73,6 +108,29 @@ pub fn popup(app: &ClipKeep) -> Element<'_, Message> {
                 .max_height(SURFACE_MAX_HEIGHT),
         )
         .into()
+}
+
+fn action_hint_text(app: &ClipKeep, id: EntryId, action: RowAction) -> (String, &'static str) {
+    match action {
+        RowAction::Details => (fl!("action-details"), KEY_INFO),
+        RowAction::Pin => {
+            let pinned = app
+                .snapshot()
+                .entries
+                .iter()
+                .find(|entry| entry.id == id)
+                .is_some_and(|entry| entry.pinned.is_some());
+            (
+                if pinned {
+                    fl!("action-unpin")
+                } else {
+                    fl!("action-pin")
+                },
+                KEY_PIN,
+            )
+        }
+        RowAction::Delete => (fl!("action-delete"), KEY_DELETE),
+    }
 }
 
 fn surface_style(theme: &cosmic::Theme) -> widget::container::Style {
@@ -95,11 +153,14 @@ fn surface_style(theme: &cosmic::Theme) -> widget::container::Style {
 
 fn history_page(app: &ClipKeep) -> Element<'_, Message> {
     let rows = visible(app);
-    let search = widget::text_input::search_input(fl!("search-placeholder"), app.query())
-        .id(SEARCH_ID.clone())
-        .width(Length::Fill)
-        .on_input(Message::Search)
-        .on_clear(Message::Search(String::new()));
+    let search = widget::text_input::search_input(
+        fl!("search-placeholder", shortcut = KEY_SEARCH),
+        app.query(),
+    )
+    .id(SEARCH_ID.clone())
+    .width(Length::Fill)
+    .on_input(Message::Search)
+    .on_clear(Message::Search(String::new()));
     let clear = widget::button::icon(
         widget::icon::from_name("user-trash-full-symbolic")
             .size(16)
@@ -169,13 +230,7 @@ fn history_page(app: &ClipKeep) -> Element<'_, Message> {
             .padding([0, 0, PAD, 0])
             .width(Length::Fill);
 
-        children.push(
-            widget::container(
-                scroll(list).on_scroll(|viewport| Message::Scrolled(viewport.absolute_offset().y)),
-            )
-            .width(Length::Fill)
-            .into(),
-        );
+        children.push(widget::container(scroll(list)).width(Length::Fill).into());
     }
 
     widget::column::with_children(children).into()
@@ -237,7 +292,7 @@ fn empty_state(app: &ClipKeep) -> Element<'_, Message> {
 }
 
 fn row<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
-    let active = app.hovered() == Some(entry.id);
+    let active = app.focused() == Some(entry.id);
 
     let button = widget::button::custom(content(app, entry))
         .class(quiet())
@@ -246,12 +301,9 @@ fn row<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
         .on_press(Message::Confirm(entry.id));
 
     let actions = widget::row::with_children(vec![
-        action_toggle(
-            "pin-symbolic",
-            entry.pinned.is_some(),
-            Message::TogglePin(entry.id),
-        ),
-        action_toggle("user-trash-symbolic", false, Message::Delete(entry.id)),
+        action_toggle(entry.id, RowAction::Details, false),
+        action_toggle(entry.id, RowAction::Pin, entry.pinned.is_some()),
+        action_toggle(entry.id, RowAction::Delete, false),
     ])
     .align_y(Alignment::Center);
 
@@ -270,59 +322,17 @@ fn row<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
     });
 
     let row = widget::container(inner)
+        .id(row_id(entry.id))
         .padding([0, PAD])
         .width(Length::Fill);
 
-    let hover = widget::mouse_area(row)
-        .on_enter(Message::Hover(entry.id))
-        .on_exit(Message::Unhover(entry.id));
-
-    let Some(parent) = app.popup_id().filter(|_| CARD_ENABLED) else {
-        return hover.into();
-    };
-
-    let card = Card::of(entry);
-    let scrolled = app.scroll();
-
-    Tooltip::new(
-        hover,
-        Some(move |bounds: Rectangle| SctkPopupSettings {
-            parent,
-            id: *CARD_WINDOW_ID,
-            grab: false,
-            input_zone: Some(vec![Rectangle::new(
-                cosmic::iced::Point::new(-1000., -1000.),
-                cosmic::iced::Size::default(),
-            )]),
-            positioner: SctkPositioner {
-                size: None,
-                size_limits: Limits::NONE.min_width(1.).min_height(1.),
-                anchor_rect: Rectangle {
-                    x: whole(bounds.x),
-                    y: whole((bounds.y - scrolled).clamp(0.0, SURFACE_MAX_HEIGHT - bounds.height)),
-                    width: whole(bounds.width),
-                    height: whole(bounds.height),
-                },
-                anchor: Anchor::Left,
-                gravity: Gravity::Left,
-                constraint_adjustment: 15,
-                offset: (-i32::from(GAP), 0),
-                reactive: true,
-            },
-            parent_size: None,
-            close_with_children: true,
-        }),
-        move || card.clone().view(),
-        Message::Surface(cosmic::surface::Action::DestroyPopup(*CARD_WINDOW_ID)),
-        Message::Surface,
-    )
-    .width(Length::Fill)
-    .delay(CARD_DELAY)
-    .into()
+    widget::mouse_area(row)
+        .on_move(move |_| Message::Focus(entry.id))
+        .into()
 }
 
 #[derive(Clone)]
-struct Card {
+struct Details {
     text: String,
     source_app: Option<String>,
     created_at: Timestamp,
@@ -332,10 +342,10 @@ struct Card {
     image_size: Option<(u32, u32)>,
 }
 
-impl Card {
+impl Details {
     fn of(entry: &EntryMeta) -> Self {
         Self {
-            text: truncate_chars(&label_for(entry), CARD_CHARS),
+            text: details_text(&label_for(entry)),
             source_app: entry.source_app.clone(),
             created_at: entry.created_at,
             last_used_at: entry.last_used_at,
@@ -347,63 +357,59 @@ impl Card {
         }
     }
 
-    fn view(self) -> Element<'static, cosmic::Action<Message>> {
-        let mut rows: Vec<Element<'static, cosmic::Action<Message>>> = Vec::new();
+    fn view(self) -> Element<'static, Message> {
+        let mut rows: Vec<Element<'static, Message>> = Vec::new();
 
         if self.image_size.is_none() {
             rows.push(
-                widget::text::body(self.text)
-                    .wrapping(Wrapping::WordOrGlyph)
+                widget::container(
+                    widget::text::body(self.text)
+                        .wrapping(Wrapping::WordOrGlyph)
+                        .width(Length::Fill),
+                )
+                .padding([DETAILS_VERTICAL_PADDING, PAD])
+                .into(),
+            );
+            rows.push(
+                widget::container(widget::divider::horizontal::default())
+                    .padding([0, PAD])
                     .into(),
             );
-            rows.push(widget::divider::horizontal::default().into());
         }
 
         rows.push(
-            widget::column::with_children(
-                [
-                    self.source_app
-                        .map(|app| detail(fl!("card-source"), application(&app))),
-                    self.image_size
-                        .map(|(w, h)| detail(fl!("card-size"), format!("{w} × {h}"))),
-                    Some(detail(fl!("card-copied"), moment(self.created_at))),
-                    Some(detail(fl!("card-used"), moment(self.last_used_at))),
-                    Some(detail(fl!("card-copies"), self.use_count.to_string())),
-                    Some(detail(fl!("card-bytes"), bytes(self.byte_size))),
-                ]
-                .into_iter()
-                .flatten()
-                .collect::<Vec<_>>(),
+            widget::container(
+                widget::column::with_children(
+                    [
+                        self.source_app
+                            .map(|app| detail(fl!("details-source"), application(&app))),
+                        self.image_size
+                            .map(|(w, h)| detail(fl!("details-size"), format!("{w} × {h}"))),
+                        Some(detail(fl!("details-copied"), moment(self.created_at))),
+                        Some(detail(fl!("details-used"), moment(self.last_used_at))),
+                        Some(detail(fl!("details-copies"), self.use_count.to_string())),
+                        Some(detail(fl!("details-bytes"), bytes(self.byte_size))),
+                    ]
+                    .into_iter()
+                    .flatten()
+                    .collect::<Vec<_>>(),
+                )
+                .spacing(GAP_TIGHT),
             )
-            .spacing(GAP_TIGHT)
+            .padding(PAD)
             .into(),
         );
 
-        widget::autosize::autosize(
-            widget::container(
-                widget::column::with_children(rows)
-                    .spacing(GAP)
-                    .width(Length::Fixed(CARD_WIDTH)),
-            )
-            .padding(PAD)
-            .style(surface_style),
-            CARD_ID.clone(),
-        )
-        .limits(
-            Limits::NONE
-                .min_width(1.0)
-                .min_height(1.0)
-                .max_width(CARD_WIDTH)
-                .max_height(SURFACE_MAX_HEIGHT),
-        )
-        .into()
+        widget::column::with_children(rows)
+            .width(Length::Fill)
+            .into()
     }
 }
 
-fn detail(name: String, value: String) -> Element<'static, cosmic::Action<Message>> {
+fn detail(name: String, value: String) -> Element<'static, Message> {
     widget::row::with_children(vec![
         widget::text::caption(name)
-            .width(Length::Fixed(CARD_LABEL_WIDTH))
+            .width(Length::Fixed(DETAILS_LABEL_WIDTH))
             .into(),
         widget::text::caption(value).width(Length::Fill).into(),
     ])
@@ -415,7 +421,7 @@ fn moment(at: Timestamp) -> String {
         .map(|stamp| {
             stamp
                 .to_zoned(jiff::tz::TimeZone::system())
-                .strftime(&fl!("card-moment-format"))
+                .strftime(&fl!("details-moment-format"))
                 .to_string()
         })
         .unwrap_or_default()
@@ -458,11 +464,6 @@ fn bytes(size: u64) -> String {
     } else {
         format!("{whole}.{} {}", remainder * 10 / 1024, UNITS[unit])
     }
-}
-
-#[allow(clippy::cast_possible_truncation)]
-fn whole(value: f32) -> i32 {
-    value.round() as i32
 }
 
 fn content<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
@@ -518,10 +519,30 @@ fn active_row<'a>() -> cosmic::theme::Container<'a> {
     }))
 }
 
-fn action_toggle(glyph: &str, selected: bool, message: Message) -> Element<'_, Message> {
-    widget::button::icon(widget::icon::from_name(glyph).size(14).symbolic(true))
+pub(crate) fn action_id(id: EntryId, action: RowAction) -> widget::Id {
+    let action = match action {
+        RowAction::Details => "details",
+        RowAction::Pin => "pin",
+        RowAction::Delete => "delete",
+    };
+    widget::Id::new(format!("clip-keep-action-{action}-{}", id.0))
+}
+
+fn action_toggle(id: EntryId, action: RowAction, selected: bool) -> Element<'static, Message> {
+    let (glyph, message) = match action {
+        RowAction::Details => (
+            "dialog-information-symbolic",
+            Message::ShowDetails(Some(id)),
+        ),
+        RowAction::Pin => ("pin-symbolic", Message::TogglePin(id)),
+        RowAction::Delete => ("user-trash-symbolic", Message::Delete(id)),
+    };
+    let button = widget::button::icon(widget::icon::from_name(glyph).size(14).symbolic(true))
         .class(flat_icon(selected))
-        .on_press(message)
+        .on_press(message);
+
+    widget::mouse_area(widget::container(button).id(action_id(id, action)))
+        .on_enter(Message::PrepareActionHint(id, action))
         .into()
 }
 
@@ -550,9 +571,128 @@ fn scroll<'a>(
     content: impl Into<Element<'a, Message>>,
 ) -> cosmic::iced::widget::Scrollable<'a, Message, cosmic::Theme, cosmic::Renderer> {
     widget::scrollable(content)
+        .id(SCROLL_ID.clone())
         .scrollbar_width(0.0)
         .scroller_width(0.0)
         .scrollbar_padding(0.0)
+}
+
+pub(crate) fn scroll_into_view(row: widget::Id) -> impl widget::Operation<Option<f32>> {
+    struct Reveal {
+        row: widget::Id,
+        viewport: Option<(Rectangle, f32)>,
+        bounds: Option<Rectangle>,
+    }
+
+    impl widget::Operation<Option<f32>> for Reveal {
+        fn traverse(&mut self, operate: &mut dyn FnMut(&mut dyn widget::Operation<Option<f32>>)) {
+            operate(self);
+        }
+
+        fn scrollable(
+            &mut self,
+            id: Option<&widget::Id>,
+            bounds: Rectangle,
+            _content: Rectangle,
+            translation: cosmic::iced::Vector,
+            _state: &mut dyn cosmic::iced::advanced::widget::operation::Scrollable,
+        ) {
+            if id == Some(&*SCROLL_ID) {
+                self.viewport = Some((bounds, translation.y));
+            }
+        }
+
+        fn container(&mut self, id: Option<&widget::Id>, bounds: Rectangle) {
+            if id == Some(&self.row) {
+                self.bounds = Some(bounds);
+            }
+        }
+
+        fn finish(&self) -> cosmic::iced::advanced::widget::operation::Outcome<Option<f32>> {
+            use cosmic::iced::advanced::widget::operation::Outcome;
+
+            let (Some((viewport, scrolled)), Some(row)) = (self.viewport, self.bounds) else {
+                return Outcome::None;
+            };
+
+            Outcome::Some(shortfall(viewport, row, scrolled))
+        }
+    }
+
+    Reveal {
+        row,
+        viewport: None,
+        bounds: None,
+    }
+}
+
+pub(crate) fn onscreen_bounds(target: widget::Id) -> impl widget::Operation<Option<Rectangle>> {
+    struct Locate {
+        target: widget::Id,
+        scrolled: Option<f32>,
+        bounds: Option<Rectangle>,
+    }
+
+    impl widget::Operation<Option<Rectangle>> for Locate {
+        fn traverse(
+            &mut self,
+            operate: &mut dyn FnMut(&mut dyn widget::Operation<Option<Rectangle>>),
+        ) {
+            operate(self);
+        }
+
+        fn scrollable(
+            &mut self,
+            id: Option<&widget::Id>,
+            _bounds: Rectangle,
+            _content: Rectangle,
+            translation: cosmic::iced::Vector,
+            _state: &mut dyn cosmic::iced::advanced::widget::operation::Scrollable,
+        ) {
+            if id == Some(&*SCROLL_ID) {
+                self.scrolled = Some(translation.y);
+            }
+        }
+
+        fn container(&mut self, id: Option<&widget::Id>, bounds: Rectangle) {
+            if id == Some(&self.target) {
+                self.bounds = Some(bounds);
+            }
+        }
+
+        fn finish(&self) -> cosmic::iced::advanced::widget::operation::Outcome<Option<Rectangle>> {
+            use cosmic::iced::advanced::widget::operation::Outcome;
+
+            Outcome::Some(
+                self.bounds
+                    .zip(self.scrolled)
+                    .map(|(mut bounds, scrolled)| {
+                        bounds.y -= scrolled;
+                        bounds
+                    }),
+            )
+        }
+    }
+
+    Locate {
+        target,
+        scrolled: None,
+        bounds: None,
+    }
+}
+
+fn shortfall(viewport: Rectangle, row: Rectangle, scrolled: f32) -> Option<f32> {
+    let top = row.y - scrolled;
+    let above = viewport.y - top;
+    let below = (top + row.height) - (viewport.y + viewport.height);
+
+    if above > 0.0 {
+        Some(-above)
+    } else if below > 0.0 {
+        Some(below)
+    } else {
+        None
+    }
 }
 
 fn pixels(value: u32) -> f32 {
@@ -561,6 +701,16 @@ fn pixels(value: u32) -> f32 {
 
 fn one_line(text: &str) -> String {
     text.lines().next().unwrap_or_default().to_owned()
+}
+
+fn details_text(text: &str) -> String {
+    if text.chars().nth(DETAILS_CHARS).is_none() {
+        return text.to_owned();
+    }
+
+    let mut truncated = truncate_chars(text, DETAILS_CHARS - 3);
+    truncated.push_str("...");
+    truncated
 }
 
 fn label_for(entry: &EntryMeta) -> String {
@@ -574,6 +724,29 @@ fn label_for(entry: &EntryMeta) -> String {
 
 fn divider<'a>() -> Element<'a, Message> {
     widget::divider::horizontal::default().into()
+}
+
+fn details_page(entry: &EntryMeta) -> Element<'_, Message> {
+    let back = widget::button::icon(
+        widget::icon::from_name("go-previous-symbolic")
+            .size(16)
+            .symbolic(true),
+    )
+    .on_press(Message::ShowDetails(None));
+
+    let header = widget::row::with_children(vec![
+        back.into(),
+        widget::text::heading(fl!("details")).into(),
+    ])
+    .spacing(GAP)
+    .align_y(Alignment::Center);
+
+    widget::column::with_children(vec![
+        widget::container(header).padding(PAD).into(),
+        widget::container(divider()).padding([0, PAD]).into(),
+        scroll(Details::of(entry).view()).into(),
+    ])
+    .into()
 }
 
 fn settings_page(app: &ClipKeep) -> Element<'_, Message> {
@@ -719,6 +892,12 @@ fn behaviour_controls(app: &ClipKeep) -> Element<'_, Message> {
             settings.capture_images,
             |settings, value| settings.capture_images = value,
         ))
+        .add(toggle(
+            app,
+            fl!("setting-paste-on-use"),
+            settings.paste_on_use,
+            |settings, value| settings.paste_on_use = value,
+        ))
         .into()
 }
 
@@ -763,5 +942,74 @@ mod tests {
             .collect();
 
         assert_eq!(options, [None, Some(1), Some(7), Some(14), Some(30)]);
+    }
+
+    #[test]
+    fn short_details_are_left_unchanged() {
+        assert_eq!(details_text("um texto curto"), "um texto curto");
+    }
+
+    #[test]
+    fn long_details_are_ellipsized_at_four_hundred_characters() {
+        let text = "á".repeat(DETAILS_CHARS + 20);
+        let result = details_text(&text);
+
+        assert_eq!(result.chars().count(), DETAILS_CHARS);
+        assert!(result.ends_with("..."));
+    }
+
+    fn rect(y: f32, height: f32) -> Rectangle {
+        Rectangle {
+            x: 0.0,
+            y,
+            width: SURFACE_WIDTH,
+            height,
+        }
+    }
+
+    #[test]
+    fn a_row_already_inside_the_viewport_is_left_alone() {
+        assert_eq!(shortfall(rect(100.0, 400.0), rect(180.0, 40.0), 0.0), None);
+    }
+
+    #[test]
+    fn a_row_above_the_viewport_scrolls_back_by_the_difference() {
+        assert_eq!(
+            shortfall(rect(100.0, 400.0), rect(70.0, 40.0), 0.0),
+            Some(-30.0)
+        );
+    }
+
+    #[test]
+    fn a_row_below_the_viewport_scrolls_on_by_the_difference() {
+        assert_eq!(
+            shortfall(rect(100.0, 400.0), rect(480.0, 40.0), 0.0),
+            Some(20.0)
+        );
+    }
+
+    #[test]
+    fn a_row_flush_with_the_bottom_edge_is_already_visible() {
+        assert_eq!(shortfall(rect(100.0, 400.0), rect(460.0, 40.0), 0.0), None);
+    }
+
+    #[test]
+    fn a_row_is_measured_where_the_scroll_has_put_it_on_screen() {
+        let viewport = rect(100.0, 400.0);
+
+        assert_eq!(shortfall(viewport, rect(1180.0, 40.0), 1000.0), None);
+        assert_eq!(shortfall(viewport, rect(1070.0, 40.0), 1000.0), Some(-30.0));
+        assert_eq!(shortfall(viewport, rect(1480.0, 40.0), 1000.0), Some(20.0));
+    }
+
+    #[test]
+    fn walking_back_to_the_top_scrolls_all_the_way_up() {
+        let viewport = rect(100.0, 400.0);
+
+        assert_eq!(
+            shortfall(viewport, rect(100.0, 40.0), 1000.0),
+            Some(-1000.0),
+            "the first row sits where the content starts, so it comes back by the whole offset"
+        );
     }
 }

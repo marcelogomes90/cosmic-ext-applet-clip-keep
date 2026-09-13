@@ -13,8 +13,7 @@
     "--share=ipc",
     "--socket=wayland",
     "--filesystem=/run/user",
-    "--filesystem=xdg-config/cosmic:ro",
-    "--filesystem=xdg-config/cosmic/io.github.marcelogomes90.cosmic-ext-applet-clip-keep:create",
+    "--filesystem=xdg-config/cosmic:rw",
     "--talk-name=com.system76.CosmicSettingsDaemon",
     "--talk-name=com.system76.CosmicSettingsDaemon.*"
   ],

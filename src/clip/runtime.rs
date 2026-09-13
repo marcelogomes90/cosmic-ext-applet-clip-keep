@@ -19,8 +19,10 @@ use super::model::{Capture, CaptureState, EntryId, EntryKind, Flavor, Snapshot, 
 use super::privacy::{self, Filter};
 use super::settings::Settings;
 use super::wayland::data_control::{Device, Manager, Offer, Selection, Source, SourceData};
+use super::wayland::output::Outputs;
 use super::wayland::reader::{self, Progress as ReadProgress, TRANSFER_TIMEOUT};
 use super::wayland::toplevel::Toplevels;
+use super::wayland::typist::{self, Typist};
 use super::wayland::writer::{Outgoing, Progress as WriteProgress, set_nonblocking};
 use super::wayland::{SetupError, data_control};
 use super::{ClipCommand, dedup, mime, thumbnail};
@@ -95,6 +97,9 @@ impl AsFd for OutgoingPipe {
     }
 }
 
+const POPUP_SETTLE: Duration = Duration::from_millis(130);
+const PASTE_DELAY: Duration = Duration::from_millis(170);
+
 pub struct Runtime {
     db: Option<Db>,
     settings: Settings,
@@ -111,6 +116,9 @@ pub struct Runtime {
     manager: Option<Manager>,
     device: Option<Device>,
     pub(crate) toplevels: Option<Toplevels>,
+    pub(crate) outputs: Outputs,
+    typist: Option<Typist>,
+    pub(crate) active_output: Option<String>,
     source: Option<Source>,
     owned_hash: Option<[u8; 32]>,
     primed: bool,
@@ -208,6 +216,9 @@ impl Runtime {
             manager: None,
             device: None,
             toplevels: None,
+            outputs: Outputs::default(),
+            typist: None,
+            active_output: None,
             source: None,
             owned_hash: None,
             primed: false,
@@ -238,7 +249,9 @@ impl Runtime {
         let seat = data_control::bind_seat(&globals, &qh)?;
         let device = manager.get_data_device(&seat, &qh);
 
+        self.outputs = Outputs::bind(&globals, &qh);
         self.toplevels = Toplevels::bind(&globals, &qh, &seat);
+        self.typist = Typist::bind(&globals, &qh, &seat, &connection);
 
         self.connection = Some(connection.clone());
         WaylandSource::new(connection, queue)
@@ -742,7 +755,7 @@ impl Runtime {
 
     fn on_command(&mut self, command: ClipCommand) {
         match command {
-            ClipCommand::Use(id) => self.use_entry(id),
+            ClipCommand::Use { id, paste } => self.use_entry(id, paste),
             ClipCommand::Offer { flavors } => {
                 let offered: Vec<String> =
                     flavors.iter().map(|flavor| flavor.mime.clone()).collect();
@@ -765,11 +778,14 @@ impl Runtime {
                     .flatten();
                 let _ = reply.send(thumbnail);
             }
+            ClipCommand::TargetOutput { reply } => {
+                let _ = reply.send(self.target_output());
+            }
             ClipCommand::Settings(settings) => self.apply_settings(*settings),
         }
     }
 
-    fn use_entry(&mut self, id: EntryId) {
+    fn use_entry(&mut self, id: EntryId, paste: bool) {
         let kind = self.db.as_ref().and_then(|db| db.kind(id).ok()).flatten();
         let loaded = match self.db.as_ref().map(|db| db.load_all(id)) {
             Some(Ok(flavors)) if !flavors.is_empty() => flavors,
@@ -791,6 +807,69 @@ impl Runtime {
         self.offer_selection(kind, loaded);
 
         self.with_db("record the use of an entry", |db| db.touch(id, now()));
+
+        if paste {
+            self.arm_paste();
+        }
+    }
+
+    fn arm_paste(&mut self) {
+        if self.typist.is_none() {
+            tracing::info!("nothing to paste with, the compositor offered no virtual keyboard");
+            return;
+        }
+
+        let shortcut = typist::paste_shortcut(self.focused_app.as_deref());
+
+        let armed = self.loop_handle.insert_source(
+            Timer::from_duration(POPUP_SETTLE),
+            move |_, (), runtime: &mut Runtime| {
+                runtime.hand_focus_back();
+
+                let typed = runtime.loop_handle.insert_source(
+                    Timer::from_duration(PASTE_DELAY),
+                    move |_, (), runtime: &mut Runtime| {
+                        runtime.type_paste(shortcut);
+                        TimeoutAction::Drop
+                    },
+                );
+
+                if typed.is_err() {
+                    tracing::warn!("could not arm the paste");
+                }
+
+                TimeoutAction::Drop
+            },
+        );
+
+        if armed.is_err() {
+            tracing::warn!("could not wait for the popup to go away");
+        }
+    }
+
+    fn hand_focus_back(&self) {
+        let Some(toplevels) = self.toplevels.as_ref() else {
+            return;
+        };
+
+        tracing::info!(app = ?self.focused_app, "handing the focus back");
+        toplevels.activate_focused();
+
+        if let Some(connection) = self.connection.as_ref()
+            && let Err(error) = connection.flush()
+        {
+            tracing::warn!(%error, "could not hand the focus back before pasting");
+        }
+    }
+
+    fn type_paste(&self, shortcut: typist::PasteShortcut) {
+        let (Some(typist), Some(connection)) = (self.typist.as_ref(), self.connection.as_ref())
+        else {
+            return;
+        };
+
+        tracing::info!(?shortcut, "pasting into the window that had the focus");
+        typist.paste(shortcut, connection);
     }
 
     fn apply_settings(&mut self, settings: Settings) {

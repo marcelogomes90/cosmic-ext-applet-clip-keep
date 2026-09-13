@@ -1,7 +1,9 @@
 pub mod applet;
 pub mod clip;
 pub mod config;
+pub mod control;
 pub mod i18n;
+pub mod shortcut;
 
 pub const APP_ID: &str = "io.github.marcelogomes90.cosmic-ext-applet-clip-keep";
 

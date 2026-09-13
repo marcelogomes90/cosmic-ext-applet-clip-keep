@@ -1,6 +1,8 @@
 pub mod data_control;
+pub mod output;
 pub mod reader;
 pub mod toplevel;
+pub mod typist;
 pub mod writer;
 
 use std::os::unix::net::UnixStream;

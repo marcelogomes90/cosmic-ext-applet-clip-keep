@@ -169,13 +169,22 @@ pub enum Selection {
 
 impl Dispatch<wl_registry::WlRegistry, GlobalListContents> for Runtime {
     fn event(
-        _: &mut Self,
-        _: &wl_registry::WlRegistry,
-        _: wl_registry::Event,
+        state: &mut Self,
+        registry: &wl_registry::WlRegistry,
+        event: wl_registry::Event,
         _: &GlobalListContents,
         _: &Connection,
-        _: &QueueHandle<Self>,
+        qh: &QueueHandle<Self>,
     ) {
+        match event {
+            wl_registry::Event::Global {
+                name,
+                interface,
+                version,
+            } => state.on_global_added(registry, name, &interface, version, qh),
+            wl_registry::Event::GlobalRemove { name } => state.on_global_removed(name),
+            _ => {}
+        }
     }
 }
 
