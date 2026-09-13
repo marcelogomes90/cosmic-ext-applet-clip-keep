@@ -29,6 +29,6 @@ setting-respect-password-hint = Přeskakovat hesla
 
 setting-max-age-days = { $days } { $days ->
     [one] den
-    [many] dny
+    [few] dny
    *[other] dní
 }

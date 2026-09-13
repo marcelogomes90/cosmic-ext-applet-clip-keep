@@ -65,12 +65,14 @@ mod tests {
     #[test]
     fn every_language_translates_exactly_the_same_messages() {
         for (language, catalogue) in [
+            ("cs", include_str!("../i18n/cs/clip-keep.ftl")),
             ("de", include_str!("../i18n/de/clip-keep.ftl")),
             ("es", include_str!("../i18n/es/clip-keep.ftl")),
             ("fr", include_str!("../i18n/fr/clip-keep.ftl")),
             ("it", include_str!("../i18n/it/clip-keep.ftl")),
             ("nl", include_str!("../i18n/nl/clip-keep.ftl")),
             ("pt-BR", include_str!("../i18n/pt-BR/clip-keep.ftl")),
+            ("pl", include_str!("../i18n/pl/clip-keep.ftl")),
             ("ru", include_str!("../i18n/ru/clip-keep.ftl")),
             ("uk", include_str!("../i18n/uk/clip-keep.ftl")),
             ("zh-CN", include_str!("../i18n/zh-CN/clip-keep.ftl")),
@@ -84,7 +86,9 @@ mod tests {
         use i18n_embed::LanguageLoader as _;
         use i18n_embed::unic_langid::LanguageIdentifier;
 
-        for language in ["de", "es", "fr", "it", "nl", "pt-BR", "ru", "uk", "zh-CN"] {
+        for language in [
+            "cs", "de", "es", "fr", "it", "nl", "pl", "pt-BR", "ru", "uk", "zh-CN",
+        ] {
             let id: LanguageIdentifier = language.parse().expect("a well-formed language tag");
             let loader = super::fluent_language_loader!();
             loader
