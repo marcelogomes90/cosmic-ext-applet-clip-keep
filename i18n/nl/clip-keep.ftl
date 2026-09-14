@@ -1,14 +1,16 @@
-search-placeholder = Zoeken…  { $shortcut }
+search-placeholder = Geschiedenis doorzoeken…
 empty-history = Nog niets gekopieerd
 no-results = Geen resultaten
 capture-unavailable = Klembordopname is niet beschikbaar
 settings = Instellingen
 details = Details
+back = Terug
 section-pinned = Vastgezet
 section-recent = Geschiedenis
 
 item-image = Afbeelding { $width } × { $height }
 
+details-information = Informatie
 details-source = Gekopieerd uit
 details-size = Afmetingen
 details-copied = Eerst gekopieerd
@@ -25,6 +27,9 @@ action-pin = Vastzetten
 action-unpin = Losmaken
 action-delete = Verwijderen
 action-details = Details
+
+footer-back = terug
+footer-use = gebruiken
 
 setting-max-entries = Grootte van geschiedenis
 setting-max-age = Verwijderen na

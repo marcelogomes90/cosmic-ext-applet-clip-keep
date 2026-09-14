@@ -82,8 +82,8 @@ rows have different sizes.
 
 ## Details
 
-Details are a normal page of the main popup, never another Wayland surface. The row information
-button and Ctrl+I open the focused entry. The page uses metadata already present in the snapshot:
+Details are a normal page of the main popup, never another Wayland surface. The row menu and Ctrl+I
+open the focused entry. The page uses metadata already present in the snapshot:
 preview text, source application, timestamps, use count, byte size and optional image dimensions.
 An image entry shows its thumbnail instead of the preview text, bounded so that the stored
 thumbnail is never scaled up.
@@ -104,6 +104,21 @@ anything.
 Settings are stored through cosmic-config and propagated to every running instance. Capture policy
 lives in `clip::settings::Settings`.
 
-The popup follows the panel anchor and theme, sizes itself to its contents up to a fixed maximum, and
-keeps scrolling inside the history/settings body. Fluent catalogues under `i18n/` provide every
+Each row carries a menu holding details, pin and delete. It is a popover over the same surface,
+placed from the measured bounds of the button that opened it, and libcosmic's own popover clamps it
+into the surface and flips it above the row when there is no room below. Three things about it are
+easy to undo by accident. The mouse area that catches a click outside the menu and the popover
+itself stay mounted whether or not a menu is open, because swapping the widgets above the page
+rebuilds the tree underneath and drops the overlay for a frame. While a menu is open the rows stop
+reporting pointer movement, so crossing them on the way to an item does not move the selection. And
+only a deliberate choice closes a menu — focus changes, pointer moves and fresh snapshots leave it
+alone, while Escape closes the menu before it closes the page.
+
+Every surface in the popup is painted from the two theme tokens libcosmic's own dropdown uses for
+its panel, and every icon is an SVG compiled into the binary rather than a name looked up in the
+icon theme, so the applet renders identically inside the Flatpak sandbox.
+
+The header and footer are fixed and only the list between them scrolls, so the body is capped at
+the surface maximum minus a generous allowance for both. The popup follows the panel anchor and
+theme, sizes itself to its contents up to that maximum. Fluent catalogues under `i18n/` provide every
 visible string. `just verify` checks formatting, clippy, backend/UI layering, tests and metadata.

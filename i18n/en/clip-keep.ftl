@@ -1,14 +1,16 @@
-search-placeholder = Search…  { $shortcut }
+search-placeholder = Search history…
 empty-history = Nothing copied yet
 no-results = No matches
 capture-unavailable = Clipboard capture is unavailable
 settings = Settings
 details = Details
+back = Back
 section-pinned = Pinned
 section-recent = History
 
 item-image = Image { $width } × { $height }
 
+details-information = Information
 details-source = Copied from
 details-size = Dimensions
 details-copied = First copied
@@ -25,6 +27,9 @@ action-pin = Pin
 action-unpin = Unpin
 action-delete = Delete
 action-details = Details
+
+footer-back = back
+footer-use = use
 
 setting-max-entries = History size
 setting-max-age = Discard after

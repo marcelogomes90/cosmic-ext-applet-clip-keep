@@ -1,14 +1,16 @@
-search-placeholder = Пошук…  { $shortcut }
+search-placeholder = Пошук в історії…
 empty-history = Ще нічого не скопійовано
 no-results = Збігів немає
 capture-unavailable = Захоплення буфера обміну недоступне
 settings = Налаштування
 details = Подробиці
+back = Назад
 section-pinned = Закріплені
 section-recent = Історія
 
 item-image = Зображення { $width } × { $height }
 
+details-information = Відомості
 details-source = Скопійовано з
 details-size = Розміри
 details-copied = Перша копія
@@ -25,6 +27,9 @@ action-pin = Закріпити
 action-unpin = Відкріпити
 action-delete = Видалити
 action-details = Подробиці
+
+footer-back = назад
+footer-use = вставити
 
 setting-max-entries = Розмір історії
 setting-max-age = Видаляти через

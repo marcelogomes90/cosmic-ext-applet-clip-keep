@@ -1,14 +1,16 @@
-search-placeholder = Buscar…  { $shortcut }
+search-placeholder = Buscar en el historial…
 empty-history = Aún no has copiado nada
 no-results = Sin coincidencias
 capture-unavailable = La captura del portapapeles no está disponible
 settings = Ajustes
 details = Detalles
+back = Atrás
 section-pinned = Fijados
 section-recent = Historial
 
 item-image = Imagen { $width } × { $height }
 
+details-information = Información
 details-source = Copiado desde
 details-size = Dimensiones
 details-copied = Primera copia
@@ -25,6 +27,9 @@ action-pin = Fijar
 action-unpin = Desfijar
 action-delete = Eliminar
 action-details = Detalles
+
+footer-back = volver
+footer-use = usar
 
 setting-max-entries = Tamaño del historial
 setting-max-age = Descartar después de

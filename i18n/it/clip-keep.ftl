@@ -1,14 +1,16 @@
-search-placeholder = Cerca…  { $shortcut }
+search-placeholder = Cerca nella cronologia…
 empty-history = Non hai ancora copiato nulla
 no-results = Nessun risultato
 capture-unavailable = L'acquisizione degli appunti non è disponibile
 settings = Impostazioni
 details = Dettagli
+back = Indietro
 section-pinned = Fissati
 section-recent = Cronologia
 
 item-image = Immagine { $width } × { $height }
 
+details-information = Informazioni
 details-source = Copiato da
 details-size = Dimensioni
 details-copied = Prima copia
@@ -25,6 +27,9 @@ action-pin = Fissa
 action-unpin = Rimuovi
 action-delete = Elimina
 action-details = Dettagli
+
+footer-back = indietro
+footer-use = usa
 
 setting-max-entries = Dimensione della cronologia
 setting-max-age = Elimina dopo

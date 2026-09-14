@@ -1,14 +1,16 @@
-search-placeholder = Suchen…  { $shortcut }
+search-placeholder = Verlauf durchsuchen…
 empty-history = Noch nichts kopiert
 no-results = Keine Treffer
 capture-unavailable = Zwischenablage-Aufzeichnung nicht verfügbar
 settings = Einstellungen
 details = Details
+back = Zurück
 section-pinned = Angeheftet
 section-recent = Verlauf
 
 item-image = Bild { $width } × { $height }
 
+details-information = Informationen
 details-source = Kopiert aus
 details-size = Abmessungen
 details-copied = Erstmals kopiert
@@ -25,6 +27,9 @@ action-pin = Anheften
 action-unpin = Lösen
 action-delete = Löschen
 action-details = Details
+
+footer-back = zurück
+footer-use = einfügen
 
 setting-max-entries = Verlaufsgröße
 setting-max-age = Verwerfen nach

@@ -6,13 +6,6 @@ use crate::clip::model::{EntryId, Snapshot, Thumbnail};
 
 use crate::clip::settings::Settings;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum RowAction {
-    Details,
-    Pin,
-    Delete,
-}
-
 #[derive(Clone, Debug)]
 pub enum Message {
     TogglePopup,
@@ -23,11 +16,12 @@ pub enum Message {
     SurfaceUnfocused(window::Id),
     PointerEntered(window::Id),
     PointerLeft(window::Id),
-    PointerMoved(window::Id, cosmic::iced::Point),
+    PointerMoved(window::Id),
     ArmOutsideClose(window::Id),
     CloseIfUnfocused(window::Id),
-    PrepareActionHint(EntryId, RowAction),
-    ShowActionHint(EntryId, RowAction, Option<Rectangle>),
+    OpenRowMenu(EntryId),
+    PlaceRowMenu(EntryId, Option<Rectangle>),
+    CloseRowMenu,
     Snapshot(Arc<Snapshot>),
     SettingsChanged(Box<Settings>),
     Search(String),

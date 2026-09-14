@@ -15,18 +15,13 @@ use cosmic::iced::platform_specific::{
 };
 use cosmic::iced::{Subscription, window};
 
-use self::message::{Message, RowAction};
+use self::message::Message;
 use self::thumbs::Thumbs;
 use crate::APP_ID;
 use crate::clip::model::{CaptureState, EntryId, EntryKind, EntryMeta, Snapshot};
 use crate::clip::settings::Settings;
 use crate::clip::{ClipCommand, ClipHandle};
 use crate::config::SettingsStore;
-
-const PANEL_ICON: &str = "io.github.marcelogomes90.cosmic-ext-applet-clip-keep-symbolic";
-
-const PAUSED_ICON: &str = "changes-prevent-symbolic";
-const UNAVAILABLE_ICON: &str = "dialog-warning-symbolic";
 
 const REOPEN_GUARD: std::time::Duration = std::time::Duration::from_millis(400);
 
@@ -52,7 +47,7 @@ pub struct ClipKeep {
     query: String,
     focused: Option<EntryId>,
     restore: Option<usize>,
-    action_hint: Option<(EntryId, RowAction, Option<cosmic::iced::Rectangle>)>,
+    menu: Option<(EntryId, Option<cosmic::iced::Rectangle>)>,
     showing_settings: bool,
     details: Option<EntryId>,
     thumbs: Thumbs,
@@ -98,7 +93,7 @@ impl cosmic::Application for ClipKeep {
                 query: String::new(),
                 focused: None,
                 restore: None,
-                action_hint: None,
+                menu: None,
                 showing_settings: false,
                 details: None,
                 thumbs: Thumbs::default(),
@@ -133,7 +128,7 @@ impl cosmic::Application for ClipKeep {
         let button = self
             .core
             .applet
-            .icon_button(self.panel_icon())
+            .icon_button_from_handle(self.panel_icon())
             .on_press(Message::TogglePopup);
 
         self.core.applet.autosize_window(button).into()
@@ -152,15 +147,19 @@ impl cosmic::Application for ClipKeep {
     }
 
     fn update(&mut self, message: Message) -> Task<Message> {
+        if self.menu.is_some() && closes_row_menu(&message) {
+            self.menu = None;
+        }
+
         match message {
-            Message::Relayout => Task::none(),
+            Message::Relayout | Message::CloseRowMenu => Task::none(),
             Message::TogglePopup => self.toggle_popup(),
             Message::ShowPopup => self.open_popup(),
             Message::SurfaceOpened(id) => self.opened(id),
             Message::SurfaceClosed(id) => self.closed(id),
             Message::SurfaceFocused(id) => self.surface_focused(id),
             Message::SurfaceUnfocused(id) => self.surface_unfocused(id),
-            Message::PointerEntered(id) => {
+            Message::PointerEntered(id) | Message::PointerMoved(id) => {
                 if self.popup_id() == Some(id) {
                     self.pointer_inside_popup = true;
                 }
@@ -169,18 +168,6 @@ impl cosmic::Application for ClipKeep {
             Message::PointerLeft(id) => {
                 if self.popup_id() == Some(id) {
                     self.pointer_inside_popup = false;
-                    self.action_hint = None;
-                }
-                Task::none()
-            }
-            Message::PointerMoved(id, position) => {
-                if self.popup_id() == Some(id) {
-                    self.pointer_inside_popup = true;
-                    if self.action_hint.is_some_and(|(_, _, bounds)| {
-                        bounds.is_some_and(|bounds| !bounds.contains(position))
-                    }) {
-                        self.action_hint = None;
-                    }
                 }
                 Task::none()
             }
@@ -191,17 +178,10 @@ impl cosmic::Application for ClipKeep {
                 Task::none()
             }
             Message::CloseIfUnfocused(id) => self.close_if_unfocused(id),
-            Message::PrepareActionHint(id, action) => {
-                self.action_hint = Some((id, action, None));
-                cosmic::iced::runtime::task::widget(view::onscreen_bounds(view::action_id(
-                    id, action,
-                )))
-                .map(move |bounds| cosmic::Action::App(Message::ShowActionHint(id, action, bounds)))
-            }
-            Message::ShowActionHint(id, action, bounds) => {
-                if matches!(self.action_hint, Some((current, kind, _)) if current == id && kind == action)
-                {
-                    self.action_hint = Some((id, action, bounds));
+            Message::OpenRowMenu(id) => self.open_row_menu(id),
+            Message::PlaceRowMenu(id, bounds) => {
+                if matches!(self.menu, Some((current, _)) if current == id) {
+                    self.menu = Some((id, bounds));
                 }
                 Task::none()
             }
@@ -220,7 +200,12 @@ impl cosmic::Application for ClipKeep {
                 self.focused = Some(id);
                 Task::none()
             }
-            Message::Key(action) => self.act(action),
+            Message::Key(action) => {
+                if self.menu.take().is_some() && action == keys::Action::Dismiss {
+                    return Task::none();
+                }
+                self.act(action)
+            }
             Message::Confirm(id) => self.confirm(id),
             Message::TogglePin(id) => self.toggle_pin(id),
             Message::Delete(id) => self.delete(id),
@@ -253,11 +238,11 @@ impl ClipKeep {
         &self.settings
     }
 
-    fn panel_icon(&self) -> &'static str {
+    fn panel_icon(&self) -> cosmic::widget::icon::Handle {
         match self.snapshot.capture {
-            CaptureState::Paused => PAUSED_ICON,
-            CaptureState::Unavailable { .. } => UNAVAILABLE_ICON,
-            CaptureState::Starting | CaptureState::Active(_) => PANEL_ICON,
+            CaptureState::Paused => view::icons::paused(),
+            CaptureState::Unavailable { .. } => view::icons::warning(),
+            CaptureState::Starting | CaptureState::Active(_) => view::icons::clipboard(),
         }
     }
 
@@ -471,7 +456,7 @@ impl ClipKeep {
     }
 
     fn reset_view(&mut self) {
-        self.action_hint = None;
+        self.menu = None;
         self.query.clear();
         self.focused = None;
         self.restore = None;
@@ -483,9 +468,21 @@ impl ClipKeep {
         self.focused
     }
 
-    pub(crate) fn action_hint(&self) -> Option<(EntryId, RowAction, cosmic::iced::Rectangle)> {
-        let (id, action, bounds) = self.action_hint?;
-        Some((id, action, bounds?))
+    pub(crate) fn row_menu(&self) -> Option<(EntryId, Option<cosmic::iced::Rectangle>)> {
+        self.menu
+    }
+
+    fn open_row_menu(&mut self, id: EntryId) -> Task<Message> {
+        if matches!(self.menu, Some((current, _)) if current == id) {
+            self.menu = None;
+            return Task::none();
+        }
+
+        self.menu = Some((id, None));
+        self.focused = Some(id);
+
+        cosmic::iced::runtime::task::widget(view::onscreen_bounds(view::menu_button_id(id)))
+            .map(move |bounds| cosmic::Action::App(Message::PlaceRowMenu(id, bounds)))
     }
 
     pub(crate) fn popup_id(&self) -> Option<window::Id> {
@@ -741,6 +738,24 @@ impl ClipKeep {
     }
 }
 
+fn closes_row_menu(message: &Message) -> bool {
+    matches!(
+        message,
+        Message::CloseRowMenu
+            | Message::Confirm(_)
+            | Message::TogglePin(_)
+            | Message::Delete(_)
+            | Message::Clear
+            | Message::Search(_)
+            | Message::ShowSettings(_)
+            | Message::ShowDetails(_)
+            | Message::Setting(_)
+            | Message::TogglePopup
+            | Message::ShowPopup
+            | Message::SurfaceClosed(_)
+    )
+}
+
 fn just_dismissed(dismissed_at: Option<std::time::Instant>, now: std::time::Instant) -> bool {
     dismissed_at.is_some_and(|at| now.duration_since(at) < REOPEN_GUARD)
 }
@@ -773,5 +788,36 @@ mod tests {
     #[test]
     fn a_popup_that_was_never_dismissed_never_guards() {
         assert!(!just_dismissed(None, Instant::now()));
+    }
+
+    #[test]
+    fn an_open_row_menu_survives_everything_that_is_not_a_choice() {
+        assert!(!closes_row_menu(&Message::OpenRowMenu(EntryId(1))));
+        assert!(!closes_row_menu(&Message::PlaceRowMenu(EntryId(1), None)));
+        assert!(!closes_row_menu(&Message::Focus(EntryId(1))));
+        assert!(!closes_row_menu(&Message::Relayout));
+        assert!(!closes_row_menu(&Message::SurfaceFocused(window::Id::NONE)));
+        assert!(!closes_row_menu(&Message::SurfaceUnfocused(
+            window::Id::NONE
+        )));
+        assert!(!closes_row_menu(&Message::ArmOutsideClose(
+            window::Id::NONE
+        )));
+        assert!(!closes_row_menu(&Message::PointerEntered(window::Id::NONE)));
+    }
+
+    #[test]
+    fn keys_are_left_to_decide_for_themselves() {
+        assert!(!closes_row_menu(&Message::Key(keys::Action::Dismiss)));
+    }
+
+    #[test]
+    fn choosing_an_action_or_leaving_the_page_puts_the_menu_away() {
+        assert!(closes_row_menu(&Message::Delete(EntryId(1))));
+        assert!(closes_row_menu(&Message::TogglePin(EntryId(1))));
+        assert!(closes_row_menu(&Message::ShowDetails(Some(EntryId(1)))));
+        assert!(closes_row_menu(&Message::ShowSettings(true)));
+        assert!(closes_row_menu(&Message::CloseRowMenu));
+        assert!(closes_row_menu(&Message::Search(String::new())));
     }
 }

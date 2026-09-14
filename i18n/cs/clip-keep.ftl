@@ -1,14 +1,16 @@
-search-placeholder = Hledat…  { $shortcut }
+search-placeholder = Hledat v historii…
 empty-history = Zatím nebylo nic zkopírováno
 no-results = Žádné shody
 capture-unavailable = Zachytávání schránky není dostupné
 settings = Nastavení
 details = Podrobnosti
+back = Zpět
 section-pinned = Připnuté
 section-recent = Historie
 
 item-image = Obrázek { $width } × { $height }
 
+details-information = Informace
 details-source = Zkopírováno z
 details-size = Rozměry
 details-copied = Poprvé zkopírováno
@@ -25,6 +27,9 @@ action-pin = Připnout
 action-unpin = Odepnout
 action-delete = Smazat
 action-details = Podrobnosti
+
+footer-back = zpět
+footer-use = použít
 
 setting-max-entries = Velikost historie
 setting-max-age = Smazat za

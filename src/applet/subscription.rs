@@ -122,9 +122,7 @@ pub fn surfaces() -> Subscription<Message> {
         )) => Some(Message::SurfaceUnfocused(id)),
         Event::Mouse(mouse::Event::CursorEntered) => Some(Message::PointerEntered(id)),
         Event::Mouse(mouse::Event::CursorLeft) => Some(Message::PointerLeft(id)),
-        Event::Mouse(mouse::Event::CursorMoved { position }) => {
-            Some(Message::PointerMoved(id, position))
-        }
+        Event::Mouse(mouse::Event::CursorMoved { .. }) => Some(Message::PointerMoved(id)),
         _ => None,
     })
 }

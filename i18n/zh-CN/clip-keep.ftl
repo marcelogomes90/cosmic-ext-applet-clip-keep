@@ -1,14 +1,16 @@
-search-placeholder = 搜索…  { $shortcut }
+search-placeholder = 搜索历史记录…
 empty-history = 还没有复制任何内容
 no-results = 没有匹配项
 capture-unavailable = 剪贴板捕获不可用
 settings = 设置
 details = 详细信息
+back = 返回
 section-pinned = 已固定
 section-recent = 历史记录
 
 item-image = 图像 { $width } × { $height }
 
+details-information = 信息
 details-source = 复制自
 details-size = 尺寸
 details-copied = 首次复制
@@ -25,6 +27,9 @@ action-pin = 固定
 action-unpin = 取消固定
 action-delete = 删除
 action-details = 详细信息
+
+footer-back = 返回
+footer-use = 使用
 
 setting-max-entries = 历史记录大小
 setting-max-age = 多久后丢弃
