@@ -49,19 +49,19 @@
   </description>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/details-card.png</image>
-      <caption>Resting on an entry opens a card with its text and where it came from</caption>
-      <caption xml:lang="pl">Przetrzymanie na wpisie otwiera kartę z tekstem i danymi jego pochodzenia</caption>
-      <caption xml:lang="cs">Při najetí na položku se otevře karta s jejím textem a informací o jejím původu</caption>
-      <caption xml:lang="de">Wenn Sie auf einem Eintrag verweilen, öffnet sich eine Karte mit seinem Text und seiner Herkunft</caption>
-      <caption xml:lang="es">Al detenerse sobre una entrada, se abre una tarjeta con su texto y origen</caption>
-      <caption xml:lang="fr">Survolez une entrée pour ouvrir une carte avec son texte et son origine</caption>
-      <caption xml:lang="it">Soffermandoti su una voce si apre una scheda con il testo e la sua origine</caption>
-      <caption xml:lang="nl">Bij aanwijzen van een item opent een kaart met de tekst en herkomst</caption>
-      <caption xml:lang="pt-BR">Ao passar sobre uma entrada, abre-se um cartão com seu texto e origem</caption>
-      <caption xml:lang="ru">При наведении на запись открывается карточка с её текстом и источником</caption>
-      <caption xml:lang="uk">Наведення на запис відкриває картку з його текстом і джерелом</caption>
-      <caption xml:lang="zh-CN">悬停在条目上会打开显示其文本和来源的卡片</caption>
+      <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/details.png</image>
+      <caption>The details page: a larger preview, where the entry came from, and when it was copied</caption>
+      <caption xml:lang="pl">Strona szczegółów: większy podgląd, skąd pochodzi wpis i kiedy został skopiowany</caption>
+      <caption xml:lang="cs">Stránka s podrobnostmi: větší náhled, odkud položka pochází a kdy byla zkopírována</caption>
+      <caption xml:lang="de">Die Detailseite: eine größere Vorschau, woher der Eintrag stammt und wann er kopiert wurde</caption>
+      <caption xml:lang="es">La página de detalles: una vista previa más grande, de dónde vino la entrada y cuándo se copió</caption>
+      <caption xml:lang="fr">La page de détails : un aperçu plus grand, d’où vient l’entrée et quand elle a été copiée</caption>
+      <caption xml:lang="it">La pagina dei dettagli: un’anteprima più grande, da dove proviene la voce e quando è stata copiata</caption>
+      <caption xml:lang="nl">De detailpagina: een grotere voorbeeldweergave, waar het item vandaan komt en wanneer het is gekopieerd</caption>
+      <caption xml:lang="pt-BR">A página de detalhes: uma prévia maior, de onde a entrada veio e quando foi copiada</caption>
+      <caption xml:lang="ru">Страница сведений: увеличенный предпросмотр, откуда запись и когда скопирована</caption>
+      <caption xml:lang="uk">Сторінка відомостей: збільшений перегляд, звідки запис і коли скопійовано</caption>
+      <caption xml:lang="zh-CN">详细信息页面：更大的预览、条目来源以及复制时间</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/history.png</image>
@@ -77,6 +77,21 @@
       <caption xml:lang="ru">Закреплённые записи находятся над историей и возвращаются в буфер обмена одним щелчком</caption>
       <caption xml:lang="uk">Закріплені записи розміщені над історією та повертаються в буфер обміну одним клацанням</caption>
       <caption xml:lang="zh-CN">固定条目位于历史记录上方，单击即可放回剪贴板</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/history-dark.png</image>
+      <caption>Light or dark, the popup takes its colours from the COSMIC theme</caption>
+      <caption xml:lang="pl">Jasny czy ciemny — okno pobiera kolory z motywu COSMIC</caption>
+      <caption xml:lang="cs">Světlý nebo tmavý — okno přebírá barvy z motivu COSMIC</caption>
+      <caption xml:lang="de">Hell oder dunkel — das Fenster übernimmt die Farben des COSMIC-Themes</caption>
+      <caption xml:lang="es">Claro u oscuro, la ventana toma sus colores del tema de COSMIC</caption>
+      <caption xml:lang="fr">Clair ou sombre, la fenêtre prend ses couleurs du thème COSMIC</caption>
+      <caption xml:lang="it">Chiaro o scuro, la finestra prende i colori dal tema di COSMIC</caption>
+      <caption xml:lang="nl">Licht of donker, het venster neemt de kleuren over van het COSMIC-thema</caption>
+      <caption xml:lang="pt-BR">Claro ou escuro, o popup pega as cores do tema do COSMIC</caption>
+      <caption xml:lang="ru">Светлая или тёмная — окно берёт цвета из темы COSMIC</caption>
+      <caption xml:lang="uk">Світла чи темна — вікно бере кольори з теми COSMIC</caption>
+      <caption xml:lang="zh-CN">无论浅色还是深色，弹出窗口都取自 COSMIC 主题的配色</caption>
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/marcelogomes90/cosmic-ext-applet-clip-keep/main/resources/screenshots/search.png</image>
@@ -214,6 +229,18 @@
     <keyword xml:lang="zh-CN">面板</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.5.0" date="2026-09-13">
+      <description>
+        <p>Clip Keep has been redrawn, and now carries its own icons instead of borrowing them from the desktop.</p>
+        <ul>
+          <li>Gives every entry a badge showing whether it holds text, an image, or files, with image entries showing their thumbnail there.</li>
+          <li>Replaces the three buttons on each row with a single menu holding details, pin, and delete.</li>
+          <li>Keeps the search field, the section headings with their counts, and a strip of keyboard shortcuts in view while only the list scrolls.</li>
+          <li>Ships its own icons compiled into the binary, so the applet looks the same whatever icon theme is installed.</li>
+          <li>Draws every surface from the COSMIC theme's own tokens, matching the desktop in light, dark, and high contrast.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.4.0" date="2026-09-13">
       <description>
         <p>Clip Keep is now quicker to use from the keyboard and better integrated with COSMIC.</p>
