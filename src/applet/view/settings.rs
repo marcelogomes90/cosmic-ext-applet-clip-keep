@@ -6,7 +6,7 @@ use super::{GAP, ICON, LIST_INSET, PAD, PAD_ROW_H, icons};
 use crate::applet::ClipKeep;
 use crate::applet::message::Message;
 use crate::clip::settings::{MAX_ENTRIES_CEILING, Settings};
-use crate::fl;
+use crate::{fl, links};
 
 pub fn page(app: &ClipKeep) -> Element<'_, Message> {
     let sections = widget::column::with_children(vec![
@@ -25,6 +25,7 @@ pub fn page(app: &ClipKeep) -> Element<'_, Message> {
             fl!("section-behaviour"),
             behaviour_controls(app),
         ),
+        section(icons::link(), fl!("section-links"), link_controls()),
     ])
     .spacing(PAD);
 
@@ -32,7 +33,9 @@ pub fn page(app: &ClipKeep) -> Element<'_, Message> {
         super::page_header(fl!("settings"), Message::ShowSettings(false)),
         widget::container(super::divider()).padding([0, PAD]).into(),
         widget::container(super::scroll(widget::container(sections).padding(PAD)))
-            .max_height(super::body_budget(0.0))
+            .max_height(super::body_budget(
+                super::PAGE_HEADER_RESERVE + super::DIVIDER_RESERVE,
+            ))
             .width(Length::Fill)
             .into(),
     ])
@@ -176,6 +179,35 @@ fn behaviour_controls(app: &ClipKeep) -> Element<'_, Message> {
             |settings, value| settings.paste_on_use = value,
         ))
         .into()
+}
+
+fn link_controls<'a>() -> Element<'a, Message> {
+    card()
+        .add(link(icons::bug(), fl!("link-issues"), links::ISSUES))
+        .add(link(
+            icons::person(),
+            fl!("link-developer"),
+            links::DEVELOPER,
+        ))
+        .add(link(
+            icons::code(),
+            fl!("link-repository"),
+            links::REPOSITORY,
+        ))
+        .into()
+}
+
+fn link<'a>(
+    handle: widget::icon::Handle,
+    label: String,
+    url: &'static str,
+) -> widget::list::ListButton<'a, Message> {
+    widget::list::button(setting_row(
+        handle,
+        label,
+        icons::sized(icons::link(), ICON),
+    ))
+    .on_press(Message::OpenLink(url))
 }
 
 fn retention_options(current: Option<u32>) -> Vec<(Option<u32>, String)> {

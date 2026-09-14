@@ -69,7 +69,9 @@ pub fn page(app: &ClipKeep) -> Element<'_, Message> {
 
         children.push(
             widget::container(super::scroll(list))
-                .max_height(super::body_budget(extra))
+                .max_height(super::body_budget(
+                    super::HEADER_RESERVE + super::FOOTER_RESERVE + extra,
+                ))
                 .width(Length::Fill)
                 .into(),
         );
@@ -87,7 +89,7 @@ pub fn page(app: &ClipKeep) -> Element<'_, Message> {
 fn header(app: &ClipKeep) -> Element<'_, Message> {
     let clear = widget::button::icon(icons::trash())
         .icon_size(ICON)
-        .class(style::outlined())
+        .class(style::flat(false))
         .padding([0, (CONTROL_HEIGHT - ICON) / 2])
         .height(Length::Fixed(f32::from(CONTROL_HEIGHT)))
         .on_press_maybe(
@@ -100,7 +102,7 @@ fn header(app: &ClipKeep) -> Element<'_, Message> {
 
     let settings = widget::button::icon(icons::settings())
         .icon_size(ICON)
-        .class(style::outlined())
+        .class(style::flat(false))
         .padding([0, (CONTROL_HEIGHT - ICON) / 2])
         .height(Length::Fixed(f32::from(CONTROL_HEIGHT)))
         .on_press(Message::ShowSettings(true));
@@ -269,7 +271,7 @@ fn tile<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
 
     widget::container(content)
         .center(Length::Fixed(TILE))
-        .class(style::raised())
+        .class(style::tile())
         .into()
 }
 

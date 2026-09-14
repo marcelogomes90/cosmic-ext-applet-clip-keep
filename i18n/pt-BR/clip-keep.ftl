@@ -22,6 +22,7 @@ details-moment-format = %d/%m/%Y %H:%M
 section-privacy = Privacidade
 section-history = Histórico
 section-behaviour = Comportamento
+section-links = Links
 
 action-pin = Fixar
 action-unpin = Desafixar
@@ -43,3 +44,7 @@ setting-max-age-days = { $days ->
     [one] 1 dia
    *[other] { $days } dias
 }
+
+link-issues = Problemas
+link-developer = Desenvolvedor
+link-repository = Repositório

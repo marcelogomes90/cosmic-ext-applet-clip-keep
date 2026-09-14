@@ -22,6 +22,7 @@ details-moment-format = %d.%m.%Y %H:%M
 section-privacy = Конфиденциальность
 section-history = История
 section-behaviour = Поведение
+section-links = Ссылки
 
 action-pin = Закрепить
 action-unpin = Открепить
@@ -45,3 +46,7 @@ setting-max-age-days = { $days ->
     [many] { $days } дней
    *[other] { $days } дня
 }
+
+link-issues = Проблемы
+link-developer = Разработчик
+link-repository = Репозиторий

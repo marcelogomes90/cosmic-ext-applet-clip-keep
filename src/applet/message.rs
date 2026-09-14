@@ -35,5 +35,6 @@ pub enum Message {
     ShowSettings(bool),
     ShowDetails(Option<EntryId>),
     Setting(Box<Settings>),
+    OpenLink(&'static str),
     Relayout,
 }

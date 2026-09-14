@@ -225,6 +225,10 @@ impl cosmic::Application for ClipKeep {
             Message::ShowSettings(showing) => self.show_settings(showing),
             Message::ShowDetails(id) => self.show_details(id),
             Message::Setting(settings) => self.apply_settings(*settings),
+            Message::OpenLink(url) => cosmic::task::future(async move {
+                crate::links::open(url).await;
+                Message::Relayout
+            }),
         }
     }
 }

@@ -22,6 +22,7 @@ details-moment-format = %Y-%m-%d %H:%M
 section-privacy = 隐私
 section-history = 历史记录
 section-behaviour = 行为
+section-links = 链接
 
 action-pin = 固定
 action-unpin = 取消固定
@@ -42,3 +43,7 @@ setting-respect-password-hint = 跳过密码
 setting-max-age-days = { $days ->
    *[other] { $days } 天
 }
+
+link-issues = 问题
+link-developer = 开发者
+link-repository = 仓库

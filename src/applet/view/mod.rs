@@ -38,8 +38,10 @@ pub(crate) const KEY_ENTER: &str = "Enter";
 pub const SURFACE_WIDTH: f32 = 360.0;
 const SURFACE_MAX_HEIGHT: f32 = 800.0;
 
-const HEADER_RESERVE: f32 = 72.0;
-const FOOTER_RESERVE: f32 = 84.0;
+pub(crate) const HEADER_RESERVE: f32 = 72.0;
+pub(crate) const PAGE_HEADER_RESERVE: f32 = 64.0;
+pub(crate) const DIVIDER_RESERVE: f32 = 1.0;
+pub(crate) const FOOTER_RESERVE: f32 = 84.0;
 pub(crate) const NOTICE_RESERVE: f32 = 88.0;
 
 pub(crate) static SEARCH_ID: LazyLock<widget::Id> =
@@ -113,8 +115,8 @@ pub fn popup(app: &ClipKeep) -> Element<'_, Message> {
         .into()
 }
 
-pub(crate) fn body_budget(extra: f32) -> f32 {
-    SURFACE_MAX_HEIGHT - HEADER_RESERVE - FOOTER_RESERVE - extra
+pub(crate) fn body_budget(reserved: f32) -> f32 {
+    SURFACE_MAX_HEIGHT - reserved
 }
 
 fn menu_origin(anchor: Rectangle, width: f32) -> Point {
@@ -124,19 +126,10 @@ fn menu_origin(anchor: Rectangle, width: f32) -> Point {
 }
 
 pub(crate) fn page_header<'a>(title: String, back: Message) -> Element<'a, Message> {
-    let back = widget::button::custom(
-        widget::row::with_children(vec![
-            icons::sized(icons::back(), ICON).into(),
-            widget::text::body(crate::fl!("back")).into(),
-        ])
-        .spacing(GAP_TIGHT)
-        .padding([0, GAP + GAP_TIGHT])
+    let back = widget::button::text(crate::fl!("back"))
+        .class(style::flat(false))
         .height(Length::Fixed(f32::from(CONTROL_HEIGHT)))
-        .align_y(Alignment::Center),
-    )
-    .class(style::outlined())
-    .padding(0)
-    .on_press(back);
+        .on_press(back);
 
     widget::container(
         cosmic::iced::widget::stack(vec![
@@ -408,11 +401,30 @@ mod tests {
 
     #[test]
     fn every_page_keeps_room_for_its_header_and_footer() {
-        assert!(body_budget(0.0) < SURFACE_MAX_HEIGHT);
-        assert!(body_budget(0.0) > 0.0);
+        for reserved in [
+            HEADER_RESERVE + FOOTER_RESERVE,
+            HEADER_RESERVE + FOOTER_RESERVE + NOTICE_RESERVE,
+            PAGE_HEADER_RESERVE + FOOTER_RESERVE,
+            PAGE_HEADER_RESERVE + DIVIDER_RESERVE,
+        ] {
+            assert!(body_budget(reserved) < SURFACE_MAX_HEIGHT);
+            assert!(body_budget(reserved) > 0.0);
+        }
+    }
+
+    #[test]
+    fn the_page_header_reserve_matches_the_header_it_stands_for() {
         assert!(near(
-            body_budget(NOTICE_RESERVE),
-            body_budget(0.0) - NOTICE_RESERVE
+            PAGE_HEADER_RESERVE,
+            f32::from(CONTROL_HEIGHT) + f32::from(PAD) * 2.0
         ));
+    }
+
+    #[test]
+    fn a_page_without_a_footer_gets_that_space_for_its_body() {
+        assert!(
+            body_budget(PAGE_HEADER_RESERVE + DIVIDER_RESERVE)
+                > body_budget(PAGE_HEADER_RESERVE + FOOTER_RESERVE)
+        );
     }
 }

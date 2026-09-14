@@ -22,6 +22,7 @@ details-moment-format = %d-%m-%Y %H:%M
 section-privacy = Soukromí
 section-history = Historie
 section-behaviour = Chování
+section-links = Odkazy
 
 action-pin = Připnout
 action-unpin = Odepnout
@@ -44,3 +45,7 @@ setting-max-age-days = { $days } { $days ->
     [few] dny
    *[other] dní
 }
+
+link-issues = Hlášení chyb
+link-developer = Vývojář
+link-repository = Repozitář

@@ -20,7 +20,9 @@ pub fn page<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message>
     widget::column::with_children(vec![
         super::page_header(fl!("details"), Message::ShowDetails(None)),
         widget::container(super::scroll(body(app, entry)))
-            .max_height(super::body_budget(0.0))
+            .max_height(super::body_budget(
+                super::PAGE_HEADER_RESERVE + super::FOOTER_RESERVE,
+            ))
             .width(Length::Fill)
             .into(),
         footer::bar(vec![
