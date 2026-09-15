@@ -8,6 +8,9 @@ back = Terug
 section-pinned = Vastgezet
 section-recent = Geschiedenis
 
+clear-title = Geschiedenis wissen?
+clear-detail = Vastgezette items blijven behouden.
+
 item-image = Afbeelding { $width } × { $height }
 
 details-information = Informatie
@@ -28,6 +31,8 @@ action-pin = Vastzetten
 action-unpin = Losmaken
 action-delete = Verwijderen
 action-details = Details
+action-cancel = Annuleren
+action-clear = Wissen
 
 footer-back = terug
 footer-use = gebruiken

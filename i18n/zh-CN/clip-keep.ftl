@@ -8,6 +8,9 @@ back = 返回
 section-pinned = 已固定
 section-recent = 历史记录
 
+clear-title = 清除历史记录？
+clear-detail = 固定条目将保留。
+
 item-image = 图像 { $width } × { $height }
 
 details-information = 信息
@@ -28,6 +31,8 @@ action-pin = 固定
 action-unpin = 取消固定
 action-delete = 删除
 action-details = 详细信息
+action-cancel = 取消
+action-clear = 清除
 
 footer-back = 返回
 footer-use = 使用

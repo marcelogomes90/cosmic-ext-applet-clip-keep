@@ -4,8 +4,8 @@ use cosmic::iced::{Alignment, Length};
 use cosmic::widget;
 
 use super::{
-    CONTROL_HEIGHT, GAP, GAP_TIGHT, ICON, ICON_SMALL, KEY_DELETE, KEY_INFO, KEY_PIN,
-    NOTICE_RESERVE, PAD, PAD_ROW_H, SEARCH_ID, footer, icons, style,
+    CONFIRM_RESERVE, CONTROL_HEIGHT, GAP, GAP_TIGHT, ICON, ICON_SMALL, KEY_DELETE, KEY_INFO,
+    KEY_PIN, NOTICE_RESERVE, PAD, PAD_ROW_H, SEARCH_ID, footer, icons, style,
 };
 use crate::applet::ClipKeep;
 use crate::applet::message::Message;
@@ -29,6 +29,11 @@ pub fn page(app: &ClipKeep) -> Element<'_, Message> {
     if let Some(notice) = notice {
         children.push(notice);
         extra += NOTICE_RESERVE;
+    }
+
+    if let Some(question) = clear_question(app) {
+        children.push(question);
+        extra += CONFIRM_RESERVE;
     }
 
     if rows.is_empty() {
@@ -92,13 +97,7 @@ fn header(app: &ClipKeep) -> Element<'_, Message> {
         .class(style::flat(false))
         .padding([0, (CONTROL_HEIGHT - ICON) / 2])
         .height(Length::Fixed(f32::from(CONTROL_HEIGHT)))
-        .on_press_maybe(
-            app.snapshot()
-                .entries
-                .iter()
-                .any(|entry| entry.pinned.is_none())
-                .then_some(Message::Clear),
-        );
+        .on_press_maybe(clearable(app).then_some(Message::ConfirmClear(!app.clearing())));
 
     let settings = widget::button::icon(icons::settings())
         .icon_size(ICON)
@@ -158,6 +157,61 @@ fn section<'a>(
     children.extend(rows);
 
     widget::column::with_children(children).into()
+}
+
+fn clearable(app: &ClipKeep) -> bool {
+    app.snapshot()
+        .entries
+        .iter()
+        .any(|entry| entry.pinned.is_none())
+}
+
+fn clear_question(app: &ClipKeep) -> Option<Element<'_, Message>> {
+    if !app.clearing() || !clearable(app) {
+        return None;
+    }
+
+    let question = widget::column::with_children(vec![
+        widget::text::body(fl!("clear-title")).into(),
+        widget::text::caption(fl!("clear-detail")).into(),
+    ])
+    .spacing(GAP_TIGHT)
+    .width(Length::Fill);
+
+    let answers = widget::row::with_children(vec![
+        widget::button::text(fl!("action-cancel"))
+            .class(style::flat(false))
+            .height(Length::Fixed(f32::from(CONTROL_HEIGHT)))
+            .on_press(Message::ConfirmClear(false))
+            .into(),
+        widget::button::text(fl!("action-clear"))
+            .class(style::flat(true))
+            .height(Length::Fixed(f32::from(CONTROL_HEIGHT)))
+            .on_press(Message::Clear)
+            .into(),
+    ])
+    .spacing(GAP_TIGHT);
+
+    let card = widget::container(
+        widget::column::with_children(vec![
+            question.into(),
+            widget::container(answers)
+                .align_x(Alignment::End)
+                .width(Length::Fill)
+                .into(),
+        ])
+        .spacing(GAP),
+    )
+    .padding(PAD)
+    .width(Length::Fill)
+    .class(style::raised());
+
+    Some(
+        widget::container(card)
+            .padding([GAP, PAD, PAD, PAD])
+            .width(Length::Fill)
+            .into(),
+    )
 }
 
 fn capture_notice(app: &ClipKeep) -> Option<Element<'_, Message>> {

@@ -30,6 +30,7 @@ pub enum Message {
     Confirm(EntryId),
     TogglePin(EntryId),
     Delete(EntryId),
+    ConfirmClear(bool),
     Clear,
     ThumbnailLoaded(EntryId, Option<Box<Thumbnail>>),
     ShowSettings(bool),

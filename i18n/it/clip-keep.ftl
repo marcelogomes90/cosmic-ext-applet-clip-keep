@@ -8,6 +8,9 @@ back = Indietro
 section-pinned = Fissati
 section-recent = Cronologia
 
+clear-title = Cancellare la cronologia?
+clear-detail = Le voci fissate vengono mantenute.
+
 item-image = Immagine { $width } × { $height }
 
 details-information = Informazioni
@@ -28,6 +31,8 @@ action-pin = Fissa
 action-unpin = Rimuovi
 action-delete = Elimina
 action-details = Dettagli
+action-cancel = Annulla
+action-clear = Cancella
 
 footer-back = indietro
 footer-use = usa

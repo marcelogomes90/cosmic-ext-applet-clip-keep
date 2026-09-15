@@ -8,6 +8,9 @@ back = Wstecz
 section-pinned = Przypięte
 section-recent = Historia
 
+clear-title = Wyczyścić historię?
+clear-detail = Przypięte wpisy zostaną zachowane.
+
 item-image = Obraz { $width } × { $height }
 
 details-information = Informacje
@@ -28,6 +31,8 @@ action-pin = Przypnij
 action-unpin = Odepnij
 action-delete = Usuń
 action-details = Szczegóły
+action-cancel = Anuluj
+action-clear = Wyczyść
 
 footer-back = wstecz
 footer-use = użyj

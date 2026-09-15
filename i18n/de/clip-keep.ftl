@@ -8,6 +8,9 @@ back = Zurück
 section-pinned = Angeheftet
 section-recent = Verlauf
 
+clear-title = Verlauf löschen?
+clear-detail = Angeheftete Einträge bleiben erhalten.
+
 item-image = Bild { $width } × { $height }
 
 details-information = Informationen
@@ -28,6 +31,8 @@ action-pin = Anheften
 action-unpin = Lösen
 action-delete = Löschen
 action-details = Details
+action-cancel = Abbrechen
+action-clear = Löschen
 
 footer-back = zurück
 footer-use = einfügen

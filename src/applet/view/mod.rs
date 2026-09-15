@@ -8,7 +8,7 @@ pub mod style;
 use std::sync::LazyLock;
 
 use cosmic::Element;
-use cosmic::iced::{Alignment, Length, Point, Rectangle};
+use cosmic::iced::{Alignment, Length, Limits, Point, Rectangle, Size};
 use cosmic::widget;
 
 use super::ClipKeep;
@@ -43,6 +43,7 @@ pub(crate) const PAGE_HEADER_RESERVE: f32 = 64.0;
 pub(crate) const DIVIDER_RESERVE: f32 = 1.0;
 pub(crate) const FOOTER_RESERVE: f32 = 84.0;
 pub(crate) const NOTICE_RESERVE: f32 = 88.0;
+pub(crate) const CONFIRM_RESERVE: f32 = 144.0;
 
 pub(crate) static SEARCH_ID: LazyLock<widget::Id> =
     LazyLock::new(|| widget::Id::new("clip-keep-search"));
@@ -51,6 +52,7 @@ pub(crate) static SCROLL_ID: LazyLock<widget::Id> =
     LazyLock::new(|| widget::Id::new("clip-keep-list"));
 
 static SURFACE_ID: LazyLock<widget::Id> = LazyLock::new(|| widget::Id::new("clip-keep-popup"));
+static PANEL_ID: LazyLock<widget::Id> = LazyLock::new(|| widget::Id::new("clip-keep-panel"));
 static MENU_POPOVER_ID: LazyLock<widget::Id> =
     LazyLock::new(|| widget::Id::new("clip-keep-row-menu"));
 
@@ -113,6 +115,42 @@ pub fn popup(app: &ClipKeep) -> Element<'_, Message> {
                 .max_height(SURFACE_MAX_HEIGHT),
         )
         .into()
+}
+
+pub fn panel(
+    button: Element<'_, Message>,
+    suggested: Option<Size>,
+    horizontal: bool,
+) -> Element<'_, Message> {
+    widget::autosize::autosize(button, PANEL_ID.clone())
+        .limits(panel_limits(suggested, horizontal))
+        .into()
+}
+
+pub(crate) fn panel_limits(suggested: Option<Size>, horizontal: bool) -> Limits {
+    let Some(bounds) = suggested else {
+        return Limits::NONE;
+    };
+
+    let mut limits = Limits::NONE;
+
+    if horizontal {
+        if bounds.width > 0.0 {
+            limits = limits.max_width(bounds.width);
+        }
+        if bounds.height > 0.0 {
+            limits = limits.height(bounds.height);
+        }
+    } else {
+        if bounds.width > 0.0 {
+            limits = limits.width(bounds.width);
+        }
+        if bounds.height > 0.0 {
+            limits = limits.max_height(bounds.height);
+        }
+    }
+
+    limits
 }
 
 pub(crate) fn body_budget(reserved: f32) -> f32 {
@@ -365,6 +403,41 @@ mod tests {
         );
     }
 
+    #[test]
+    fn the_panel_button_keeps_its_own_length_however_long_the_panel_is() {
+        let button = Length::Fixed(40.0);
+
+        let along =
+            panel_limits(Some(Size::new(1920.0, 40.0)), true).resolve(button, button, Size::ZERO);
+        assert!(near(along.width, 40.0));
+
+        let down =
+            panel_limits(Some(Size::new(40.0, 1080.0)), false).resolve(button, button, Size::ZERO);
+        assert!(near(down.height, 40.0));
+    }
+
+    #[test]
+    fn the_panel_button_takes_the_thickness_the_panel_offers() {
+        let button = Length::Fixed(40.0);
+
+        let along =
+            panel_limits(Some(Size::new(1920.0, 48.0)), true).resolve(button, button, Size::ZERO);
+        assert!(near(along.height, 48.0));
+
+        let down =
+            panel_limits(Some(Size::new(48.0, 1080.0)), false).resolve(button, button, Size::ZERO);
+        assert!(near(down.width, 48.0));
+    }
+
+    #[test]
+    fn a_panel_that_suggests_nothing_constrains_nothing() {
+        let button = Length::Fixed(40.0);
+        let size = panel_limits(None, true).resolve(button, button, Size::ZERO);
+
+        assert!(near(size.width, 40.0));
+        assert!(near(size.height, 40.0));
+    }
+
     fn near(left: f32, right: f32) -> bool {
         (left - right).abs() < 0.001
     }
@@ -404,6 +477,7 @@ mod tests {
         for reserved in [
             HEADER_RESERVE + FOOTER_RESERVE,
             HEADER_RESERVE + FOOTER_RESERVE + NOTICE_RESERVE,
+            HEADER_RESERVE + FOOTER_RESERVE + NOTICE_RESERVE + CONFIRM_RESERVE,
             PAGE_HEADER_RESERVE + FOOTER_RESERVE,
             PAGE_HEADER_RESERVE + DIVIDER_RESERVE,
         ] {

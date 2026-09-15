@@ -8,6 +8,9 @@ back = Назад
 section-pinned = Закреплённые
 section-recent = История
 
+clear-title = Очистить историю?
+clear-detail = Закреплённые записи сохраняются.
+
 item-image = Изображение { $width } × { $height }
 
 details-information = Сведения
@@ -28,6 +31,8 @@ action-pin = Закрепить
 action-unpin = Открепить
 action-delete = Удалить
 action-details = Подробности
+action-cancel = Отмена
+action-clear = Очистить
 
 footer-back = назад
 footer-use = вставить

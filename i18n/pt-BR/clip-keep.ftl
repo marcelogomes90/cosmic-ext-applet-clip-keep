@@ -8,6 +8,9 @@ back = Voltar
 section-pinned = Fixados
 section-recent = Histórico
 
+clear-title = Limpar o histórico?
+clear-detail = As entradas fixadas são mantidas.
+
 item-image = Imagem { $width } × { $height }
 
 details-information = Informações
@@ -28,6 +31,8 @@ action-pin = Fixar
 action-unpin = Desafixar
 action-delete = Excluir
 action-details = Detalhes
+action-cancel = Cancelar
+action-clear = Limpar
 
 footer-back = volta
 footer-use = usar

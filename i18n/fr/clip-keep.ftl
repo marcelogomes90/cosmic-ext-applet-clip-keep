@@ -8,6 +8,9 @@ back = Retour
 section-pinned = Épinglés
 section-recent = Historique
 
+clear-title = Effacer l’historique ?
+clear-detail = Les entrées épinglées sont conservées.
+
 item-image = Image { $width } × { $height }
 
 details-information = Informations
@@ -28,6 +31,8 @@ action-pin = Épingler
 action-unpin = Désépingler
 action-delete = Supprimer
 action-details = Détails
+action-cancel = Annuler
+action-clear = Effacer
 
 footer-back = retour
 footer-use = utiliser

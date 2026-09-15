@@ -32,6 +32,13 @@ enum PopupState {
     Open(window::Id),
 }
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+enum ClearState {
+    #[default]
+    Idle,
+    Asking,
+}
+
 pub struct ClipKeep {
     core: Core,
     clip: ClipHandle,
@@ -50,6 +57,7 @@ pub struct ClipKeep {
     menu: Option<(EntryId, Option<cosmic::iced::Rectangle>)>,
     showing_settings: bool,
     details: Option<EntryId>,
+    clearing: ClearState,
     thumbs: Thumbs,
 }
 
@@ -96,6 +104,7 @@ impl cosmic::Application for ClipKeep {
                 menu: None,
                 showing_settings: false,
                 details: None,
+                clearing: ClearState::default(),
                 thumbs: Thumbs::default(),
             },
             Task::none(),
@@ -131,7 +140,11 @@ impl cosmic::Application for ClipKeep {
             .icon_button_from_handle(self.panel_icon())
             .on_press(Message::TogglePopup);
 
-        self.core.applet.autosize_window(button).into()
+        view::panel(
+            button.into(),
+            self.core.applet.suggested_bounds,
+            self.core.applet.is_horizontal(),
+        )
     }
 
     fn view_window(&self, id: window::Id) -> Element<'_, Message> {
@@ -209,13 +222,11 @@ impl cosmic::Application for ClipKeep {
             Message::Confirm(id) => self.confirm(id),
             Message::TogglePin(id) => self.toggle_pin(id),
             Message::Delete(id) => self.delete(id),
-            Message::Clear => {
-                self.thumbs.clear();
-                self.clip.send(ClipCommand::Clear {
-                    include_pinned: false,
-                });
+            Message::ConfirmClear(asking) => {
+                self.ask_clear(asking);
                 Task::none()
             }
+            Message::Clear => self.clear(),
             Message::ThumbnailLoaded(id, thumbnail) => {
                 let handle = thumbnail
                     .map(|thumbnail| cosmic::widget::image::Handle::from_bytes(thumbnail.png));
@@ -265,6 +276,18 @@ impl ClipKeep {
 
     pub(crate) fn query(&self) -> &str {
         &self.query
+    }
+
+    pub(crate) fn clearing(&self) -> bool {
+        self.clearing == ClearState::Asking
+    }
+
+    fn ask_clear(&mut self, asking: bool) {
+        self.clearing = if asking {
+            ClearState::Asking
+        } else {
+            ClearState::Idle
+        };
     }
 
     pub(crate) fn showing_settings(&self) -> bool {
@@ -466,6 +489,7 @@ impl ClipKeep {
         self.restore = None;
         self.showing_settings = false;
         self.details = None;
+        self.clearing = ClearState::Idle;
     }
 
     pub(crate) fn focused(&self) -> Option<EntryId> {
@@ -526,6 +550,17 @@ impl ClipKeep {
             };
         }
 
+        if self.clearing() {
+            match action {
+                Action::Dismiss => {
+                    self.clearing = ClearState::Idle;
+                    return Task::none();
+                }
+                Action::Confirm => return self.clear(),
+                _ => self.clearing = ClearState::Idle,
+            }
+        }
+
         match action {
             Action::Down => self.step(true),
             Action::Up => self.step(false),
@@ -564,6 +599,7 @@ impl ClipKeep {
         self.query = query;
         self.showing_settings = false;
         self.details = None;
+        self.clearing = ClearState::Idle;
         self.focused = self.listed().first().copied();
         self.reveal()
     }
@@ -574,14 +610,25 @@ impl ClipKeep {
         cosmic::widget::text_input::focus(view::SEARCH_ID.clone())
     }
 
+    fn clear(&mut self) -> Task<Message> {
+        self.clearing = ClearState::Idle;
+        self.thumbs.clear();
+        self.clip.send(ClipCommand::Clear {
+            include_pinned: false,
+        });
+        Task::none()
+    }
+
     fn show_settings(&mut self, showing: bool) -> Task<Message> {
         self.showing_settings = showing;
         self.details = None;
+        self.clearing = ClearState::Idle;
         Task::none()
     }
 
     fn show_details(&mut self, id: Option<EntryId>) -> Task<Message> {
         self.showing_settings = false;
+        self.clearing = ClearState::Idle;
 
         let shown = id.and_then(|wanted| {
             self.snapshot
@@ -749,6 +796,7 @@ fn closes_row_menu(message: &Message) -> bool {
             | Message::Confirm(_)
             | Message::TogglePin(_)
             | Message::Delete(_)
+            | Message::ConfirmClear(_)
             | Message::Clear
             | Message::Search(_)
             | Message::ShowSettings(_)

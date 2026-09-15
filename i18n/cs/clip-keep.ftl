@@ -8,6 +8,9 @@ back = Zpět
 section-pinned = Připnuté
 section-recent = Historie
 
+clear-title = Vymazat historii?
+clear-detail = Připnuté položky zůstanou zachovány.
+
 item-image = Obrázek { $width } × { $height }
 
 details-information = Informace
@@ -28,6 +31,8 @@ action-pin = Připnout
 action-unpin = Odepnout
 action-delete = Smazat
 action-details = Podrobnosti
+action-cancel = Zrušit
+action-clear = Vymazat
 
 footer-back = zpět
 footer-use = použít

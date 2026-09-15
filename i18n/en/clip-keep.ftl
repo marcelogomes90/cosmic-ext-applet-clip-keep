@@ -8,6 +8,9 @@ back = Back
 section-pinned = Pinned
 section-recent = History
 
+clear-title = Clear the history?
+clear-detail = Pinned entries are kept.
+
 item-image = Image { $width } × { $height }
 
 details-information = Information
@@ -28,6 +31,8 @@ action-pin = Pin
 action-unpin = Unpin
 action-delete = Delete
 action-details = Details
+action-cancel = Cancel
+action-clear = Clear
 
 footer-back = back
 footer-use = use
