@@ -229,6 +229,17 @@
     <keyword xml:lang="zh-CN">面板</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.5.2" date="2026-09-14">
+      <description>
+        <p>Emptying the history now asks first, and the panel button keeps to its own size.</p>
+        <ul>
+          <li>Asks for confirmation before emptying the history, on a card carrying the question and its answers, rather than clearing the list on a single press of the bin.</li>
+          <li>Answers that question from the keyboard as well: Enter clears, Escape takes the question back.</li>
+          <li>Drops a pending question when the popup closes, so reopening never resumes it.</li>
+          <li>Keeps the panel button as wide as its icon when the panel offers the applet a longer slot, instead of stretching it across the slot.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.5.1" date="2026-09-14">
       <description>
         <p>The popup has lost the boxes around its controls, and settings now carries the project's own links.</p>
