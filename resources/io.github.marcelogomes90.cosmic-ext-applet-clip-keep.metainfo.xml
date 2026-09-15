@@ -229,6 +229,17 @@
     <keyword xml:lang="zh-CN">面板</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.5.1" date="2026-09-14">
+      <description>
+        <p>The popup has lost the boxes around its controls, and settings now carries the project's own links.</p>
+        <ul>
+          <li>Adds a Links section to settings, opening the issue tracker, the repository, and the developer's page in the browser.</li>
+          <li>Draws the header and back buttons flat, so only the list rows and cards carry a surface of their own.</li>
+          <li>Keeps each entry's type badge on a neutral surface, with the accent on its icon alone.</li>
+          <li>Measures every page against the header and footer it actually has, giving the settings page the room its missing footer leaves.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.5.0" date="2026-09-13">
       <description>
         <p>Clip Keep has been redrawn, and now carries its own icons instead of borrowing them from the desktop.</p>
