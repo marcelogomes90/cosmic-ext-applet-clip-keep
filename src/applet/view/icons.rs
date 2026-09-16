@@ -30,17 +30,30 @@ bundled! {
     link => "link-symbolic.svg",
     lock => "lock-symbolic.svg",
     mask => "mask-symbolic.svg",
-    more => "more-symbolic.svg",
     paste => "paste-symbolic.svg",
     paused => "paused-symbolic.svg",
     person => "person-symbolic.svg",
     pin => "pin-symbolic.svg",
     search => "search-symbolic.svg",
-    settings => "settings-symbolic.svg",
     shield => "shield-symbolic.svg",
     text => "text-symbolic.svg",
-    trash => "trash-symbolic.svg",
     warning => "warning-symbolic.svg",
+}
+
+macro_rules! named {
+    ($($name:ident => $icon:literal,)*) => {
+        $(
+            pub fn $name() -> widget::icon::Handle {
+                widget::icon::from_name($icon).handle()
+            }
+        )*
+    };
+}
+
+named! {
+    more => "view-more-symbolic",
+    settings => "preferences-system-symbolic",
+    trash => "edit-delete-symbolic",
 }
 
 pub fn clipboard() -> widget::icon::Handle {
