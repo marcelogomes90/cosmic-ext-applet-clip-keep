@@ -229,6 +229,16 @@
     <keyword xml:lang="zh-CN">面板</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.5.4" date="2026-09-16">
+      <description>
+        <p>This patch hands the popup's buttons to the desktop's icon theme and opens the popup on hover.</p>
+        <ul>
+          <li>Draws the settings, empty-history and entry menu buttons with the desktop's own icons, so they match every other applet whatever icon theme is installed, in place of the glyphs compiled into the binary.</li>
+          <li>Opens the popup when the pointer rests on the panel button while another applet's popup is open, as the desktop's own applets do.</li>
+          <li>Marks the repository link with the same glyph the developer's other applets use.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.5.3" date="2026-09-16">
       <description>
         <p>Clip Keep now has an icon of its own wherever applications are listed.</p>
