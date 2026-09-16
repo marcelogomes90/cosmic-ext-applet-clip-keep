@@ -115,8 +115,11 @@ only a deliberate choice closes a menu — focus changes, pointer moves and fres
 alone, while Escape closes the menu before it closes the page.
 
 Every surface in the popup is painted from the two theme tokens libcosmic's own dropdown uses for
-its panel, and every icon is an SVG compiled into the binary rather than a name looked up in the
-icon theme, so the applet renders identically inside the Flatpak sandbox.
+its panel. Icons split two ways: the chrome the desktop already has a word for — settings, delete,
+the row menu — is looked up by name (`preferences-system-symbolic`, `edit-delete-symbolic`,
+`view-more-symbolic`) so it matches every other applet, and everything the COSMIC theme has no glyph
+for is an SVG compiled into the binary. Both render identically inside the Flatpak sandbox, because
+the COSMIC icon theme is bundled in `com.system76.Cosmic.BaseApp`.
 
 The header and footer are fixed and only the list between them scrolls, so the body is capped at
 the surface maximum minus a generous allowance for both. The popup follows the panel anchor and
