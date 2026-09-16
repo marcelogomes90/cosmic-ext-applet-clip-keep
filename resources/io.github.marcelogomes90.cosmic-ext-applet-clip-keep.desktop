@@ -33,6 +33,7 @@ NoDisplay=true
 StartupNotify=true
 X-CosmicApplet=true
 X-CosmicShrinkable=true
+X-CosmicHoverPopup=Auto
 X-HostWaylandDisplay=true
 X-OverflowPriority=80
 X-OverflowMinSize=1
