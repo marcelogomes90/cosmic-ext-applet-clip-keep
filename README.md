@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="resources/io.github.marcelogomes90.cosmic-ext-applet-clip-keep-symbolic.svg" width="128" alt="Clip Keep icon" />
+<img src="resources/io.github.marcelogomes90.cosmic-ext-applet-clip-keep.svg" width="128" alt="Clip Keep icon" />
 
 # Clip Keep
 

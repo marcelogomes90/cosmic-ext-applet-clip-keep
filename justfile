@@ -16,6 +16,8 @@ desktop-dst := base-dir / 'share' / 'applications' / appid + '.desktop'
 metainfo-dst := base-dir / 'share' / 'metainfo' / appid + '.metainfo.xml'
 icon-src := 'resources' / (icon-name + '.svg')
 icon-dst := base-dir / 'share' / 'icons' / 'hicolor' / 'scalable' / 'apps' / (icon-name + '.svg')
+app-icon-src := 'resources' / (appid + '.svg')
+app-icon-dst := base-dir / 'share' / 'icons' / 'hicolor' / 'scalable' / 'apps' / (appid + '.svg')
 legacy-icon-dst := base-dir / 'share' / 'icons' / 'hicolor' / 'scalable' / 'apps' / (appid + '.svg')
 license-dst := base-dir / 'share' / 'licenses' / appid / 'LICENSE'
 
@@ -25,6 +27,7 @@ user-dump-dst := env('HOME') / '.local' / 'bin' / name + '-dump'
 user-desktop-dst := user-base / 'applications' / appid + '.desktop'
 user-metainfo-dst := user-base / 'metainfo' / appid + '.metainfo.xml'
 user-icon-dst := user-base / 'icons' / 'hicolor' / 'scalable' / 'apps' / (icon-name + '.svg')
+user-app-icon-dst := user-base / 'icons' / 'hicolor' / 'scalable' / 'apps' / (appid + '.svg')
 user-legacy-icon-dst := user-base / 'icons' / 'hicolor' / 'scalable' / 'apps' / (appid + '.svg')
 user-license-dst := user-base / 'licenses' / appid / 'LICENSE'
 
@@ -90,16 +93,18 @@ install:
     install -Dm0644 resources/{{appid}}.desktop {{desktop-dst}}
     install -Dm0644 resources/{{appid}}.metainfo.xml {{metainfo-dst}}
     install -Dm0644 {{icon-src}} {{icon-dst}}
+    install -Dm0644 {{app-icon-src}} {{app-icon-dst}}
     install -Dm0644 LICENSE {{license-dst}}
 
 uninstall:
-    rm -f {{bin-dst}} {{dump-dst}} {{desktop-dst}} {{metainfo-dst}} {{icon-dst}} {{legacy-icon-dst}} {{license-dst}}
+    rm -f {{bin-dst}} {{dump-dst}} {{desktop-dst}} {{metainfo-dst}} {{icon-dst}} {{app-icon-dst}} {{legacy-icon-dst}} {{license-dst}}
 
 install-user:
     install -Dm0755 {{bin-src}} {{user-bin-dst}}
     install -Dm0755 {{dump-src}} {{user-dump-dst}}
     install -Dm0644 resources/{{appid}}.metainfo.xml {{user-metainfo-dst}}
     install -Dm0644 {{icon-src}} {{user-icon-dst}}
+    install -Dm0644 {{app-icon-src}} {{user-app-icon-dst}}
     install -Dm0644 LICENSE {{user-license-dst}}
     mkdir -p "$(dirname {{user-desktop-dst}})"
     sed 's|^Exec=.*|Exec={{user-bin-dst}}|' resources/{{appid}}.desktop > {{user-desktop-dst}}
@@ -107,7 +112,7 @@ install-user:
     @echo "Installed. Add 'Clip Keep' in Settings -> Desktop -> Panel -> Applets."
 
 uninstall-user:
-    rm -f {{user-bin-dst}} {{user-dump-dst}} {{user-desktop-dst}} {{user-metainfo-dst}} {{user-icon-dst}} {{user-legacy-icon-dst}} {{user-license-dst}}
+    rm -f {{user-bin-dst}} {{user-dump-dst}} {{user-desktop-dst}} {{user-metainfo-dst}} {{user-icon-dst}} {{user-app-icon-dst}} {{user-legacy-icon-dst}} {{user-license-dst}}
 
 flatpak-sources:
     flatpak run --filesystem="$(pwd)" --share=network \

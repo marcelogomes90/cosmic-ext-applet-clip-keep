@@ -1,0 +1,20 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M24 40C24 31.1634 31.1634 24 40 24H216C224.837 24 232 31.1634 232 40V216C232 224.837 224.837 232 216 232H40C31.1634 232 24 224.837 24 216V40Z" fill="url(#plate)"/>
+  <rect x="92" y="56" width="104" height="128" rx="18" fill="#FFFFFF" fill-opacity="0.28"/>
+  <rect x="72" y="66" width="104" height="128" rx="18" fill="url(#card)"/>
+  <rect x="100" y="54" width="48" height="26" rx="10" fill="#C9772A"/>
+  <path d="M96 108h56M96 132h44M96 156h32" stroke="#C9772A" stroke-width="13" stroke-linecap="round"/>
+  <circle cx="178" cy="178" r="36" fill="url(#clock)" stroke="url(#plate)" stroke-width="10"/>
+  <path d="M178 158v20l13 9" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="plate" x1="24" y1="232" x2="232" y2="24" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9A5316"/><stop offset="1" stop-color="#E8A44A"/>
+    </linearGradient>
+    <linearGradient id="card" x1="72" y1="194" x2="176" y2="66" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F3F7FC"/><stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <linearGradient id="clock" x1="150" y1="206" x2="206" y2="150" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1668E3"/><stop offset="1" stop-color="#57A0FF"/>
+    </linearGradient>
+  </defs>
+</svg>
