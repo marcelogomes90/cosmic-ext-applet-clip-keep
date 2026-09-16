@@ -229,6 +229,15 @@
     <keyword xml:lang="zh-CN">面板</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.5.3" date="2026-09-16">
+      <description>
+        <p>Clip Keep now has an icon of its own wherever applications are listed.</p>
+        <ul>
+          <li>Adds a colour application icon, shown in the software centre and when picking applets in Settings, in place of the one-colour panel glyph that stood in for it.</li>
+          <li>Keeps the panel button exactly as it was: it still draws the symbolic mark compiled into the binary.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.5.2" date="2026-09-14">
       <description>
         <p>Emptying the history now asks first, and the panel button keeps to its own size.</p>
