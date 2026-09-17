@@ -8,6 +8,7 @@
   <developer id="io.github.marcelogomes90">
     <name>Marcelo Gomes</name>
   </developer>
+  <update_contact>marcelo.sobrinho@outlook.com</update_contact>
   <name>Clip Keep</name>
   <summary>Everything you copied, one click away</summary>
   <summary xml:lang="cs">Vše, co jste zkopírovali, na jedno kliknutí</summary>
@@ -210,7 +211,7 @@
   <url type="homepage">https://github.com/marcelogomes90/cosmic-ext-applet-clip-keep</url>
   <url type="bugtracker">https://github.com/marcelogomes90/cosmic-ext-applet-clip-keep/issues</url>
   <url type="help">https://github.com/marcelogomes90/cosmic-ext-applet-clip-keep#readme</url>
-  <url type="contact">mailto:marcelo.sobrinho@outlook.com</url>
+  <url type="contact">https://github.com/marcelogomes90/cosmic-ext-applet-clip-keep/issues</url>
   <url type="vcs-browser">https://github.com/marcelogomes90/cosmic-ext-applet-clip-keep</url>
   <provides>
     <id>com.system76.CosmicApplet</id>
