@@ -314,6 +314,15 @@
     <keyword xml:lang="zh-CN">面板</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.5.5" date="2026-09-18">
+      <description>
+        <p>This patch finishes handing the popup's chrome to the desktop's icon theme and gives two settings of their own glyphs.</p>
+        <ul>
+          <li>Draws the Pinned and Recent headings, and the pin and details actions in each entry's menu, with the desktop's own icons, so they follow whatever icon theme is installed.</li>
+          <li>Marks the Behaviour section and the Discard after setting with glyphs of their own, in place of the settings gear and the delete icon they borrowed before.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.5.4" date="2026-09-16">
       <description>
         <p>This patch hands the popup's buttons to the desktop's icon theme and opens the popup on hover.</p>
