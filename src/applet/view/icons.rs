@@ -16,12 +16,14 @@ macro_rules! bundled {
 bundled! {
     app => "app-symbolic.svg",
     back => "back-symbolic.svg",
+    behaviour => "behaviour-symbolic.svg",
     bug => "bug-symbolic.svg",
     calendar => "calendar-symbolic.svg",
     close => "close-symbolic.svg",
     code => "code-symbolic.svg",
     crop => "crop-symbolic.svg",
     database => "database-symbolic.svg",
+    expiry => "expiry-symbolic.svg",
     file => "file-symbolic.svg",
     hash => "hash-symbolic.svg",
     history => "history-symbolic.svg",
@@ -33,7 +35,6 @@ bundled! {
     paste => "paste-symbolic.svg",
     paused => "paused-symbolic.svg",
     person => "person-symbolic.svg",
-    pin => "pin-symbolic.svg",
     search => "search-symbolic.svg",
     shield => "shield-symbolic.svg",
     text => "text-symbolic.svg",
@@ -51,7 +52,10 @@ macro_rules! named {
 }
 
 named! {
+    details => "dialog-information-symbolic",
     more => "view-more-symbolic",
+    pin => "pin-symbolic",
+    recent => "document-open-recent-symbolic",
     settings => "preferences-system-symbolic",
     trash => "edit-delete-symbolic",
 }

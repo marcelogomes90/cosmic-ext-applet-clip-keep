@@ -65,7 +65,7 @@ pub fn page(app: &ClipKeep) -> Element<'_, Message> {
                         .into(),
                 );
             }
-            sections.push(section(icons::history(), fl!("section-recent"), regular));
+            sections.push(section(icons::recent(), fl!("section-recent"), regular));
         }
 
         let list = widget::container(widget::column::with_children(sections))
@@ -375,7 +375,7 @@ pub(crate) fn menu(app: &ClipKeep, id: EntryId) -> Element<'_, Message> {
 
     let items = vec![
         item(
-            icons::info(),
+            icons::details(),
             fl!("action-details"),
             Message::ShowDetails(Some(id)),
             false,

@@ -21,7 +21,7 @@ pub fn page(app: &ClipKeep) -> Element<'_, Message> {
             history_controls(app),
         ),
         section(
-            icons::settings(),
+            icons::behaviour(),
             fl!("section-behaviour"),
             behaviour_controls(app),
         ),
@@ -150,7 +150,7 @@ fn retention(app: &ClipKeep) -> Element<'_, Message> {
     let base = app.settings().clone();
 
     setting_row(
-        icons::trash(),
+        icons::expiry(),
         fl!("setting-max-age"),
         widget::dropdown(labels, selected, move |index| {
             let mut next = base.clone();
