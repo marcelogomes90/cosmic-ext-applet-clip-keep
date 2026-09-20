@@ -580,17 +580,19 @@ impl Runtime {
                 SlotState::Failed | SlotState::Reading(_) => true,
             });
 
-        let flavors: Vec<Flavor> = transfer
-            .slots
-            .iter()
-            .filter(|slot| slot.role == Role::Content)
-            .filter_map(|slot| match &slot.state {
-                SlotState::Done(body) if !body.is_empty() => {
-                    Some(Flavor::new(slot.mime.clone(), body.clone()))
-                }
-                _ => None,
-            })
-            .collect();
+        let flavors: Vec<Flavor> = dedup::distinct_flavors(
+            transfer
+                .slots
+                .iter()
+                .filter(|slot| slot.role == Role::Content)
+                .filter_map(|slot| match &slot.state {
+                    SlotState::Done(body) if !body.is_empty() => {
+                        Some(Flavor::new(slot.mime.clone(), body.clone()))
+                    }
+                    _ => None,
+                })
+                .collect(),
+        );
 
         let capture = Capture {
             kind: transfer.kind,
@@ -668,19 +670,33 @@ impl Runtime {
             return;
         }
 
-        let source = manager.create_data_source(qh);
-        for flavor in &flavors {
-            source.offer(&flavor.mime);
+        self.owned_hash = Some(dedup::hash_flavors(kind, &flavors));
+
+        let mut served: Vec<(String, Arc<[u8]>)> = flavors
+            .into_iter()
+            .map(|flavor| (flavor.mime, Arc::from(flavor.body)))
+            .collect();
+
+        if kind == EntryKind::Text
+            && let Some(body) = served.first().map(|(_, body)| Arc::clone(body))
+        {
+            let offered: Vec<String> = served.iter().map(|(mime, _)| mime.clone()).collect();
+            served.extend(
+                mime::text_aliases(&offered)
+                    .into_iter()
+                    .map(|alias| (alias, Arc::clone(&body))),
+            );
         }
 
-        self.owned_hash = Some(dedup::hash_flavors(kind, &flavors));
+        let source = manager.create_data_source(qh);
+        for (mime, _) in &served {
+            source.offer(mime);
+        }
+
         if let Some(data) = source.data()
             && let Ok(mut stored) = data.flavors.lock()
         {
-            *stored = flavors
-                .into_iter()
-                .map(|flavor| (flavor.mime, Arc::from(flavor.body)))
-                .collect();
+            *stored = served;
         }
 
         let previous = self.source.replace(source.clone());
@@ -777,6 +793,14 @@ impl Runtime {
                     .and_then(|db| db.thumbnail(id).ok())
                     .flatten();
                 let _ = reply.send(thumbnail);
+            }
+            ClipCommand::Formats { id, reply } => {
+                let mimes = self
+                    .db
+                    .as_ref()
+                    .and_then(|db| db.mimes(id).ok())
+                    .unwrap_or_default();
+                let _ = reply.send(mimes);
             }
             ClipCommand::TargetOutput { reply } => {
                 let _ = reply.send(self.target_output());

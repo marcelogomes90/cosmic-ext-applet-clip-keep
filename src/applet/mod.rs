@@ -59,6 +59,7 @@ pub struct ClipKeep {
     details: Option<EntryId>,
     clearing: ClearState,
     thumbs: Thumbs,
+    formats: Option<(EntryId, Vec<String>)>,
 }
 
 pub fn run(clip: ClipHandle) -> cosmic::iced::Result {
@@ -106,6 +107,7 @@ impl cosmic::Application for ClipKeep {
                 details: None,
                 clearing: ClearState::default(),
                 thumbs: Thumbs::default(),
+                formats: None,
             },
             Task::none(),
         )
@@ -233,6 +235,12 @@ impl cosmic::Application for ClipKeep {
                 self.thumbs.insert(id, handle);
                 Task::none()
             }
+            Message::FormatsLoaded(id, mimes) => {
+                if self.details == Some(id) {
+                    self.formats = Some((id, mimes));
+                }
+                Task::none()
+            }
             Message::ShowSettings(showing) => self.show_settings(showing),
             Message::ShowDetails(id) => self.show_details(id),
             Message::Setting(settings) => self.apply_settings(*settings),
@@ -297,6 +305,13 @@ impl ClipKeep {
     pub(crate) fn details(&self) -> Option<&EntryMeta> {
         let id = self.details?;
         self.snapshot.entries.iter().find(|entry| entry.id == id)
+    }
+
+    pub(crate) fn formats(&self) -> &[String] {
+        match &self.formats {
+            Some((id, mimes)) if Some(*id) == self.details => mimes,
+            _ => &[],
+        }
     }
 
     fn toggle_popup(&mut self) -> Task<Message> {
@@ -489,6 +504,7 @@ impl ClipKeep {
         self.restore = None;
         self.showing_settings = false;
         self.details = None;
+        self.formats = None;
         self.clearing = ClearState::Idle;
     }
 
@@ -638,11 +654,28 @@ impl ClipKeep {
                 .map(|entry| (entry.id, entry.kind))
         });
         self.details = shown.map(|(id, _)| id);
+        self.formats = None;
 
-        match shown {
-            Some((id, EntryKind::Image)) => self.load_thumbnail(id),
-            _ => Task::none(),
-        }
+        let Some((id, kind)) = shown else {
+            return Task::none();
+        };
+
+        let tasks = vec![
+            self.load_formats(id),
+            if kind == EntryKind::Image {
+                self.load_thumbnail(id)
+            } else {
+                Task::none()
+            },
+        ];
+
+        Task::batch(tasks)
+    }
+
+    fn load_formats(&self, id: EntryId) -> Task<Message> {
+        let clip = self.clip.clone();
+
+        cosmic::task::future(async move { Message::FormatsLoaded(id, clip.formats(id).await) })
     }
 
     fn step(&mut self, down: bool) -> Task<Message> {

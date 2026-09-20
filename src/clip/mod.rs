@@ -38,6 +38,10 @@ pub enum ClipCommand {
         id: EntryId,
         reply: oneshot::Sender<Option<Thumbnail>>,
     },
+    Formats {
+        id: EntryId,
+        reply: oneshot::Sender<Vec<String>>,
+    },
     TargetOutput {
         reply: oneshot::Sender<Option<String>>,
     },
@@ -77,6 +81,12 @@ impl ClipHandle {
         let (reply, answer) = oneshot::channel();
         self.send(ClipCommand::Thumbnail { id, reply });
         answer.await.ok().flatten()
+    }
+
+    pub async fn formats(&self, id: EntryId) -> Vec<String> {
+        let (reply, answer) = oneshot::channel();
+        self.send(ClipCommand::Formats { id, reply });
+        answer.await.unwrap_or_default()
     }
 
     pub async fn target_output(&self) -> Option<String> {

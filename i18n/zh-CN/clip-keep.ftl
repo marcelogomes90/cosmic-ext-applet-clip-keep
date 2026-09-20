@@ -20,6 +20,9 @@ details-copied = 首次复制
 details-used = 最后使用
 details-copies = 复制次数
 details-bytes = 大小
+details-formats = 格式
+format-plain = 纯文本
+format-files = 文件
 details-moment-format = %Y-%m-%d %H:%M
 
 section-privacy = 隐私

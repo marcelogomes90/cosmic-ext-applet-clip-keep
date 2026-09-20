@@ -20,6 +20,9 @@ details-copied = Poprvé zkopírováno
 details-used = Naposledy použito
 details-copies = Počet kopírování
 details-bytes = Velikost
+details-formats = Formáty
+format-plain = Prostý text
+format-files = Soubory
 details-moment-format = %d-%m-%Y %H:%M
 
 section-privacy = Soukromí

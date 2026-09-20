@@ -300,6 +300,14 @@ impl Db {
         rows.collect()
     }
 
+    pub fn mimes(&self, id: EntryId) -> rusqlite::Result<Vec<String>> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT mime FROM contents WHERE entry_id = ?1 ORDER BY ordinal ASC")?;
+        let rows = stmt.query_map(params![id.0], |row| row.get::<_, String>(0))?;
+        rows.collect()
+    }
+
     pub fn thumbnail(&self, id: EntryId) -> rusqlite::Result<Option<Thumbnail>> {
         self.conn
             .query_row(

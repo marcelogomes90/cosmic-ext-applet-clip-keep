@@ -75,6 +75,70 @@ fn a_capture_is_stored_with_every_flavor_it_offered() {
 }
 
 #[test]
+fn a_rich_capture_keeps_every_flavour_in_the_order_it_was_read() {
+    let mut db = Db::in_memory().unwrap();
+    let capture = Capture {
+        kind: EntryKind::Text,
+        flavors: vec![
+            Flavor::new("text/plain;charset=utf-8", b"hello".to_vec()),
+            Flavor::new("text/html", b"<b>hello</b>".to_vec()),
+            Flavor::new("application/rtf", b"{\\rtf1 hello}".to_vec()),
+            Flavor::new("text/markdown", b"**hello**".to_vec()),
+        ],
+        source_app: None,
+    };
+
+    let id = store(&mut db, &capture, T0).id();
+
+    assert_eq!(
+        db.mimes(id).unwrap(),
+        [
+            "text/plain;charset=utf-8",
+            "text/html",
+            "application/rtf",
+            "text/markdown"
+        ]
+    );
+    assert_eq!(
+        db.load(id, None).unwrap().unwrap().mime,
+        "text/plain;charset=utf-8",
+        "the flavour with no name asked for is still the plain one"
+    );
+    assert_eq!(
+        db.load(id, Some("text/markdown")).unwrap().unwrap().body,
+        b"**hello**"
+    );
+}
+
+#[test]
+fn an_entry_saved_before_rich_flavours_still_reads_back() {
+    let mut db = Db::in_memory().unwrap();
+    let id = store(&mut db, &text("plain and alone"), T0).id();
+
+    assert_eq!(db.mimes(id).unwrap(), ["text/plain;charset=utf-8"]);
+    assert_eq!(db.load(id, None).unwrap().unwrap().body, b"plain and alone");
+}
+
+#[test]
+fn richer_flavours_do_not_make_the_same_text_a_new_entry() {
+    let mut db = Db::in_memory().unwrap();
+    let plain = text("shared");
+    let mut rich = plain.clone();
+    rich.flavors
+        .push(Flavor::new("text/html", b"<i>shared</i>".to_vec()));
+
+    let first = store(&mut db, &plain, T0);
+    let second = store(&mut db, &rich, T0 + 5_000);
+
+    assert!(first.is_new());
+    assert!(
+        !second.is_new(),
+        "an old entry must not be duplicated once more flavours are captured"
+    );
+    assert_eq!(first.id(), second.id());
+}
+
+#[test]
 fn copying_the_same_thing_again_bumps_the_entry_instead_of_duplicating_it() {
     let mut db = Db::in_memory().unwrap();
 

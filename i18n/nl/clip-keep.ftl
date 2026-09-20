@@ -20,6 +20,9 @@ details-copied = Eerst gekopieerd
 details-used = Laatst gebruikt
 details-copies = Aantal keer gekopieerd
 details-bytes = Grootte
+details-formats = Indelingen
+format-plain = Platte tekst
+format-files = Bestanden
 details-moment-format = %d-%m-%Y %H:%M
 
 section-privacy = Privacy

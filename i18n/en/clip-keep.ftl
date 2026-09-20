@@ -20,6 +20,9 @@ details-copied = First copied
 details-used = Last used
 details-copies = Times copied
 details-bytes = Size
+details-formats = Formats
+format-plain = Plain text
+format-files = Files
 details-moment-format = %Y-%m-%d %H:%M
 
 section-privacy = Privacy

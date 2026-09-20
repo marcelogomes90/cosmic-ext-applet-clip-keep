@@ -20,6 +20,9 @@ details-copied = Première copie
 details-used = Dernière utilisation
 details-copies = Nombre de copies
 details-bytes = Taille
+details-formats = Formats
+format-plain = Texte brut
+format-files = Fichiers
 details-moment-format = %d/%m/%Y %H:%M
 
 section-privacy = Confidentialité

@@ -19,6 +19,10 @@ the clipboard, ready to paste.
 
 - Records text, file, and image selections, and puts any of them back on the clipboard with one
   click.
+- Keeps the formatting a copy came with. A snippet taken from a document or a page is stored with
+  its rich flavours beside the plain text, and every entry is offered back under each name a
+  destination might ask for, so the window you paste into picks what suits it — the styled version
+  in a word processor, plain text in a terminal.
 - Opens from anywhere with **Super+V**, on the monitor holding the window you were just using, and
   accepts typing and keyboard actions immediately without a preparatory click. Clicking outside
   dismisses it. The shortcut registers itself the first time Clip Keep runs, and never claims the
@@ -34,12 +38,13 @@ the clipboard, ready to paste.
   removed by the entry limit, the age limit, or **Clear history**.
 - Shows image entries as thumbnails, and never loads a full body into the list.
 - Opens a details page from each row's menu or Ctrl+I, with more of the text and where it came from,
-  when it was first copied and last used, how many times, and how big it is. Escape returns from
-  details or settings to the list before it closes the popup.
+  when it was first copied and last used, how many times, how big it is, and which formats it holds.
+  Escape returns from details or settings to the list before it closes the popup.
 - Keeps each row to one line: a badge for what it holds, the entry itself, and a menu holding
   details, pin, and delete.
-- Draws its own icons rather than borrowing from the icon theme, so the applet looks the same
-  wherever it is installed, and takes every colour from the COSMIC theme in use.
+- Takes the icons the desktop already has a word for — settings, delete, the row menu — from the
+  icon theme so the applet matches everything else on the panel, and compiles in its own glyphs for
+  the rest, which no theme ships. Every colour comes from the COSMIC theme in use.
 - Discards entries an application marked as a password, honouring the
   `x-kde-passwordManagerHint` convention that password managers already publish.
 - Pauses recording entirely in private mode, which the panel button shows at a glance.
