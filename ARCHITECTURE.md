@@ -117,7 +117,10 @@ anything.
 ## Settings and presentation
 
 Settings are stored through cosmic-config and propagated to every running instance. Capture policy
-lives in `clip::settings::Settings`.
+lives in `clip::settings::Settings`, which also carries how large image thumbnails are drawn in the
+list. The smallest size is the default, so a history in use looks the same until it is changed, and
+no size asks for more pixels than a stored thumbnail has. A thumbnail is rounded by the tile's own
+radius less the inset around it, so it follows the theme rather than a number of its own.
 
 Each row carries a menu holding details, pin and delete. It is a popover over the same surface,
 placed from the measured bounds of the button that opened it, and libcosmic's own popover clamps it

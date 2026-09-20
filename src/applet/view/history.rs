@@ -10,14 +10,20 @@ use super::{
 use crate::applet::ClipKeep;
 use crate::applet::message::Message;
 use crate::clip::model::{CaptureState, EntryId, EntryKind, EntryMeta};
+use crate::clip::settings::ImageSize;
 use crate::fl;
 
 const MENU_LABEL_CHAR: f32 = 7.6;
 const MENU_WIDTH_MIN: f32 = 120.0;
 const MENU_WIDTH_MAX: f32 = 240.0;
 
-const TILE: f32 = 36.0;
-const THUMBNAIL: u16 = 28;
+const TILE_SMALL: f32 = 36.0;
+const TILE_MEDIUM: f32 = 64.0;
+const TILE_LARGE: f32 = 96.0;
+
+const THUMBNAIL_SMALL: u16 = 28;
+const THUMBNAIL_MEDIUM: u16 = 56;
+const THUMBNAIL_LARGE: u16 = 88;
 
 pub fn page(app: &ClipKeep) -> Element<'_, Message> {
     let rows = super::visible(app);
@@ -302,29 +308,56 @@ fn row<'a>(app: &'a ClipKeep, entry: &'a EntryMeta, menu_open: bool) -> Element<
     hover.into()
 }
 
-fn tile<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
-    let content: Element<'a, Message> = match entry.kind {
-        EntryKind::Image => match app.thumbs().get(entry.id) {
-            Some(handle) => {
-                let (width, height) = entry
-                    .image_size
-                    .map_or((THUMBNAIL.into(), THUMBNAIL.into()), |(w, h)| {
-                        crate::clip::thumbnail::fit_within(w, h, THUMBNAIL, THUMBNAIL)
-                    });
+fn theme_radius() -> f32 {
+    cosmic::theme::active().cosmic().corner_radii.radius_s[0]
+}
 
-                widget::image(handle.clone())
-                    .width(Length::Fixed(super::pixels(width)))
-                    .height(Length::Fixed(super::pixels(height)))
-                    .into()
+fn inner_radius(radius: f32, tile: f32, width: f32, height: f32) -> f32 {
+    let inset = ((tile - width) / 2.0).min((tile - height) / 2.0).max(0.0);
+
+    (radius - inset).max(0.0)
+}
+
+fn tile_metrics(size: ImageSize) -> (f32, u16) {
+    match size {
+        ImageSize::Small => (TILE_SMALL, THUMBNAIL_SMALL),
+        ImageSize::Medium => (TILE_MEDIUM, THUMBNAIL_MEDIUM),
+        ImageSize::Large => (TILE_LARGE, THUMBNAIL_LARGE),
+    }
+}
+
+fn tile<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
+    let mut side = TILE_SMALL;
+
+    let content: Element<'a, Message> = match entry.kind {
+        EntryKind::Image => {
+            let (tile, thumbnail) = tile_metrics(app.settings().image_size);
+            side = tile;
+
+            match app.thumbs().get(entry.id) {
+                Some(handle) => {
+                    let (width, height) = entry
+                        .image_size
+                        .map_or((thumbnail.into(), thumbnail.into()), |(w, h)| {
+                            crate::clip::thumbnail::fit_within(w, h, thumbnail, thumbnail)
+                        });
+                    let (width, height) = (super::pixels(width), super::pixels(height));
+
+                    widget::image(handle.clone())
+                        .width(Length::Fixed(width))
+                        .height(Length::Fixed(height))
+                        .border_radius(inner_radius(theme_radius(), tile, width, height))
+                        .into()
+                }
+                None => icons::sized(icons::image(), ICON).into(),
             }
-            None => icons::sized(icons::image(), ICON).into(),
-        },
+        }
         EntryKind::Files => icons::sized(icons::file(), ICON).into(),
         EntryKind::Text => icons::sized(icons::text(), ICON).into(),
     };
 
     widget::container(content)
-        .center(Length::Fixed(TILE))
+        .center(Length::Fixed(side))
         .class(style::tile())
         .into()
 }
@@ -462,6 +495,71 @@ mod tests {
         assert!(
             label_room(200).clamp(MENU_WIDTH_MIN, MENU_WIDTH_MAX) < super::super::SURFACE_WIDTH
         );
+    }
+
+    fn near(left: f32, right: f32) -> bool {
+        (left - right).abs() < 0.001
+    }
+
+    #[test]
+    fn a_thumbnail_is_rounded_to_sit_inside_the_tile() {
+        let thumbnail = f32::from(THUMBNAIL_LARGE);
+
+        assert!(
+            near(inner_radius(8.0, TILE_LARGE, thumbnail, thumbnail), 4.0),
+            "the inset between the image and the border comes off the tile radius"
+        );
+    }
+
+    #[test]
+    fn a_thumbnail_well_clear_of_the_corner_is_left_square() {
+        assert!(near(inner_radius(8.0, TILE_LARGE, 20.0, 20.0), 0.0));
+    }
+
+    #[test]
+    fn the_tightest_side_decides_the_rounding() {
+        assert!(near(
+            inner_radius(8.0, TILE_LARGE, 88.0, 20.0),
+            inner_radius(8.0, TILE_LARGE, 88.0, 88.0)
+        ));
+    }
+
+    #[test]
+    fn a_rounding_is_never_negative() {
+        for size in ImageSize::ALL {
+            let (tile, thumbnail) = tile_metrics(size);
+            let radius = inner_radius(2.0, tile, f32::from(thumbnail), f32::from(thumbnail));
+            assert!(radius >= 0.0);
+        }
+    }
+
+    #[test]
+    fn each_step_up_gives_the_thumbnail_more_room() {
+        let sizes: Vec<(f32, u16)> = ImageSize::ALL.into_iter().map(tile_metrics).collect();
+
+        for pair in sizes.windows(2) {
+            assert!(pair[1].0 > pair[0].0);
+            assert!(pair[1].1 > pair[0].1);
+        }
+    }
+
+    #[test]
+    fn the_smallest_tile_is_the_one_the_list_has_always_drawn() {
+        let (tile, thumbnail) = tile_metrics(ImageSize::Small);
+
+        assert!(near(tile, TILE_SMALL));
+        assert_eq!(thumbnail, THUMBNAIL_SMALL);
+    }
+
+    #[test]
+    fn no_tile_asks_for_more_pixels_than_a_stored_thumbnail_has() {
+        let max = u16::try_from(crate::clip::thumbnail::MAX_EDGE).unwrap();
+
+        for size in ImageSize::ALL {
+            let (tile, thumbnail) = tile_metrics(size);
+            assert!(thumbnail <= max);
+            assert!(f32::from(thumbnail) < tile);
+        }
     }
 
     #[test]

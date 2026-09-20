@@ -36,15 +36,15 @@ the clipboard, ready to paste.
   from the middle of a snippet are enough to find it.
 - Pins the entries you keep reaching for. Pinned entries sit in their own section and are never
   removed by the entry limit, the age limit, or **Clear history**.
-- Shows image entries as thumbnails, and never loads a full body into the list.
+- Shows image entries as thumbnails, small, medium, or large as you prefer, and never loads a full
+  body into the list.
 - Opens a details page from each row's menu or Ctrl+I, with more of the text and where it came from,
   when it was first copied and last used, how many times, how big it is, and which formats it holds.
   Escape returns from details or settings to the list before it closes the popup.
 - Keeps each row to one line: a badge for what it holds, the entry itself, and a menu holding
   details, pin, and delete.
-- Takes the icons the desktop already has a word for — settings, delete, the row menu — from the
-  icon theme so the applet matches everything else on the panel, and compiles in its own glyphs for
-  the rest, which no theme ships. Every colour comes from the COSMIC theme in use.
+- Draws its own icons rather than borrowing from the icon theme, so the applet looks the same
+  wherever it is installed, and takes every colour from the COSMIC theme in use.
 - Discards entries an application marked as a password, honouring the
   `x-kde-passwordManagerHint` convention that password managers already publish.
 - Pauses recording entirely in private mode, which the panel button shows at a glance.

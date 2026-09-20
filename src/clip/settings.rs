@@ -2,12 +2,25 @@ use serde::{Deserialize, Serialize};
 
 pub const MAX_ENTRIES_CEILING: u32 = 500;
 
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub enum ImageSize {
+    #[default]
+    Small,
+    Medium,
+    Large,
+}
+
+impl ImageSize {
+    pub const ALL: [Self; 3] = [Self::Small, Self::Medium, Self::Large];
+}
+
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[expect(clippy::struct_excessive_bools)]
 pub struct Settings {
     pub max_entries: u32,
     pub max_age_days: Option<u32>,
     pub capture_images: bool,
+    pub image_size: ImageSize,
     pub private_mode: bool,
     pub respect_password_hint: bool,
     pub paste_on_use: bool,
@@ -19,6 +32,7 @@ impl Default for Settings {
             max_entries: 100,
             max_age_days: Some(30),
             capture_images: true,
+            image_size: ImageSize::Small,
             private_mode: false,
             respect_password_hint: true,
             paste_on_use: false,
@@ -41,6 +55,19 @@ mod tests {
     #[test]
     fn defaults_survive_sanitising_unchanged() {
         assert_eq!(Settings::default().sanitised(), Settings::default());
+    }
+
+    #[test]
+    fn a_fresh_install_shows_images_exactly_as_it_always_did() {
+        assert_eq!(Settings::default().image_size, ImageSize::Small);
+    }
+
+    #[test]
+    fn every_image_size_is_offered() {
+        assert_eq!(
+            ImageSize::ALL,
+            [ImageSize::Small, ImageSize::Medium, ImageSize::Large]
+        );
     }
 
     #[test]

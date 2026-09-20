@@ -5,7 +5,7 @@ use cosmic::widget;
 use super::{GAP, ICON, LIST_INSET, PAD, PAD_ROW_H, icons};
 use crate::applet::ClipKeep;
 use crate::applet::message::Message;
-use crate::clip::settings::{MAX_ENTRIES_CEILING, Settings};
+use crate::clip::settings::{ImageSize, MAX_ENTRIES_CEILING, Settings};
 use crate::{fl, links};
 
 pub fn page(app: &ClipKeep) -> Element<'_, Message> {
@@ -178,7 +178,27 @@ fn behaviour_controls(app: &ClipKeep) -> Element<'_, Message> {
             settings.paste_on_use,
             |settings, value| settings.paste_on_use = value,
         ))
+        .add(image_size(app))
         .into()
+}
+
+fn image_size(app: &ClipKeep) -> Element<'_, Message> {
+    let current = app.settings().image_size;
+    let options = image_size_options();
+    let selected = options.iter().position(|(size, _)| *size == current);
+    let values: Vec<ImageSize> = options.iter().map(|(size, _)| *size).collect();
+    let labels: Vec<String> = options.into_iter().map(|(_, label)| label).collect();
+    let base = app.settings().clone();
+
+    setting_row(
+        icons::crop(),
+        fl!("setting-image-size"),
+        widget::dropdown(labels, selected, move |index| {
+            let mut next = base.clone();
+            next.image_size = values.get(index).copied().unwrap_or(current);
+            Message::Setting(Box::new(next))
+        }),
+    )
 }
 
 fn link_controls<'a>() -> Element<'a, Message> {
@@ -208,6 +228,20 @@ fn link<'a>(
         icons::sized(icons::link(), ICON),
     ))
     .on_press(Message::OpenLink(url))
+}
+
+fn image_size_options() -> Vec<(ImageSize, String)> {
+    ImageSize::ALL
+        .into_iter()
+        .map(|size| {
+            let label = match size {
+                ImageSize::Small => fl!("setting-image-size-small"),
+                ImageSize::Medium => fl!("setting-image-size-medium"),
+                ImageSize::Large => fl!("setting-image-size-large"),
+            };
+            (size, label)
+        })
+        .collect()
 }
 
 fn retention_options(current: Option<u32>) -> Vec<(Option<u32>, String)> {
@@ -241,6 +275,27 @@ mod tests {
             .collect();
 
         assert_eq!(options, [None, Some(1), Some(7), Some(30)]);
+    }
+
+    #[test]
+    fn the_image_sizes_are_listed_from_smallest_to_largest() {
+        let sizes: Vec<ImageSize> = image_size_options()
+            .into_iter()
+            .map(|(size, _)| size)
+            .collect();
+
+        assert_eq!(sizes, ImageSize::ALL);
+    }
+
+    #[test]
+    fn every_image_size_carries_its_own_label() {
+        let labels: Vec<String> = image_size_options()
+            .into_iter()
+            .map(|(_, label)| label)
+            .collect();
+
+        assert_eq!(labels.len(), ImageSize::ALL.len());
+        assert!(labels.iter().all(|label| !label.is_empty()));
     }
 
     #[test]
