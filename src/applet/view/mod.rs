@@ -164,14 +164,17 @@ fn menu_origin(anchor: Rectangle, width: f32) -> Point {
 }
 
 pub(crate) fn page_header<'a>(title: String, back: Message) -> Element<'a, Message> {
-    let back = widget::button::text(crate::fl!("back"))
-        .class(style::flat(false))
-        .height(Length::Fixed(f32::from(CONTROL_HEIGHT)))
+    let back_button = widget::button::icon(widget::icon::from_name("go-previous-symbolic"))
+        .class(widget::button::ButtonClass::Link)
+        .extra_small()
+        .label(crate::fl!("back"))
+        .padding(0)
+        .spacing(4)
         .on_press(back);
 
     widget::container(
         cosmic::iced::widget::stack(vec![
-            widget::container(back).into(),
+            widget::container(back_button).into(),
             widget::container(widget::text::heading(title))
                 .center(Length::Fill)
                 .into(),
