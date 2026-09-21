@@ -1,6 +1,6 @@
 use sha2::{Digest, Sha256};
 
-use super::model::{Capture, EntryKind, PREVIEW_CHARS, truncate_chars};
+use super::model::{Capture, EntryKind, Flavor, PREVIEW_CHARS, truncate_chars};
 
 const INDENT_CHARS: usize = 8;
 
@@ -8,7 +8,7 @@ pub fn hash(capture: &Capture) -> [u8; 32] {
     hash_flavors(capture.kind, &capture.flavors)
 }
 
-pub fn hash_flavors(kind: EntryKind, flavors: &[super::model::Flavor]) -> [u8; 32] {
+pub fn hash_flavors(kind: EntryKind, flavors: &[Flavor]) -> [u8; 32] {
     let mut hasher = Sha256::new();
     hasher.update([kind as u8]);
 
@@ -21,6 +21,18 @@ pub fn hash_flavors(kind: EntryKind, flavors: &[super::model::Flavor]) -> [u8; 3
     }
 
     hasher.finalize().into()
+}
+
+pub fn distinct_flavors(flavors: Vec<Flavor>) -> Vec<Flavor> {
+    let mut kept: Vec<Flavor> = Vec::with_capacity(flavors.len());
+
+    for flavor in flavors {
+        if !kept.iter().any(|seen| seen.body == flavor.body) {
+            kept.push(flavor);
+        }
+    }
+
+    kept
 }
 
 pub fn preview(capture: &Capture) -> String {
@@ -156,6 +168,44 @@ mod tests {
             .push(Flavor::new("text/html", b"<b>hello</b>".to_vec()));
 
         assert_eq!(hash(&plain), hash(&with_markup));
+    }
+
+    #[test]
+    fn a_flavour_repeating_bytes_already_kept_is_dropped() {
+        let flavors = vec![
+            Flavor::new("text/plain", b"hello".to_vec()),
+            Flavor::new("text/rtf", b"{\\rtf1 hello}".to_vec()),
+            Flavor::new("text/richtext", b"{\\rtf1 hello}".to_vec()),
+        ];
+
+        let kept = distinct_flavors(flavors);
+
+        assert_eq!(kept.len(), 2);
+        assert_eq!(kept[0].mime, "text/plain");
+        assert_eq!(kept[1].mime, "text/rtf", "the first spelling wins");
+    }
+
+    #[test]
+    fn flavours_that_really_differ_all_survive() {
+        let flavors = vec![
+            Flavor::new("text/plain", b"hello".to_vec()),
+            Flavor::new("text/html", b"<b>hello</b>".to_vec()),
+        ];
+
+        assert_eq!(distinct_flavors(flavors).len(), 2);
+    }
+
+    #[test]
+    fn the_primary_is_never_the_one_dropped() {
+        let flavors = vec![
+            Flavor::new("text/plain;charset=utf-8", b"same".to_vec()),
+            Flavor::new("text/html", b"same".to_vec()),
+        ];
+
+        let kept = distinct_flavors(flavors);
+
+        assert_eq!(kept.len(), 1);
+        assert_eq!(kept[0].mime, "text/plain;charset=utf-8");
     }
 
     #[test]

@@ -16,6 +16,8 @@ const ROW_HEIGHT: f32 = 30.0;
 const IMAGE_WIDTH: u16 = 256;
 const IMAGE_HEIGHT: u16 = 192;
 
+const FACTS_RESERVE: f32 = 340.0;
+
 pub fn page<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
     widget::column::with_children(vec![
         super::page_header(fl!("details"), Message::ShowDetails(None)),
@@ -89,6 +91,11 @@ fn body<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
         rows.push(detail(handle, name, value));
     }
 
+    if let Some(formats) = formats(app.formats()) {
+        rows.push(super::divider());
+        rows.push(formats);
+    }
+
     let mut children: Vec<Element<'a, Message>> = Vec::new();
 
     if let Some(summary) = summary {
@@ -127,9 +134,17 @@ fn body<'a>(app: &'a ClipKeep, entry: &'a EntryMeta) -> Element<'a, Message> {
         .into()
 }
 
+fn excerpt_budget() -> f32 {
+    super::body_budget(super::PAGE_HEADER_RESERVE + super::FOOTER_RESERVE + FACTS_RESERVE)
+}
+
 fn excerpt(text: String) -> Element<'static, Message> {
-    widget::text::body(text)
+    let lines = widget::text::body(text)
         .wrapping(Wrapping::WordOrGlyph)
+        .width(Length::Fill);
+
+    widget::container(widget::scrollable(lines))
+        .max_height(excerpt_budget())
         .width(Length::Fill)
         .into()
 }
@@ -148,23 +163,116 @@ fn preview(handle: widget::image::Handle, size: (u32, u32)) -> Element<'static, 
 }
 
 fn detail(handle: widget::icon::Handle, name: String, value: String) -> Element<'static, Message> {
-    widget::container(
-        widget::row::with_children(vec![
-            icons::sized(handle, ICON_SMALL).into(),
-            widget::divider::vertical::default()
-                .height(Length::Fixed(f32::from(ICON)))
-                .into(),
-            widget::text::caption(name)
-                .width(Length::Fixed(LABEL_WIDTH))
-                .into(),
-            widget::text::caption(value).width(Length::Fill).into(),
-        ])
-        .spacing(GAP + GAP_TIGHT)
-        .align_y(Alignment::Center),
-    )
+    widget::container(fact(
+        handle,
+        name,
+        widget::text::caption(value).width(Length::Fill),
+        Alignment::Center,
+    ))
     .height(Length::Fixed(ROW_HEIGHT))
     .align_y(Alignment::Center)
     .into()
+}
+
+fn fact<'a>(
+    handle: widget::icon::Handle,
+    name: String,
+    value: impl Into<Element<'a, Message>>,
+    align: Alignment,
+) -> Element<'a, Message> {
+    widget::row::with_children(vec![
+        icons::sized(handle, ICON_SMALL).into(),
+        widget::divider::vertical::default()
+            .height(Length::Fixed(f32::from(ICON)))
+            .into(),
+        widget::text::caption(name)
+            .width(Length::Fixed(LABEL_WIDTH))
+            .into(),
+        value.into(),
+    ])
+    .spacing(GAP + GAP_TIGHT)
+    .align_y(align)
+    .into()
+}
+
+fn formats<'a>(mimes: &[String]) -> Option<Element<'a, Message>> {
+    let names = format_names(mimes);
+    if names.is_empty() {
+        return None;
+    }
+
+    let lines: Vec<Element<'a, Message>> = names
+        .into_iter()
+        .map(|name| {
+            widget::text::caption(name)
+                .wrapping(Wrapping::WordOrGlyph)
+                .width(Length::Fill)
+                .into()
+        })
+        .collect();
+
+    Some(
+        widget::container(fact(
+            icons::code(),
+            fl!("details-formats"),
+            widget::column::with_children(lines)
+                .spacing(GAP_TIGHT)
+                .width(Length::Fill),
+            Alignment::Start,
+        ))
+        .padding([GAP_TIGHT + 2, 0])
+        .into(),
+    )
+}
+
+fn format_names(mimes: &[String]) -> Vec<String> {
+    let mut names: Vec<String> = Vec::new();
+
+    for mime in mimes {
+        let name = format_name(mime);
+        if !names.contains(&name) {
+            names.push(name);
+        }
+    }
+
+    names
+}
+
+fn format_name(mime: &str) -> String {
+    let base = mime.split(';').next().unwrap_or(mime).trim();
+
+    for (known, name) in [
+        ("text/html", "HTML"),
+        ("text/rtf", "RTF"),
+        ("application/rtf", "RTF"),
+        ("text/richtext", "RTF"),
+        ("text/markdown", "Markdown"),
+        ("text/csv", "CSV"),
+        ("image/png", "PNG"),
+        ("image/jpeg", "JPEG"),
+        ("image/gif", "GIF"),
+        ("image/bmp", "BMP"),
+    ] {
+        if base.eq_ignore_ascii_case(known) {
+            return name.to_owned();
+        }
+    }
+
+    if crate::clip::mime::FILES
+        .iter()
+        .any(|known| base.eq_ignore_ascii_case(known))
+    {
+        return fl!("format-files");
+    }
+
+    if crate::clip::mime::TEXT.iter().any(|known| {
+        let known = known.split(';').next().unwrap_or(known);
+        base.eq_ignore_ascii_case(known)
+    }) {
+        return fl!("format-plain");
+    }
+
+    base.to_owned()
 }
 
 fn moment(at: Timestamp) -> String {
@@ -243,6 +351,62 @@ mod tests {
 
         assert_eq!(result.chars().count(), DETAILS_CHARS);
         assert!(result.ends_with("..."));
+    }
+
+    fn mimes(list: &[&str]) -> Vec<String> {
+        list.iter().map(|mime| (*mime).to_owned()).collect()
+    }
+
+    #[test]
+    fn a_text_summary_never_pushes_the_facts_off_the_page() {
+        let budget = super::super::body_budget(
+            super::super::PAGE_HEADER_RESERVE + super::super::FOOTER_RESERVE,
+        );
+
+        assert!(excerpt_budget() > 0.0);
+        assert!(
+            excerpt_budget() + FACTS_RESERVE <= budget,
+            "the excerpt and the information block have to share one page"
+        );
+    }
+
+    #[test]
+    fn an_entry_whose_formats_have_not_arrived_shows_no_row() {
+        assert!(format_names(&[]).is_empty());
+    }
+
+    #[test]
+    fn a_charset_is_not_part_of_the_name_a_reader_needs() {
+        assert_eq!(
+            format_name("text/plain;charset=utf-8"),
+            format_name("text/plain")
+        );
+        assert_eq!(format_name("TEXT/HTML"), "HTML");
+    }
+
+    #[test]
+    fn the_two_spellings_of_rich_text_read_as_one_format() {
+        assert_eq!(
+            format_names(&mimes(&[
+                "text/plain;charset=utf-8",
+                "text/html",
+                "text/rtf",
+                "text/richtext"
+            ])),
+            [
+                format_name("text/plain"),
+                "HTML".to_owned(),
+                "RTF".to_owned()
+            ]
+        );
+    }
+
+    #[test]
+    fn a_format_nobody_named_still_shows_what_it_is() {
+        assert_eq!(
+            format_name("application/x-invented"),
+            "application/x-invented"
+        );
     }
 
     #[test]

@@ -87,6 +87,7 @@ settings_entry!(
     max_entries,
     max_age_days,
     capture_images,
+    image_size,
     private_mode,
     respect_password_hint,
     paste_on_use,

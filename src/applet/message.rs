@@ -33,6 +33,7 @@ pub enum Message {
     ConfirmClear(bool),
     Clear,
     ThumbnailLoaded(EntryId, Option<Box<Thumbnail>>),
+    FormatsLoaded(EntryId, Vec<String>),
     ShowSettings(bool),
     ShowDetails(Option<EntryId>),
     Setting(Box<Settings>),

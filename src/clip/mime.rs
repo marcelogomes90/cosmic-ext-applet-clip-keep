@@ -9,7 +9,16 @@ pub const TEXT: &[&str] = &[
     "TEXT",
 ];
 
-pub const MARKUP: &[&str] = &["text/html"];
+pub const RICH_ORDER: &[&str] = &[
+    "text/html",
+    "text/rtf",
+    "application/rtf",
+    "text/richtext",
+    "text/markdown",
+    "text/csv",
+];
+
+pub const MAX_EXTRA_FLAVORS: usize = 4;
 
 pub const IMAGE: &[&str] = &["image/png", "image/jpeg", "image/bmp", "image/gif"];
 
@@ -47,7 +56,8 @@ pub fn choose(offered: &[String], capture_images: bool) -> Option<Wanted> {
 
     if let Some(text) = first_of(offered, TEXT) {
         let mut mimes = vec![text];
-        mimes.extend(first_of(offered, MARKUP));
+        let extras = extras(offered, &mimes[0]);
+        mimes.extend(extras);
         return Some(Wanted {
             kind: EntryKind::Text,
             mimes,
@@ -56,6 +66,94 @@ pub fn choose(offered: &[String], capture_images: bool) -> Option<Wanted> {
     }
 
     None
+}
+
+pub fn text_aliases(offered: &[String]) -> Vec<String> {
+    let Some(primary) = offered.first() else {
+        return Vec::new();
+    };
+
+    if !is_plain_text(primary) {
+        return Vec::new();
+    }
+
+    let mut aliases = Vec::new();
+
+    for alias in TEXT.iter().copied() {
+        let known = offered.iter().any(|mime| mime.eq_ignore_ascii_case(alias));
+        if !known {
+            push_once(&mut aliases, alias);
+        }
+    }
+
+    aliases
+}
+
+fn extras(offered: &[String], primary: &str) -> Vec<String> {
+    let wanted: Vec<&str> = offered
+        .iter()
+        .map(String::as_str)
+        .filter(|mime| is_extra_text(mime, primary))
+        .collect();
+
+    let mut chosen = Vec::new();
+
+    for preferred in RICH_ORDER.iter().copied() {
+        if let Some(mime) = wanted
+            .iter()
+            .copied()
+            .find(|mime| mime.eq_ignore_ascii_case(preferred))
+        {
+            push_once(&mut chosen, mime);
+        }
+    }
+
+    for mime in wanted {
+        push_once(&mut chosen, mime);
+    }
+
+    chosen.truncate(MAX_EXTRA_FLAVORS);
+    chosen
+}
+
+fn is_extra_text(mime: &str, primary: &str) -> bool {
+    if mime.eq_ignore_ascii_case(primary) || is_plain_text(mime) {
+        return false;
+    }
+
+    let base = mime.split(';').next().unwrap_or(mime).trim();
+    if base.eq_ignore_ascii_case("application/rtf") {
+        return true;
+    }
+
+    text_subtype(base).is_some_and(|subtype| !is_private_subtype(subtype))
+}
+
+fn is_private_subtype(subtype: &str) -> bool {
+    subtype.starts_with('_')
+        || subtype
+            .get(..6)
+            .is_some_and(|prefix| prefix.eq_ignore_ascii_case("x-moz-"))
+}
+
+fn is_plain_text(mime: &str) -> bool {
+    if TEXT.iter().any(|known| mime.eq_ignore_ascii_case(known)) {
+        return true;
+    }
+
+    let base = mime.split(';').next().unwrap_or(mime).trim();
+    base.eq_ignore_ascii_case("text/plain")
+}
+
+fn text_subtype(mime: &str) -> Option<&str> {
+    let (prefix, subtype) = mime.split_at_checked("text/".len())?;
+    prefix.eq_ignore_ascii_case("text/").then_some(subtype)
+}
+
+fn push_once(chosen: &mut Vec<String>, mime: &str) {
+    if !chosen.iter().any(|kept| kept.eq_ignore_ascii_case(mime)) {
+        chosen.push(mime.to_owned());
+    }
 }
 
 fn first_of(offered: &[String], candidates: &[&str]) -> Option<String> {
@@ -98,6 +196,130 @@ mod tests {
         assert_eq!(wanted.kind, EntryKind::Text);
         assert_eq!(wanted.mimes, ["text/plain;charset=utf-8", "text/html"]);
         assert!(!wanted.password_hint);
+    }
+
+    #[test]
+    fn every_other_text_flavour_is_kept_beside_the_plain_one() {
+        let wanted = choose(
+            &offered(&[
+                "text/plain;charset=utf-8",
+                "text/markdown",
+                "text/html",
+                "application/rtf",
+            ]),
+            true,
+        )
+        .unwrap();
+
+        assert_eq!(
+            wanted.mimes,
+            [
+                "text/plain;charset=utf-8",
+                "text/html",
+                "application/rtf",
+                "text/markdown"
+            ],
+            "the well-known rich flavours lead, the rest follows as offered"
+        );
+    }
+
+    #[test]
+    fn another_spelling_of_plain_text_is_not_worth_a_second_copy() {
+        let wanted = choose(
+            &offered(&[
+                "text/plain;charset=utf-8",
+                "text/plain;charset=iso-8859-1",
+                "STRING",
+                "TEXT",
+            ]),
+            true,
+        )
+        .unwrap();
+
+        assert_eq!(wanted.mimes, ["text/plain;charset=utf-8"]);
+    }
+
+    #[test]
+    fn an_applications_private_target_is_left_alone() {
+        let wanted = choose(
+            &offered(&[
+                "text/plain",
+                "text/_moz_htmlcontext",
+                "application/x-openoffice-embed-source-xml",
+                "x-special/nautilus-clipboard",
+            ]),
+            true,
+        )
+        .unwrap();
+
+        assert_eq!(wanted.mimes, ["text/plain"]);
+    }
+
+    #[test]
+    fn a_browsers_own_bookkeeping_targets_are_refused() {
+        let wanted = choose(
+            &offered(&[
+                "text/plain;charset=utf-8",
+                "text/html",
+                "text/x-moz-url-priv",
+                "text/_moz_htmlinfo",
+            ]),
+            true,
+        )
+        .unwrap();
+
+        assert_eq!(
+            wanted.mimes,
+            ["text/plain;charset=utf-8", "text/html"],
+            "the page url firefox tracks for itself does not belong in the history"
+        );
+    }
+
+    #[test]
+    fn an_app_that_offers_the_world_does_not_fill_the_history_with_it() {
+        let wanted = choose(
+            &offered(&[
+                "text/plain",
+                "text/html",
+                "text/rtf",
+                "text/richtext",
+                "text/markdown",
+                "text/csv",
+                "text/x-vcard",
+            ]),
+            true,
+        )
+        .unwrap();
+
+        assert_eq!(wanted.mimes.len(), MAX_EXTRA_FLAVORS + 1);
+        assert_eq!(wanted.mimes[0], "text/plain");
+    }
+
+    #[test]
+    fn the_flavours_a_destination_may_ask_for_are_filled_in() {
+        let aliases = text_aliases(&offered(&["text/plain;charset=utf-8", "text/html"]));
+
+        assert_eq!(aliases, ["UTF8_STRING", "text/plain", "STRING", "TEXT"]);
+    }
+
+    #[test]
+    fn nothing_is_invented_for_an_entry_that_is_not_plain_text() {
+        assert!(text_aliases(&offered(&["image/png"])).is_empty());
+        assert!(text_aliases(&offered(&["text/uri-list"])).is_empty());
+        assert!(text_aliases(&[]).is_empty());
+    }
+
+    #[test]
+    fn an_alias_already_on_offer_is_not_offered_twice() {
+        let aliases = text_aliases(&offered(&["STRING", "text/plain", "TEXT"]));
+
+        assert!(!aliases.iter().any(|alias| alias == "STRING"));
+        assert!(!aliases.iter().any(|alias| alias == "text/plain"));
+        assert_eq!(
+            aliases,
+            ["text/plain;charset=utf-8", "UTF8_STRING"],
+            "the two spellings of the utf-8 charset count as one"
+        );
     }
 
     #[test]
