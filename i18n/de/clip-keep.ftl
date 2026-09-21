@@ -1,4 +1,4 @@
-search-placeholder = Verlauf durchsuchen…
+search-placeholder = Suchen
 empty-history = Noch nichts kopiert
 no-results = Keine Treffer
 capture-unavailable = Zwischenablage-Aufzeichnung nicht verfügbar

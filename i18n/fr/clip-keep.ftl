@@ -1,4 +1,4 @@
-search-placeholder = Rechercher dans l’historique…
+search-placeholder = Rechercher
 empty-history = Rien de copié pour l'instant
 no-results = Aucun résultat
 capture-unavailable = La capture du presse-papiers est indisponible

@@ -1,4 +1,4 @@
-search-placeholder = Пошук в історії…
+search-placeholder = Пошук
 empty-history = Ще нічого не скопійовано
 no-results = Збігів немає
 capture-unavailable = Захоплення буфера обміну недоступне

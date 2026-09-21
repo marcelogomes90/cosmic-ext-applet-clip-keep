@@ -1,4 +1,4 @@
-search-placeholder = Geschiedenis doorzoeken…
+search-placeholder = Zoeken
 empty-history = Nog niets gekopieerd
 no-results = Geen resultaten
 capture-unavailable = Klembordopname is niet beschikbaar

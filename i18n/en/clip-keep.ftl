@@ -1,4 +1,4 @@
-search-placeholder = Search history…
+search-placeholder = Search
 empty-history = Nothing copied yet
 no-results = No matches
 capture-unavailable = Clipboard capture is unavailable

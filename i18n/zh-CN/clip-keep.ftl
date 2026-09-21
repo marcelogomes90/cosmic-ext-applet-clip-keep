@@ -1,4 +1,4 @@
-search-placeholder = 搜索历史记录…
+search-placeholder = 搜索
 empty-history = 还没有复制任何内容
 no-results = 没有匹配项
 capture-unavailable = 剪贴板捕获不可用

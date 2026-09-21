@@ -1,4 +1,4 @@
-search-placeholder = Szukaj w historii…
+search-placeholder = Szukaj
 empty-history = Jeszcze nic nie skopiowano
 no-results = Brak dopasowań
 capture-unavailable = Nie można skopiować do schowka

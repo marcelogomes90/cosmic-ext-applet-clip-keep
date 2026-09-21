@@ -1,4 +1,4 @@
-search-placeholder = Pesquisar no histórico…
+search-placeholder = Pesquisar
 empty-history = Nada copiado ainda
 no-results = Nenhum resultado
 capture-unavailable = A captura da área de transferência não está disponível
@@ -37,7 +37,7 @@ action-details = Detalhes
 action-cancel = Cancelar
 action-clear = Limpar
 
-footer-back = volta
+footer-back = voltar
 footer-use = usar
 
 setting-max-entries = Tamanho do histórico

@@ -1,4 +1,4 @@
-search-placeholder = Cerca nella cronologia…
+search-placeholder = Cerca
 empty-history = Non hai ancora copiato nulla
 no-results = Nessun risultato
 capture-unavailable = L'acquisizione degli appunti non è disponibile

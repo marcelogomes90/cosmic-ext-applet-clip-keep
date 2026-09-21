@@ -1,4 +1,4 @@
-search-placeholder = Buscar en el historial…
+search-placeholder = Buscar
 empty-history = Aún no has copiado nada
 no-results = Sin coincidencias
 capture-unavailable = La captura del portapapeles no está disponible

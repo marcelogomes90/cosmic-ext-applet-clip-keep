@@ -1,4 +1,4 @@
-search-placeholder = Hledat v historii…
+search-placeholder = Hledat
 empty-history = Zatím nebylo nic zkopírováno
 no-results = Žádné shody
 capture-unavailable = Zachytávání schránky není dostupné
