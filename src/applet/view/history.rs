@@ -118,6 +118,7 @@ fn header(app: &ClipKeep) -> Element<'_, Message> {
 fn search_field(app: &ClipKeep) -> Element<'_, Message> {
     let mut field = widget::text_input(fl!("search-placeholder"), app.query())
         .id(SEARCH_ID.clone())
+        .font(cosmic::font::default())
         .width(Length::Fill)
         .padding([0, cosmic::theme::spacing().space_xxs])
         .style(cosmic::theme::TextInput::Search)
