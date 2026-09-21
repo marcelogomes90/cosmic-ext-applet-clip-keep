@@ -476,11 +476,11 @@ mod tests {
     }
 
     #[test]
-    fn every_page_keeps_room_for_its_header_and_footer() {
+    fn every_page_keeps_room_for_the_chrome_around_its_body() {
         for reserved in [
-            HEADER_RESERVE + FOOTER_RESERVE,
-            HEADER_RESERVE + FOOTER_RESERVE + NOTICE_RESERVE,
-            HEADER_RESERVE + FOOTER_RESERVE + NOTICE_RESERVE + CONFIRM_RESERVE,
+            HEADER_RESERVE,
+            HEADER_RESERVE + NOTICE_RESERVE,
+            HEADER_RESERVE + NOTICE_RESERVE + CONFIRM_RESERVE,
             PAGE_HEADER_RESERVE + FOOTER_RESERVE,
             PAGE_HEADER_RESERVE + DIVIDER_RESERVE,
         ] {

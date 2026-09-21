@@ -139,7 +139,10 @@ the row menu — is looked up by name (`preferences-system-symbolic`, `edit-dele
 for is an SVG compiled into the binary. Both render identically inside the Flatpak sandbox, because
 the COSMIC icon theme is bundled in `com.system76.Cosmic.BaseApp`.
 
-The header and footer are fixed and only the list between them scrolls, so the body is capped at
-the surface maximum minus a generous allowance for both. The popup follows the panel anchor and
-theme, sizes itself to its contents up to that maximum. Fluent catalogues under `i18n/` provide every
-visible string. `just verify` checks formatting, clippy, backend/UI layering, tests and metadata.
+The header is fixed and only the list beneath it scrolls, so the body is capped at the surface
+maximum minus a generous allowance for the chrome around it. The list carries no footer of its own:
+each row menu names its shortcut beside the action, the way COSMIC's own menus do. The details page
+keeps a footer, because it has no menu to hold Escape and Enter. The popup follows the panel anchor
+and theme, sizes itself to its contents up to that maximum. Fluent catalogues under `i18n/` provide
+every visible string. `just verify` checks formatting, clippy, backend/UI layering, tests and
+metadata.

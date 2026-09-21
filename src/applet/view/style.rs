@@ -1,6 +1,9 @@
 use cosmic::cosmic_theme::palette::Srgba;
+use cosmic::iced::advanced::widget::text::Style as TextStyle;
 use cosmic::iced::{Background, Border, Color, Shadow};
 use cosmic::widget;
+
+const ACCEL_ALPHA: f32 = 0.75;
 
 fn component(theme: &cosmic::Theme) -> Srgba {
     theme.cosmic().bg_component_color()
@@ -95,6 +98,20 @@ pub fn tile<'a>() -> cosmic::theme::Container<'a> {
         },
         ..Default::default()
     })
+}
+
+pub fn accel() -> cosmic::theme::Text {
+    fn muted(theme: &cosmic::Theme) -> TextStyle {
+        let mut ink = theme.cosmic().background(theme.transparent).component.on;
+        ink.alpha *= ACCEL_ALPHA;
+
+        TextStyle {
+            color: Some(ink.into()),
+            ..Default::default()
+        }
+    }
+
+    cosmic::theme::Text::Custom(muted)
 }
 
 pub fn badge<'a>() -> cosmic::theme::Container<'a> {

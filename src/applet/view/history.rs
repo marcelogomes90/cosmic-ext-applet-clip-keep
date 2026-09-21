@@ -5,7 +5,7 @@ use cosmic::widget;
 
 use super::{
     CONFIRM_RESERVE, CONTROL_HEIGHT, GAP, GAP_TIGHT, ICON, ICON_SMALL, KEY_DELETE, KEY_INFO,
-    KEY_PIN, NOTICE_RESERVE, PAD, PAD_ROW_H, SEARCH_ID, footer, icons, style,
+    KEY_PIN, NOTICE_RESERVE, PAD, PAD_ROW_H, SEARCH_ID, icons, style,
 };
 use crate::applet::ClipKeep;
 use crate::applet::message::Message;
@@ -14,6 +14,7 @@ use crate::clip::settings::ImageSize;
 use crate::fl;
 
 const MENU_LABEL_CHAR: f32 = 7.6;
+const MENU_ACCEL_CHAR: f32 = 6.6;
 const MENU_WIDTH_MIN: f32 = 120.0;
 const MENU_WIDTH_MAX: f32 = 240.0;
 
@@ -80,19 +81,11 @@ pub fn page(app: &ClipKeep) -> Element<'_, Message> {
 
         children.push(
             widget::container(super::scroll(list))
-                .max_height(super::body_budget(
-                    super::HEADER_RESERVE + super::FOOTER_RESERVE + extra,
-                ))
+                .max_height(super::body_budget(super::HEADER_RESERVE + extra))
                 .width(Length::Fill)
                 .into(),
         );
     }
-
-    children.push(footer::bar(vec![
-        (KEY_DELETE, fl!("action-delete")),
-        (KEY_INFO, fl!("action-details")),
-        (KEY_PIN, fl!("action-pin")),
-    ]));
 
     widget::column::with_children(children).into()
 }
@@ -388,14 +381,23 @@ pub(crate) fn menu_width() -> f32 {
         .max()
         .unwrap_or(0);
 
-    label_room(longest).clamp(MENU_WIDTH_MIN, MENU_WIDTH_MAX)
+    let accel = [KEY_INFO, KEY_PIN, KEY_DELETE]
+        .iter()
+        .map(|key| key.chars().count())
+        .max()
+        .unwrap_or(0);
+
+    entry_room(longest, accel).clamp(MENU_WIDTH_MIN, MENU_WIDTH_MAX)
 }
 
-fn label_room(characters: usize) -> f32 {
-    let text = MENU_LABEL_CHAR * f32::from(u16::try_from(characters).unwrap_or(u16::MAX));
-    let chrome = f32::from(ICON + (GAP + GAP_TIGHT) * 3 + GAP_TIGHT * 2);
+fn entry_room(label: usize, accel: usize) -> f32 {
+    let chrome = f32::from(ICON + (GAP + GAP_TIGHT) * 4 + GAP_TIGHT * 2);
 
-    text + chrome
+    room(MENU_LABEL_CHAR, label) + room(MENU_ACCEL_CHAR, accel) + chrome
+}
+
+fn room(per_character: f32, characters: usize) -> f32 {
+    per_character * f32::from(u16::try_from(characters).unwrap_or(u16::MAX))
 }
 
 pub(crate) fn menu(app: &ClipKeep, id: EntryId) -> Element<'_, Message> {
@@ -410,6 +412,7 @@ pub(crate) fn menu(app: &ClipKeep, id: EntryId) -> Element<'_, Message> {
         item(
             icons::details(),
             fl!("action-details"),
+            KEY_INFO,
             Message::ShowDetails(Some(id)),
             false,
         ),
@@ -420,12 +423,14 @@ pub(crate) fn menu(app: &ClipKeep, id: EntryId) -> Element<'_, Message> {
             } else {
                 fl!("action-pin")
             },
+            KEY_PIN,
             Message::TogglePin(id),
             false,
         ),
         item(
             icons::trash(),
             fl!("action-delete"),
+            KEY_DELETE,
             Message::Delete(id),
             true,
         ),
@@ -445,6 +450,7 @@ pub(crate) fn menu(app: &ClipKeep, id: EntryId) -> Element<'_, Message> {
 fn item(
     handle: widget::icon::Handle,
     label: String,
+    accel: &'static str,
     message: Message,
     destructive: bool,
 ) -> Element<'static, Message> {
@@ -452,6 +458,7 @@ fn item(
         widget::row::with_children(vec![
             icons::sized(handle, ICON).into(),
             widget::text::body(label).width(Length::Fill).into(),
+            widget::text::caption(accel).class(style::accel()).into(),
         ])
         .spacing(GAP + GAP_TIGHT)
         .align_y(Alignment::Center),
@@ -485,15 +492,31 @@ mod tests {
 
     #[test]
     fn the_menu_is_as_wide_as_its_longest_entry_needs() {
-        assert!(label_room(8) > label_room(4));
+        assert!(entry_room(8, 6) > entry_room(4, 6));
         assert!(menu_width() >= MENU_WIDTH_MIN);
         assert!(menu_width() <= MENU_WIDTH_MAX);
     }
 
     #[test]
+    fn an_entry_leaves_room_for_its_shortcut_beside_the_label() {
+        assert!(entry_room(8, 6) > entry_room(8, 0));
+    }
+
+    #[test]
+    fn a_label_and_its_shortcut_fit_side_by_side_without_being_clamped() {
+        let longest = ["Ctrl+I", "Ctrl+P", "Ctrl+D"]
+            .iter()
+            .map(|key| key.chars().count())
+            .max()
+            .unwrap();
+
+        assert!(entry_room(12, longest) <= MENU_WIDTH_MAX);
+    }
+
+    #[test]
     fn a_wildly_long_translation_does_not_stretch_the_menu_past_the_popup() {
         assert!(
-            label_room(200).clamp(MENU_WIDTH_MIN, MENU_WIDTH_MAX) < super::super::SURFACE_WIDTH
+            entry_room(200, 6).clamp(MENU_WIDTH_MIN, MENU_WIDTH_MAX) < super::super::SURFACE_WIDTH
         );
     }
 

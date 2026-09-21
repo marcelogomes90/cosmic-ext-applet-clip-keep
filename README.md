@@ -29,7 +29,7 @@ the clipboard, ready to paste.
   combination if something else already answers it.
 - Drives the list from the keyboard: the arrows walk it and scroll to follow, Enter copies and
   closes, and Ctrl+I, Ctrl+P, Ctrl+D and Ctrl+F open details, pin, delete, and go back to the search.
-  A strip along the bottom keeps those shortcuts in view without hunting for them.
+  Each row's menu names the shortcut beside the action it performs, so they are learned in passing.
 - Pastes into the window you came from when you pick an entry. Off by default, and nothing is typed
   when you dismiss the list instead.
 - Filters the list as you type, matching case-insensitively anywhere in an entry, so a few letters
