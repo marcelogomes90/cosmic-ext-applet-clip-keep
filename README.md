@@ -27,6 +27,11 @@ the clipboard, ready to paste.
   accepts typing and keyboard actions immediately without a preparatory click. Clicking outside
   dismisses it. The shortcut registers itself the first time Clip Keep runs, and never claims the
   combination if something else already answers it.
+
+  **On its first start, Clip Keep tries to register `Super+V` as its global shortcut. It never replaces
+  an existing shortcut: if that combination is already in use, choose any combination in COSMIC
+  Settings and assign it the command `flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle`.
+  A shortcut created automatically or manually can be changed later in COSMIC Settings**
 - Drives the list from the keyboard: the arrows walk it and scroll to follow, Enter copies and
   closes, and Ctrl+I, Ctrl+P, Ctrl+D and Ctrl+F open details, pin, delete, and go back to the search.
   Each row's menu names the shortcut beside the action it performs, so they are learned in passing.
