@@ -314,6 +314,20 @@
     <keyword xml:lang="zh-CN">面板</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.5.6" date="2026-09-22">
+      <description>
+        <p>This patch keeps the formatting a copy came with, lets you choose how large images are drawn, and quiets the system log.</p>
+        <ul>
+          <li>Keeps every text flavour a copy came with, so a snippet taken from a document arrives styled in a word processor and plain in a terminal, and names the formats an entry holds on its details page.</li>
+          <li>Adds an Image size setting, drawing thumbnails in the list small, medium or large.</li>
+          <li>Names each shortcut beside the action it performs in the row menu, in place of the strip that ran along the bottom of the list.</li>
+          <li>Marks the back button with a chevron beside its label, so it matches the buttons that do the same job elsewhere in COSMIC.</li>
+          <li>Draws the search field in the interface font, and shortens its placeholder to Search.</li>
+          <li>Corrects the Brazilian Portuguese label on the back shortcut.</li>
+          <li>Leaves the system log alone during ordinary use. Every copy, paste and popup was written to the journal, which buried anything else being debugged there; what the applet finds at startup is still reported, and the rest is available on request.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.5.5" date="2026-09-18">
       <description>
         <p>This patch finishes handing the popup's chrome to the desktop's icon theme and gives two settings of their own glyphs.</p>

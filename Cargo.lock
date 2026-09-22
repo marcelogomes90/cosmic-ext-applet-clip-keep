@@ -958,7 +958,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-ext-applet-clip-keep"
-version = "1.5.5"
+version = "1.5.6"
 dependencies = [
  "calloop",
  "calloop-wayland-source",
