@@ -69,7 +69,7 @@ impl Listener {
 
             match UnixListener::bind(&path) {
                 Ok(listener) => {
-                    tracing::info!(socket = %path.display(), "listening for the global shortcut");
+                    tracing::debug!(socket = %path.display(), "listening for the global shortcut");
                     return Some(Self { path, listener });
                 }
                 Err(error) if error.kind() == ErrorKind::AddrInUse => {}

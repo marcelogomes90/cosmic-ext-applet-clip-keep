@@ -43,7 +43,7 @@ pub fn connect() -> Result<Connection, SetupError> {
         match UnixStream::connect(&candidate) {
             Ok(socket) => match Connection::from_socket(socket) {
                 Ok(connection) => {
-                    tracing::info!(socket = %candidate.display(), "connected to the compositor");
+                    tracing::debug!(socket = %candidate.display(), "connected to the compositor");
                     return Ok(connection);
                 }
                 Err(error) => attempts.push(format!("{}: {error}", candidate.display())),

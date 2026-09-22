@@ -49,12 +49,12 @@ pub enum Manager {
 impl Manager {
     pub fn bind(globals: &GlobalList, qh: &QueueHandle<Runtime>) -> Result<Self, SetupError> {
         if let Ok(manager) = globals.bind::<ExtDataControlManagerV1, _, _>(qh, 1..=1, ()) {
-            tracing::info!(protocol = Backend::Ext.protocol(), "bound data-control");
+            tracing::debug!(protocol = Backend::Ext.protocol(), "bound data-control");
             return Ok(Self::Ext(manager));
         }
 
         if let Ok(manager) = globals.bind::<ZwlrDataControlManagerV1, _, _>(qh, 1..=2, ()) {
-            tracing::info!(protocol = Backend::Wlr.protocol(), "bound data-control");
+            tracing::debug!(protocol = Backend::Wlr.protocol(), "bound data-control");
             return Ok(Self::Wlr(manager));
         }
 

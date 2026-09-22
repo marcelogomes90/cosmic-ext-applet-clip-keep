@@ -230,7 +230,7 @@ impl Runtime {
 
     fn open_database(&mut self) -> rusqlite::Result<()> {
         let path = super::db::default_path();
-        tracing::info!(path = %path.display(), "opening the history");
+        tracing::debug!(path = %path.display(), "opening the history");
 
         self.db = Some(Db::open(&path)?);
         Ok(())
@@ -640,7 +640,7 @@ impl Runtime {
 
         match db.store(&entry, now()) {
             Ok(stored) => {
-                tracing::info!(
+                tracing::debug!(
                     id = %stored.id(),
                     kind = ?capture.kind,
                     bytes = capture.byte_size(),
@@ -839,7 +839,7 @@ impl Runtime {
 
     fn arm_paste(&mut self) {
         if self.typist.is_none() {
-            tracing::info!("nothing to paste with, the compositor offered no virtual keyboard");
+            tracing::debug!("nothing to paste with, the compositor offered no virtual keyboard");
             return;
         }
 
@@ -876,7 +876,7 @@ impl Runtime {
             return;
         };
 
-        tracing::info!(app = ?self.focused_app, "handing the focus back");
+        tracing::debug!(app = ?self.focused_app, "handing the focus back");
         toplevels.activate_focused();
 
         if let Some(connection) = self.connection.as_ref()
@@ -892,7 +892,7 @@ impl Runtime {
             return;
         };
 
-        tracing::info!(?shortcut, "pasting into the window that had the focus");
+        tracing::debug!(?shortcut, "pasting into the window that had the focus");
         typist.paste(shortcut, connection);
     }
 

@@ -84,7 +84,7 @@ fn requests(
                 request.answer(ours).await;
 
                 if ours {
-                    tracing::info!(
+                    tracing::debug!(
                         output = output.as_deref(),
                         forced,
                         "taking the global shortcut"

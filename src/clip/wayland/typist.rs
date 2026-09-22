@@ -88,7 +88,7 @@ impl Typist {
             return None;
         }
 
-        tracing::info!("ready to paste for you");
+        tracing::debug!("ready to paste for you");
 
         Some(Self {
             keyboard,

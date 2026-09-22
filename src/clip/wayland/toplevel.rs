@@ -343,7 +343,7 @@ impl Runtime {
         let app = self.toplevels.as_ref().and_then(Toplevels::focused_app);
 
         if app != self.focused_app {
-            tracing::info!(?app, "focus moved");
+            tracing::trace!(?app, "focus moved");
             self.focused_app = app;
         }
     }

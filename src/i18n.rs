@@ -21,7 +21,7 @@ pub fn init() {
     let requested = i18n_embed::DesktopLanguageRequester::requested_languages();
 
     match localizer.select(&requested) {
-        Ok(selected) => tracing::info!(?selected, ?requested, "loaded translations"),
+        Ok(selected) => tracing::debug!(?selected, ?requested, "loaded translations"),
         Err(error) => tracing::warn!(%error, "keeping English, the locale did not load"),
     }
 }

@@ -344,7 +344,7 @@ impl ClipKeep {
     fn create_popup(&mut self) -> Task<Message> {
         let id = window::Id::unique();
         self.popup = PopupState::Open(id);
-        tracing::info!(?id, "opening an ungrabbed popup");
+        tracing::debug!(?id, "opening an ungrabbed popup");
 
         let parent = self
             .core
@@ -467,7 +467,7 @@ impl ClipKeep {
 
         let id = window::Id::unique();
         self.keyboard_surface = Some(id);
-        tracing::info!(?id, "requesting keyboard focus through a helper layer");
+        tracing::debug!(?id, "requesting keyboard focus through a helper layer");
 
         cosmic::surface::surface_task(cosmic::surface::action::app_layer_shell::<Self>(
             |_| cosmic::surface::action::LiveSettings::default(),
@@ -493,7 +493,7 @@ impl ClipKeep {
         if self.focused_surface == Some(id) {
             self.focused_surface = None;
         }
-        tracing::info!(?id, "releasing the helper keyboard layer");
+        tracing::debug!(?id, "releasing the helper keyboard layer");
         cosmic::surface::surface_task(cosmic::surface::action::destroy_layer_shell(id))
     }
 
