@@ -196,7 +196,7 @@ impl cosmic::Application for ClipKeep {
             Message::OpenRowMenu(id) => self.open_row_menu(id),
             Message::PlaceRowMenu(id, bounds) => {
                 if matches!(self.menu, Some((current, _)) if current == id) {
-                    self.menu = Some((id, bounds));
+                    self.menu = bounds.map(|bounds| (id, Some(bounds)));
                 }
                 Task::none()
             }
@@ -216,7 +216,10 @@ impl cosmic::Application for ClipKeep {
                 Task::none()
             }
             Message::Key(action) => {
-                if self.menu.take().is_some() && action == keys::Action::Dismiss {
+                let dismissing_a_menu = self.showing_row_menu();
+                self.menu = None;
+
+                if dismissing_a_menu && action == keys::Action::Dismiss {
                     return Task::none();
                 }
                 self.act(action)
@@ -383,6 +386,11 @@ impl ClipKeep {
         ])
     }
 
+    fn dismiss_popup(&mut self) -> Task<Message> {
+        self.dismissed_at = Some(std::time::Instant::now());
+        self.close_popup()
+    }
+
     fn close_popup(&mut self) -> Task<Message> {
         let PopupState::Open(id) = self.popup else {
             return Task::none();
@@ -516,6 +524,10 @@ impl ClipKeep {
         self.menu
     }
 
+    fn showing_row_menu(&self) -> bool {
+        menu_on_screen(self.menu, self.details.is_none() && !self.showing_settings)
+    }
+
     fn open_row_menu(&mut self, id: EntryId) -> Task<Message> {
         if matches!(self.menu, Some((current, _)) if current == id) {
             self.menu = None;
@@ -584,7 +596,7 @@ impl ClipKeep {
                 Some(id) => self.confirm(id),
                 None => Task::none(),
             },
-            Action::Dismiss => self.close_popup(),
+            Action::Dismiss => self.dismiss_popup(),
             Action::Delete => match self.focused {
                 Some(id) => self.delete(id),
                 None => Task::none(),
@@ -797,7 +809,7 @@ impl ClipKeep {
             id,
             paste: self.settings.paste_on_use,
         });
-        self.close_popup()
+        self.dismiss_popup()
     }
 
     fn toggle_pin(&mut self, id: EntryId) -> Task<Message> {
@@ -820,6 +832,10 @@ impl ClipKeep {
         self.clip.send(ClipCommand::Delete(id));
         Task::none()
     }
+}
+
+fn menu_on_screen(menu: Option<(EntryId, Option<cosmic::iced::Rectangle>)>, listing: bool) -> bool {
+    listing && matches!(menu, Some((_, Some(_))))
 }
 
 fn closes_row_menu(message: &Message) -> bool {
@@ -894,6 +910,22 @@ mod tests {
     #[test]
     fn keys_are_left_to_decide_for_themselves() {
         assert!(!closes_row_menu(&Message::Key(keys::Action::Dismiss)));
+    }
+
+    #[test]
+    fn only_a_menu_the_user_can_see_is_holding_escape() {
+        let placed = Some((EntryId(1), Some(cosmic::iced::Rectangle::default())));
+
+        assert!(menu_on_screen(placed, true));
+        assert!(
+            !menu_on_screen(Some((EntryId(1), None)), true),
+            "a menu still waiting for its anchor draws nothing, so Escape belongs to the popup"
+        );
+        assert!(
+            !menu_on_screen(placed, false),
+            "details and settings hide the menu, so Escape belongs to the page"
+        );
+        assert!(!menu_on_screen(None, true));
     }
 
     #[test]
