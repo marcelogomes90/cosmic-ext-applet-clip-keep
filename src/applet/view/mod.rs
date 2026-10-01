@@ -26,6 +26,8 @@ pub(crate) const GAP_TIGHT: u16 = 4;
 
 pub(crate) const CONTROL_HEIGHT: u16 = 32;
 
+pub(crate) const LINK_INSET: [u16; 2] = [GAP_TIGHT, GAP];
+
 pub(crate) const ICON_SMALL: u16 = 14;
 pub(crate) const ICON: u16 = 16;
 
@@ -165,11 +167,12 @@ fn menu_origin(anchor: Rectangle, width: f32) -> Point {
 
 pub(crate) fn page_header<'a>(title: String, back: Message) -> Element<'a, Message> {
     let back_button = widget::button::icon(widget::icon::from_name("go-previous-symbolic"))
-        .class(widget::button::ButtonClass::Link)
+        .class(widget::button::ButtonClass::Text)
         .extra_small()
         .label(crate::fl!("back"))
-        .padding(0)
-        .spacing(4)
+        .padding(LINK_INSET)
+        .spacing(GAP_TIGHT)
+        .height(Length::Fixed(f32::from(CONTROL_HEIGHT)))
         .on_press(back);
 
     widget::container(
