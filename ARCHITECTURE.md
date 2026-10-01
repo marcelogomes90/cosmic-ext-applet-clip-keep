@@ -83,6 +83,15 @@ handling keeps navigation working even when an individual widget consumed the ev
 - Ctrl+I, Ctrl+P, Ctrl+D and Ctrl+F open details, pin, delete and focus search;
 - Escape returns from details or settings to the list, then closes the popup.
 
+**The two actions that end the popup — Escape and Enter — are taken when the key comes back up;
+everything else on the way down.** A key press is sometimes never delivered to this applet while
+its release is, with no focus change either side of it: the helper layer holds the keyboard, the
+keystroke before it was handled normally, and the press simply does not arrive. Whatever the cause
+is, it is below the applet. Taking the terminal actions on the release makes a single tap reliable,
+because the release is the event that does arrive. Navigation and typing stay on the press, where
+they keep auto-repeat and where a dropped press costs nothing but another tap. A terminal action
+must never fire on both, or one tap would leave the details page *and* use the entry behind it.
+
 Selection from the pointer and selection from the keyboard share the same `focused` entry. Scrolling
 uses measured widget bounds rather than estimated row heights because headings, dividers and image
 rows have different sizes.

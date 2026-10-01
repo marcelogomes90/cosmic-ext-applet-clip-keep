@@ -20,24 +20,31 @@ pub enum Action {
 
 pub fn subscription() -> Subscription<Message> {
     event::listen_with(|event, status, _| {
-        let Event::Keyboard(keyboard::Event::KeyPressed {
-            key,
-            modifiers,
-            text,
-            ..
-        }) = event
-        else {
-            return None;
-        };
-
-        interpret(
-            &key,
-            modifiers,
-            text.as_deref(),
-            status == event::Status::Captured,
-        )
+        match event {
+            Event::Keyboard(keyboard::Event::KeyReleased { key, .. }) => released(&key),
+            Event::Keyboard(keyboard::Event::KeyPressed {
+                key,
+                modifiers,
+                text,
+                ..
+            }) => interpret(
+                &key,
+                modifiers,
+                text.as_deref(),
+                status == event::Status::Captured,
+            ),
+            _ => None,
+        }
         .map(Message::Key)
     })
+}
+
+pub fn released(key: &Key) -> Option<Action> {
+    match key {
+        Key::Named(Named::Escape) => Some(Action::Dismiss),
+        Key::Named(Named::Enter) => Some(Action::Confirm),
+        _ => None,
+    }
 }
 
 pub fn interpret(
@@ -67,8 +74,6 @@ pub fn interpret(
     match key {
         Key::Named(Named::ArrowDown) => return Some(Action::Down),
         Key::Named(Named::ArrowUp) => return Some(Action::Up),
-        Key::Named(Named::Enter) => return Some(Action::Confirm),
-        Key::Named(Named::Escape) => return Some(Action::Dismiss),
         _ => {}
     }
 
@@ -102,7 +107,7 @@ mod tests {
     }
 
     #[test]
-    fn the_arrows_and_enter_drive_the_list() {
+    fn the_arrows_drive_the_list() {
         let none = Modifiers::empty();
 
         assert_eq!(
@@ -112,14 +117,6 @@ mod tests {
         assert_eq!(
             interpret(&named(Named::ArrowUp), none, None, false),
             Some(Action::Up)
-        );
-        assert_eq!(
-            interpret(&named(Named::Enter), none, None, false),
-            Some(Action::Confirm)
-        );
-        assert_eq!(
-            interpret(&named(Named::Escape), none, None, false),
-            Some(Action::Dismiss)
         );
     }
 
@@ -151,6 +148,31 @@ mod tests {
             interpret(&character("f"), ctrl, None, false),
             Some(Action::FocusSearch)
         );
+    }
+
+    #[test]
+    fn what_ends_the_popup_is_taken_on_the_way_up() {
+        assert_eq!(released(&named(Named::Escape)), Some(Action::Dismiss));
+        assert_eq!(released(&named(Named::Enter)), Some(Action::Confirm));
+        assert_eq!(released(&named(Named::ArrowDown)), None);
+        assert_eq!(released(&character("a")), None);
+
+        for modifiers in [
+            Modifiers::empty(),
+            Modifiers::SHIFT,
+            Modifiers::CTRL,
+            Modifiers::ALT,
+            Modifiers::LOGO,
+        ] {
+            for key in [named(Named::Escape), named(Named::Enter)] {
+                assert_eq!(
+                    interpret(&key, modifiers, None, true),
+                    None,
+                    "a terminal action must not also fire on the press, or one tap would \
+                     both leave the details page and use the entry behind it"
+                );
+            }
+        }
     }
 
     #[test]
