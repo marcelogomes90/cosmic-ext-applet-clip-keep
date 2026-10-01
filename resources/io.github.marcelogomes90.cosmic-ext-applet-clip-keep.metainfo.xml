@@ -23,112 +23,126 @@
   <summary xml:lang="uk">Усе скопійоване — за один клік</summary>
   <summary xml:lang="zh-CN">您复制的所有内容，一键即可获取</summary>
   <description>
-    <p>Clip Keep is a clipboard history applet for the COSMIC desktop. It keeps what you copy in a searchable list behind a panel button, so a snippet you copied twenty minutes ago is still there when you need it. Type to narrow the list and press Enter to make an earlier item available on the clipboard again.</p>
-    <p>On its first start, Clip Keep tries to register <code>Super+V</code> as its global shortcut. It never replaces an existing shortcut: if that combination is already in use, choose any combination in COSMIC Settings and assign it the command <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. A shortcut created automatically or manually can be changed later in COSMIC Settings.</p>
-    <p xml:lang="pl">Clip Keep jest apletem schowka dla środowiska COSMIC. Zachowuje on wszystko co skopiowałeś w łatwym do wyszukiwania formacie w formie przycisku na panelu, więc urywek który skopiowałeś kwadrans temu jest dalej dostępny, gdy go potrzebujesz. Zacznij pisać by zawężyć wyszukiwanie i naciśnij Enter by wcześniejszy element był znowu bezpośrednio w schowku.</p>
-    <p xml:lang="pl">Przy pierwszym uruchomieniu Clip Keep próbuje zarejestrować <code>Super+V</code> jako globalny skrót. Nigdy nie zastępuje istniejącego skrótu: jeśli ta kombinacja jest już używana, wybierz dowolną kombinację w Ustawieniach COSMIC i przypisz jej polecenie <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Skrót utworzony automatycznie lub ręcznie można później zmienić w Ustawieniach COSMIC.</p>
-    <p>A clipboard manager sits between every application on the desktop and has to be trusted with what passes through. Clip Keep is organised around three things going wrong:</p>
-    <p xml:lang="pl">Menadżer schowka jest pomiędzy każdą inną aplikacją w systemie, więc musi być godny zaufania nad powierzonymi mu danymi. Clip Keep jest uodporniony na trzy wektory zagrożeń:</p>
+    <p>Clip Keep remembers what you copy. It sits in the COSMIC panel, and one click opens a searchable list of everything that has been through your clipboard, so the link you copied twenty minutes ago is still there when you need it. Start typing to narrow the list, press Enter, and that entry is back on the clipboard.</p>
+    <p>Pin the entries you reach for every day and they stay at the top. Open one to see where it came from, when you first copied it and how often you have used it since. Images are kept as well, with a thumbnail in the list.</p>
+    <p>The first time it runs, Clip Keep tries to claim <code>Super+V</code>. It never takes over a shortcut that is already in use: if that combination is taken, pick your own in COSMIC Settings and give it the command <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Either way, you can change it later in COSMIC Settings.</p>
+    <p>A clipboard sees everything you copy, so Clip Keep is careful with it:</p>
     <ul>
-      <li>Reading a selection must never hold up the application that owns it. Only the formats worth keeping are ever requested, every transfer has a timeout and a size ceiling, and the reads run alongside the event loop rather than blocking it, so copying a large image out of a browser cannot freeze the browser.</li>
-      <li xml:lang="pl">Odczytanie zaznaczenia nigdy nie może blokować aplikacji do której należą dane. Tylko formaty możliwe do skopiowania są żadane, każdy przesył ma limit czasowy i rozmiarowy, i odczytanie zawiera się w cyklu wydarzenia zamiast blokowania go, więc kopiowanie dużych obrazów z przeglądarki ni zawiesza jej.</li>
-      <li>History has to stay small in memory. The list holds only what it draws, images are stored as pre-scaled thumbnails, and a full image is loaded when it is previewed and dropped when it is not.</li>
-      <li xml:lang="pl">Ślad historii w pamięci musi być mały. Lista zawiera tylko to co jest zapisane, obrazy są zapisywane jako miniaturki a duże obrazy są ładowane tylko podczas podglądu i usuwane z pamięci po nim.</li>
-      <li>Some things should never be recorded. Entries carrying a password manager hint can be discarded, private mode pauses capture, and the history file is readable only by you.</li>
-      <li xml:lang="pl">Niektóre rzeczy nigdy nie powinne być zapisywane, Każdy element zawierający sugestię że jest hasłem jest odrzucany, tryb prywatny przerywa zapis i pliki historii są dostępne do odczytu tylko dla ciebie.</li>
+      <li>Whatever your password manager marks as a password is skipped.</li>
+      <li>Private mode stops recording until you switch it back off.</li>
+      <li>The history never leaves your computer, and only you can read the file it lives in.</li>
+      <li>Copying stays instant, however large the thing you copied.</li>
     </ul>
-    <p>Capture uses the COSMIC compositor's data-control protocol and stays on the local machine.</p>
-    <p xml:lang="pl">Kopiowanie używa protokołu data-control kompozytora COSMIC i nie opuszcza fizycznie komputera.</p>
-    <p xml:lang="cs">Clip Keep je applet historie schránky pro prostředí COSMIC. Uchovává zkopírovaný obsah v prohledávatelném seznamu, který otevřete tlačítkem na panelu, takže i úryvek zkopírovaný před dvaceti minutami budete mít stále po ruce. Psaním můžete seznam zúžit a stisknutím klávesy Enter znovu zpřístupnit starší položku ve schránce.</p>
-    <p xml:lang="cs">Při prvním spuštění se Clip Keep pokusí zaregistrovat <code>Super+V</code> jako globální klávesovou zkratku. Nikdy nenahradí existující zkratku: pokud se tato kombinace již používá, zvolte libovolnou kombinaci v Nastavení COSMIC a přiřaďte jí příkaz <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Automaticky nebo ručně vytvořenou zkratku lze později změnit v Nastavení COSMIC.</p>
-    <p xml:lang="cs">Mezi všemi aplikacemi v prostředí stojí správce schránky, který musí mít přístup k tomu, co jimi prochází. Clip Keep je navržen s ohledem na tři věci, které se mohou pokazit:</p>
+    <p xml:lang="cs">Clip Keep si pamatuje, co zkopírujete. Sídlí v panelu COSMIC a jedním kliknutím otevře prohledávatelný seznam všeho, co prošlo schránkou, takže odkaz zkopírovaný před dvaceti minutami tam bude i ve chvíli, kdy ho potřebujete. Začněte psát, seznam se zúží, stisknete Enter a položka je zpátky ve schránce.</p>
+    <p xml:lang="cs">Položky, které používáte denně, si můžete připnout a zůstanou nahoře. Po otevření uvidíte, odkud pocházejí, kdy jste je zkopírovali poprvé a jak často jste je od té doby použili. Obrázky se ukládají také, v seznamu s náhledem.</p>
+    <p xml:lang="cs">Při prvním spuštění se Clip Keep pokusí zabrat <code>Super+V</code>. Nikdy nepřepíše zkratku, která se už používá: pokud je tato kombinace obsazená, zvolte si v Nastavení COSMIC vlastní a přiřaďte jí příkaz <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Tak či tak ji později můžete v Nastavení COSMIC změnit.</p>
+    <p xml:lang="cs">Schránka vidí všechno, co zkopírujete, a Clip Keep s tím zachází opatrně:</p>
     <ul>
-      <li xml:lang="cs">Čtení výběru nikdy nesmí zdržovat aplikaci, která jej vlastní. Vyžadovány jsou pouze formáty, které má smysl uchovávat. Každý přenos má časový limit a maximální velikost. Čtení probíhá souběžně se smyčkou událostí, aniž by ji blokovalo, takže kopírování velkého obrázku z prohlížeče nemůže zablokovat samotný prohlížeč.</li>
-      <li xml:lang="cs">Historie musí zůstat paměťově nenáročná. Seznam uchovává pouze to, co zobrazuje. Obrázky jsou uložené jako předem zmenšené náhledy. Celý obrázek se načte při zobrazení náhledu a po jeho zavření se uvolní.</li>
-      <li xml:lang="cs">Některé věci by se nikdy neměly zaznamenávat. Položky označené upozorněním správce hesel lze zahodit, soukromý režim pozastaví zachytávání a soubor s historií můžete číst pouze vy.</li>
+      <li xml:lang="cs">Co váš správce hesel označí jako heslo, se nezaznamenává.</li>
+      <li xml:lang="cs">Soukromý režim zastaví zaznamenávání, dokud jej sami nevypnete.</li>
+      <li xml:lang="cs">Historie nikdy neopustí váš počítač a soubor, ve kterém je uložená, můžete číst jen vy.</li>
+      <li xml:lang="cs">Kopírování zůstává okamžité, ať zkopírujete cokoliv velkého.</li>
     </ul>
-    <p xml:lang="cs">Zachytávání využívá protokol data-control kompozitoru COSMIC a probíhá pouze na místním počítači.</p>
-    <p xml:lang="de">Clip Keep ist ein Applet für den Zwischenablageverlauf auf dem COSMIC-Desktop. Es speichert kopierte Inhalte in einer durchsuchbaren Liste hinter einer Panel-Schaltfläche, damit ein vor zwanzig Minuten kopierter Textausschnitt noch verfügbar ist, wenn du ihn brauchst. Tippe, um die Liste einzugrenzen, und drücke die Eingabetaste, um einen früheren Eintrag wieder in die Zwischenablage zu übernehmen.</p>
-    <p xml:lang="de">Beim ersten Start versucht Clip Keep, <code>Super+V</code> als globale Tastenkombination zu registrieren. Eine vorhandene Tastenkombination wird niemals ersetzt: Falls diese Kombination bereits belegt ist, wähle eine beliebige Kombination in den COSMIC-Einstellungen und weise ihr den Befehl <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code> zu. Automatisch oder manuell angelegte Tastenkombinationen können später in den COSMIC-Einstellungen geändert werden.</p>
-    <p xml:lang="de">Ein Zwischenablageverwalter steht zwischen allen Anwendungen auf dem Desktop und muss mit den Inhalten, die ihn durchlaufen, vertrauenswürdig umgehen. Clip Keep ist darauf ausgelegt, drei mögliche Probleme zu vermeiden:</p>
+    <p xml:lang="de">Clip Keep merkt sich, was du kopierst. Es sitzt im COSMIC-Panel, und ein Klick öffnet eine durchsuchbare Liste von allem, was durch die Zwischenablage gegangen ist – der Link von vor zwanzig Minuten ist also noch da, wenn du ihn brauchst. Tippe, um die Liste einzugrenzen, drücke die Eingabetaste, und der Eintrag liegt wieder in der Zwischenablage.</p>
+    <p xml:lang="de">Einträge, die du täglich brauchst, kannst du anheften; sie bleiben oben. Öffne einen, um zu sehen, woher er stammt, wann du ihn zuerst kopiert hast und wie oft du ihn seitdem benutzt hast. Bilder werden ebenfalls aufbewahrt, mit einer Vorschau in der Liste.</p>
+    <p xml:lang="de">Beim ersten Start versucht Clip Keep, sich <code>Super+V</code> zu nehmen. Eine bereits vergebene Tastenkombination wird nie überschrieben: Ist sie belegt, wähle in den COSMIC-Einstellungen deine eigene und weise ihr den Befehl <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code> zu. So oder so kannst du sie später in den COSMIC-Einstellungen ändern.</p>
+    <p xml:lang="de">Eine Zwischenablage sieht alles, was du kopierst – Clip Keep geht entsprechend sorgsam damit um:</p>
     <ul>
-      <li xml:lang="de">Das Lesen einer Auswahl darf die Anwendung, der sie gehört, niemals aufhalten. Nur Formate, die sich zum Aufbewahren eignen, werden angefordert. Jede Übertragung hat ein Zeitlimit und eine Größenobergrenze, und die Lesevorgänge laufen parallel zur Ereignisschleife, statt sie zu blockieren. So kann das Kopieren eines großen Bildes aus einem Browser den Browser nicht einfrieren.</li>
-      <li xml:lang="de">Der Verlauf muss im Arbeitsspeicher klein bleiben. Die Liste hält nur die Inhalte vor, die sie anzeigt. Bilder werden als bereits verkleinerte Vorschaubilder gespeichert; ein vollständiges Bild wird nur für seine Vorschau geladen und anschließend wieder freigegeben.</li>
-      <li xml:lang="de">Manche Inhalte sollten niemals aufgezeichnet werden. Einträge mit einem Hinweis eines Passwortverwalters können verworfen werden, der private Modus pausiert die Erfassung, und die Verlaufsdatei ist nur für dich lesbar.</li>
+      <li xml:lang="de">Was dein Passwortverwalter als Passwort kennzeichnet, wird übersprungen.</li>
+      <li xml:lang="de">Der private Modus hält die Aufzeichnung an, bis du ihn wieder ausschaltest.</li>
+      <li xml:lang="de">Der Verlauf verlässt deinen Rechner nie, und die Datei dahinter kannst nur du lesen.</li>
+      <li xml:lang="de">Kopieren bleibt sofort erledigt, egal wie groß das Kopierte ist.</li>
     </ul>
-    <p xml:lang="de">Die Erfassung nutzt das data-control-Protokoll des COSMIC-Compositors und bleibt auf dem lokalen Rechner.</p>
-    <p xml:lang="es">Clip Keep es un applet de historial del portapapeles para el escritorio COSMIC. Guarda lo que copias en una lista con búsqueda accesible desde un botón del panel, para que un fragmento que copiaste hace veinte minutos siga ahí cuando lo necesites. Escribe para filtrar la lista y pulsa Intro para volver a poner un elemento anterior en el portapapeles.</p>
-    <p xml:lang="es">Al iniciarse por primera vez, Clip Keep intenta registrar <code>Super+V</code> como atajo global. Nunca sustituye un atajo existente: si esa combinación ya está en uso, elige cualquier combinación en los Ajustes de COSMIC y asígnale el comando <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Un atajo creado de forma automática o manual se puede cambiar después en los Ajustes de COSMIC.</p>
-    <p xml:lang="es">Un gestor del portapapeles se sitúa entre todas las aplicaciones del escritorio y debe ser digno de confianza con lo que pasa por él. Clip Keep está diseñado para evitar tres posibles problemas:</p>
+    <p xml:lang="es">Clip Keep recuerda lo que copias. Vive en el panel de COSMIC y, con un clic, abre una lista con búsqueda de todo lo que ha pasado por el portapapeles, así que el enlace que copiaste hace veinte minutos sigue ahí cuando lo necesitas. Empieza a escribir para filtrar, pulsa Intro y ese elemento vuelve al portapapeles.</p>
+    <p xml:lang="es">Fija los elementos que usas a diario y se quedarán arriba. Abre uno para ver de dónde vino, cuándo lo copiaste por primera vez y cuántas veces lo has usado desde entonces. Las imágenes también se guardan, con una miniatura en la lista.</p>
+    <p xml:lang="es">La primera vez que se ejecuta, Clip Keep intenta quedarse con <code>Super+V</code>. Nunca pisa un atajo que ya esté en uso: si esa combinación está ocupada, elige la tuya en los Ajustes de COSMIC y asígnale el comando <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. En cualquier caso, luego puedes cambiarlo en los Ajustes de COSMIC.</p>
+    <p xml:lang="es">Un portapapeles ve todo lo que copias, y Clip Keep lo trata con cuidado:</p>
     <ul>
-      <li xml:lang="es">Leer una selección nunca debe bloquear la aplicación a la que pertenece. Solo se solicitan los formatos que merece la pena conservar, cada transferencia tiene un tiempo límite y un tamaño máximo, y las lecturas se ejecutan en paralelo al bucle de eventos en lugar de bloquearlo, de modo que copiar una imagen grande desde un navegador no puede congelarlo.</li>
-      <li xml:lang="es">El historial debe ocupar poca memoria. La lista solo mantiene lo que muestra, las imágenes se guardan como miniaturas ya reducidas, y una imagen completa se carga al mostrar su vista previa y se libera cuando deja de mostrarse.</li>
-      <li xml:lang="es">Algunas cosas nunca deberían registrarse. Las entradas con una indicación de un gestor de contraseñas se pueden descartar, el modo privado pausa la captura y solo tú puedes leer el archivo del historial.</li>
+      <li xml:lang="es">Lo que tu gestor de contraseñas marca como contraseña se omite.</li>
+      <li xml:lang="es">El modo privado detiene el registro hasta que vuelvas a desactivarlo.</li>
+      <li xml:lang="es">El historial nunca sale de tu equipo, y solo tú puedes leer el archivo donde se guarda.</li>
+      <li xml:lang="es">Copiar sigue siendo instantáneo, por grande que sea lo copiado.</li>
     </ul>
-    <p xml:lang="es">La captura utiliza el protocolo data-control del compositor de COSMIC y permanece en el equipo local.</p>
-    <p xml:lang="fr">Clip Keep est un applet d’historique du presse-papiers pour le bureau COSMIC. Il conserve ce que vous copiez dans une liste avec recherche, accessible depuis un bouton du panneau, pour qu’un extrait copié il y a vingt minutes soit toujours là quand vous en avez besoin. Saisissez du texte pour filtrer la liste et appuyez sur Entrée pour remettre un ancien élément dans le presse-papiers.</p>
-    <p xml:lang="fr">Au premier lancement, Clip Keep tente d’enregistrer <code>Super+V</code> comme raccourci global. Il ne remplace jamais un raccourci existant : si cette combinaison est déjà utilisée, choisissez une autre combinaison dans les Paramètres de COSMIC et associez-lui la commande <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Un raccourci créé automatiquement ou manuellement peut être modifié par la suite dans les Paramètres de COSMIC.</p>
-    <p xml:lang="fr">Un gestionnaire de presse-papiers se place entre toutes les applications du bureau et doit traiter de manière fiable tout ce qui y transite. Clip Keep est conçu pour éviter trois problèmes possibles :</p>
+    <p xml:lang="fr">Clip Keep retient ce que vous copiez. Il se place dans le panneau COSMIC et, d’un clic, ouvre une liste avec recherche de tout ce qui est passé par le presse-papiers : le lien copié il y a vingt minutes est donc toujours là quand vous en avez besoin. Tapez pour filtrer, appuyez sur Entrée, et l’élément revient dans le presse-papiers.</p>
+    <p xml:lang="fr">Épinglez les éléments dont vous vous servez tous les jours : ils restent en haut. Ouvrez-en un pour voir d’où il vient, quand vous l’avez copié la première fois et combien de fois vous l’avez utilisé depuis. Les images sont conservées aussi, avec un aperçu dans la liste.</p>
+    <p xml:lang="fr">Au premier lancement, Clip Keep essaie de prendre <code>Super+V</code>. Il ne remplace jamais un raccourci déjà utilisé : si cette combinaison est prise, choisissez la vôtre dans les Paramètres de COSMIC et associez-lui la commande <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Dans tous les cas, vous pourrez le modifier plus tard dans les Paramètres de COSMIC.</p>
+    <p xml:lang="fr">Un presse-papiers voit tout ce que vous copiez ; Clip Keep y fait donc attention :</p>
     <ul>
-      <li xml:lang="fr">Lire une sélection ne doit jamais bloquer l’application qui la possède. Seuls les formats qui méritent d’être conservés sont demandés, chaque transfert a une limite de temps et de taille, et les lectures s’exécutent en parallèle de la boucle d’événements plutôt que de la bloquer. Copier une grande image depuis un navigateur ne peut donc pas figer celui-ci.</li>
-      <li xml:lang="fr">L’historique doit rester peu gourmand en mémoire. La liste ne garde en mémoire que ce qu’elle affiche, les images sont stockées sous forme de miniatures déjà réduites, et une image complète est chargée pour son aperçu puis libérée lorsqu’elle n’est plus affichée.</li>
-      <li xml:lang="fr">Certains contenus ne devraient jamais être enregistrés. Les entrées signalées par un gestionnaire de mots de passe peuvent être ignorées, le mode privé suspend la capture, et le fichier d’historique n’est lisible que par vous.</li>
+      <li xml:lang="fr">Ce que votre gestionnaire de mots de passe signale comme mot de passe est ignoré.</li>
+      <li xml:lang="fr">Le mode privé suspend l’enregistrement jusqu’à ce que vous le désactiviez.</li>
+      <li xml:lang="fr">L’historique ne quitte jamais votre ordinateur, et vous seul pouvez lire le fichier qui le contient.</li>
+      <li xml:lang="fr">Copier reste instantané, quelle que soit la taille de ce que vous copiez.</li>
     </ul>
-    <p xml:lang="fr">La capture utilise le protocole data-control du compositeur de COSMIC et reste sur la machine locale.</p>
-    <p xml:lang="it">Clip Keep è un applet della cronologia degli appunti per il desktop COSMIC. Conserva ciò che copi in un elenco ricercabile accessibile da un pulsante del pannello, così un frammento copiato venti minuti fa è ancora disponibile quando ti serve. Digita per filtrare l’elenco e premi Invio per riportare negli appunti un elemento precedente.</p>
-    <p xml:lang="it">Al primo avvio, Clip Keep prova a registrare <code>Super+V</code> come scorciatoia globale. Non sostituisce mai una scorciatoia esistente: se quella combinazione è già in uso, scegli una combinazione nelle Impostazioni di COSMIC e assegnale il comando <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Una scorciatoia creata automaticamente o manualmente può essere modificata in seguito nelle Impostazioni di COSMIC.</p>
-    <p xml:lang="it">Un gestore degli appunti si trova tra tutte le applicazioni del desktop e deve trattare in modo affidabile ciò che vi passa. Clip Keep è progettato per evitare tre possibili problemi:</p>
+    <p xml:lang="it">Clip Keep ricorda quello che copi. Sta nel pannello di COSMIC e con un clic apre un elenco ricercabile di tutto ciò che è passato dagli appunti: il link copiato venti minuti fa è ancora lì quando ti serve. Scrivi per filtrare, premi Invio e quella voce torna negli appunti.</p>
+    <p xml:lang="it">Fissa le voci che usi ogni giorno e restano in cima. Aprine una per vedere da dove arriva, quando l’hai copiata la prima volta e quante volte l’hai usata da allora. Anche le immagini vengono conservate, con un’anteprima nell’elenco.</p>
+    <p xml:lang="it">Al primo avvio Clip Keep prova a prendersi <code>Super+V</code>. Non sostituisce mai una scorciatoia già in uso: se quella combinazione è occupata, scegli la tua nelle Impostazioni di COSMIC e assegnale il comando <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. In ogni caso potrai cambiarla in seguito nelle Impostazioni di COSMIC.</p>
+    <p xml:lang="it">Gli appunti vedono tutto quello che copi, e Clip Keep ci va cauto:</p>
     <ul>
-      <li xml:lang="it">Leggere una selezione non deve mai bloccare l’applicazione a cui appartiene. Vengono richiesti solo i formati che vale la pena conservare, ogni trasferimento ha un limite di tempo e di dimensione, e le letture avvengono in parallelo al ciclo degli eventi anziché bloccarlo, così copiare un’immagine grande da un browser non può congelarlo.</li>
-      <li xml:lang="it">La cronologia deve occupare poca memoria. L’elenco mantiene solo ciò che visualizza, le immagini vengono memorizzate come miniature già ridimensionate, e un’immagine completa viene caricata per l’anteprima e liberata quando non è più visualizzata.</li>
-      <li xml:lang="it">Alcuni contenuti non dovrebbero mai essere registrati. Le voci contrassegnate da un gestore di password possono essere scartate, la modalità privata sospende l’acquisizione e il file della cronologia è leggibile solo da te.</li>
+      <li xml:lang="it">Ciò che il tuo gestore di password segnala come password viene saltato.</li>
+      <li xml:lang="it">La modalità privata sospende la registrazione finché non la disattivi.</li>
+      <li xml:lang="it">La cronologia non lascia mai il tuo computer, e solo tu puoi leggere il file in cui è salvata.</li>
+      <li xml:lang="it">Copiare resta immediato, per quanto grande sia ciò che copi.</li>
     </ul>
-    <p xml:lang="it">L’acquisizione usa il protocollo data-control del compositore di COSMIC e rimane sul computer locale.</p>
-    <p xml:lang="nl">Clip Keep is een applet voor klembordgeschiedenis op het COSMIC-bureaublad. Het bewaart wat je kopieert in een doorzoekbare lijst achter een paneelknop, zodat een stukje tekst dat je twintig minuten geleden kopieerde er nog is wanneer je het nodig hebt. Typ om de lijst te filteren en druk op Enter om een eerder item weer op het klembord te zetten.</p>
-    <p xml:lang="nl">Bij de eerste start probeert Clip Keep <code>Super+V</code> als globale sneltoets te registreren. Het vervangt nooit een bestaande sneltoets: als die combinatie al in gebruik is, kies dan een combinatie in COSMIC-instellingen en wijs er de opdracht <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code> aan toe. Een automatisch of handmatig aangemaakte sneltoets kun je later wijzigen in COSMIC-instellingen.</p>
-    <p xml:lang="nl">Een klembordbeheerder staat tussen alle toepassingen op het bureaublad en moet betrouwbaar omgaan met alles wat erdoorheen gaat. Clip Keep is ontworpen om drie mogelijke problemen te voorkomen:</p>
+    <p xml:lang="nl">Clip Keep onthoudt wat je kopieert. Het zit in het COSMIC-paneel en opent met één klik een doorzoekbare lijst van alles wat door het klembord is gegaan, zodat de link van twintig minuten geleden er nog steeds is wanneer je hem nodig hebt. Typ om de lijst te verkleinen, druk op Enter en het item staat weer op het klembord.</p>
+    <p xml:lang="nl">Zet de items die je dagelijks gebruikt vast; ze blijven bovenaan staan. Open er een om te zien waar het vandaan komt, wanneer je het voor het eerst kopieerde en hoe vaak je het sindsdien hebt gebruikt. Afbeeldingen worden ook bewaard, met een miniatuur in de lijst.</p>
+    <p xml:lang="nl">Bij de eerste start probeert Clip Keep <code>Super+V</code> te claimen. Een sneltoets die al in gebruik is wordt nooit overschreven: is die combinatie bezet, kies dan je eigen in COSMIC-instellingen en geef die het commando <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Je kunt hem later hoe dan ook wijzigen in COSMIC-instellingen.</p>
+    <p xml:lang="nl">Een klembord ziet alles wat je kopieert, dus gaat Clip Keep er zorgvuldig mee om:</p>
     <ul>
-      <li xml:lang="nl">Het lezen van een selectie mag de toepassing die deze bezit nooit ophouden. Alleen formaten die het bewaren waard zijn worden opgevraagd, elke overdracht heeft een tijdslimiet en een maximale grootte, en het lezen gebeurt naast de gebeurtenislus in plaats van deze te blokkeren. Zo kan het kopiëren van een grote afbeelding uit een browser de browser niet laten vastlopen.</li>
-      <li xml:lang="nl">De geschiedenis moet weinig geheugen gebruiken. De lijst houdt alleen vast wat ze weergeeft, afbeeldingen worden opgeslagen als vooraf verkleinde miniaturen, en een volledige afbeelding wordt geladen wanneer het voorbeeld wordt getoond en vrijgegeven wanneer dat niet meer zo is.</li>
-      <li xml:lang="nl">Sommige dingen mogen nooit worden vastgelegd. Items met een aanwijzing van een wachtwoordbeheerder kunnen worden overgeslagen, de privémodus pauzeert het vastleggen en alleen jij kunt het geschiedenisbestand lezen.</li>
+      <li xml:lang="nl">Wat je wachtwoordbeheerder als wachtwoord markeert, wordt overgeslagen.</li>
+      <li xml:lang="nl">Privémodus stopt het opnemen tot je die weer uitzet.</li>
+      <li xml:lang="nl">De geschiedenis verlaat je computer nooit, en alleen jij kunt het bestand lezen waarin die staat.</li>
+      <li xml:lang="nl">Kopiëren blijft direct, hoe groot het gekopieerde ook is.</li>
     </ul>
-    <p xml:lang="nl">Het vastleggen gebruikt het data-control-protocol van de COSMIC-compositor en blijft op de lokale computer.</p>
-    <p xml:lang="pt-BR">O Clip Keep é um applet de histórico da área de transferência para o ambiente COSMIC. Ele mantém o que você copia em uma lista pesquisável, acessível por um botão no painel, para que um trecho copiado há vinte minutos ainda esteja disponível quando você precisar. Digite para filtrar a lista e pressione Enter para colocar um item anterior de volta na área de transferência.</p>
-    <p xml:lang="pt-BR">Na primeira execução, o Clip Keep tenta registrar <code>Super+V</code> como atalho global. Ele nunca substitui um atalho existente: se essa combinação já estiver em uso, escolha uma combinação nas Configurações do COSMIC e atribua a ela o comando <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Um atalho criado automaticamente ou manualmente pode ser alterado depois nas Configurações do COSMIC.</p>
-    <p xml:lang="pt-BR">Um gerenciador da área de transferência fica entre todos os aplicativos do ambiente e precisa ser confiável para lidar com o que passa por ele. O Clip Keep é estruturado para evitar três possíveis problemas:</p>
+    <p xml:lang="pl">Clip Keep pamięta to, co kopiujesz. Siedzi w panelu COSMIC i jednym kliknięciem otwiera przeszukiwalną listę wszystkiego, co przeszło przez schowek, więc odnośnik skopiowany dwadzieścia minut temu wciąż tam jest, kiedy go potrzebujesz. Zacznij pisać, by zawęzić listę, naciśnij Enter, a wpis wraca do schowka.</p>
+    <p xml:lang="pl">Przypnij wpisy, z których korzystasz codziennie, a zostaną na górze. Otwórz jeden, by zobaczyć, skąd pochodzi, kiedy skopiowałeś go po raz pierwszy i jak często od tego czasu go używałeś. Obrazy też są zachowywane, z miniaturką na liście.</p>
+    <p xml:lang="pl">Przy pierwszym uruchomieniu Clip Keep próbuje zająć <code>Super+V</code>. Nigdy nie nadpisuje skrótu, który jest już używany: jeśli ta kombinacja jest zajęta, wybierz własną w Ustawieniach COSMIC i przypisz jej polecenie <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Tak czy inaczej możesz go później zmienić w Ustawieniach COSMIC.</p>
+    <p xml:lang="pl">Schowek widzi wszystko, co kopiujesz, więc Clip Keep obchodzi się z tym ostrożnie:</p>
     <ul>
-      <li xml:lang="pt-BR">Ler uma seleção nunca deve bloquear o aplicativo ao qual ela pertence. Somente os formatos que vale a pena guardar são solicitados, cada transferência tem um limite de tempo e de tamanho, e as leituras acontecem em paralelo ao loop de eventos, sem bloqueá-lo. Assim, copiar uma imagem grande de um navegador não pode travá-lo.</li>
-      <li xml:lang="pt-BR">O histórico precisa ocupar pouca memória. A lista mantém apenas o que exibe, as imagens são armazenadas como miniaturas já reduzidas e uma imagem completa só é carregada para a prévia, sendo liberada quando deixa de ser exibida.</li>
-      <li xml:lang="pt-BR">Algumas coisas nunca deveriam ser registradas. Entradas sinalizadas por um gerenciador de senhas podem ser descartadas, o modo privado pausa a captura e o arquivo de histórico só pode ser lido por você.</li>
+      <li xml:lang="pl">To, co menedżer haseł oznacza jako hasło, jest pomijane.</li>
+      <li xml:lang="pl">Tryb prywatny wstrzymuje zapisywanie, dopóki go nie wyłączysz.</li>
+      <li xml:lang="pl">Historia nigdy nie opuszcza twojego komputera, a plik, w którym się znajduje, możesz czytać tylko ty.</li>
+      <li xml:lang="pl">Kopiowanie pozostaje natychmiastowe, niezależnie od tego, jak duże jest to, co kopiujesz.</li>
     </ul>
-    <p xml:lang="pt-BR">A captura usa o protocolo data-control do compositor do COSMIC e permanece no computador local.</p>
-    <p xml:lang="ru">Clip Keep — это апплет истории буфера обмена для рабочего стола COSMIC. Он сохраняет скопированное в списке с поиском, доступном через кнопку на панели, чтобы фрагмент, скопированный двадцать минут назад, оставался под рукой, когда он понадобится. Начните вводить текст, чтобы отфильтровать список, и нажмите Enter, чтобы снова поместить прежний элемент в буфер обмена.</p>
-    <p xml:lang="ru">При первом запуске Clip Keep пытается зарегистрировать <code>Super+V</code> как глобальное сочетание клавиш. Он никогда не заменяет существующее сочетание: если эта комбинация уже используется, выберите любое сочетание в Настройках COSMIC и назначьте ему команду <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Сочетание, созданное автоматически или вручную, можно позже изменить в Настройках COSMIC.</p>
-    <p xml:lang="ru">Менеджер буфера обмена находится между всеми приложениями рабочего стола, и ему приходится доверять всё, что через него проходит. Clip Keep устроен так, чтобы избежать трёх возможных проблем:</p>
+    <p xml:lang="pt-BR">O Clip Keep lembra o que você copia. Ele fica no painel do COSMIC e, com um clique, abre uma lista pesquisável de tudo o que passou pela área de transferência — então aquele link que você copiou há vinte minutos ainda está lá quando você precisa. Comece a digitar para filtrar, aperte Enter e o item volta para a área de transferência.</p>
+    <p xml:lang="pt-BR">Fixe os itens que você usa todo dia e eles ficam no topo. Abra um para ver de onde ele veio, quando você copiou pela primeira vez e quantas vezes já usou desde então. Imagens também são guardadas, com miniatura na lista.</p>
+    <p xml:lang="pt-BR">Na primeira execução, o Clip Keep tenta assumir o <code>Super+V</code>. Ele nunca toma um atalho que já esteja em uso: se essa combinação estiver ocupada, escolha a sua nas Configurações do COSMIC e dê a ela o comando <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. De um jeito ou de outro, dá para mudar depois nas Configurações do COSMIC.</p>
+    <p xml:lang="pt-BR">A área de transferência vê tudo o que você copia, e o Clip Keep toma cuidado com isso:</p>
     <ul>
-      <li xml:lang="ru">Чтение выделенного содержимого никогда не должно задерживать приложение, которому оно принадлежит. Запрашиваются только форматы, которые стоит сохранять, у каждой передачи есть ограничение по времени и размеру, а чтение выполняется параллельно циклу событий, не блокируя его. Поэтому копирование большого изображения из браузера не может привести к зависанию браузера.</li>
-      <li xml:lang="ru">История должна занимать мало памяти. Список хранит в памяти только то, что отображает, изображения сохраняются в виде заранее уменьшенных миниатюр, а полное изображение загружается для предварительного просмотра и освобождается, когда больше не показывается.</li>
-      <li xml:lang="ru">Некоторые данные никогда не следует записывать. Элементы с отметкой менеджера паролей можно отбрасывать, приватный режим приостанавливает захват, а файл истории доступен для чтения только вам.</li>
+      <li xml:lang="pt-BR">O que o seu gerenciador de senhas marca como senha é ignorado.</li>
+      <li xml:lang="pt-BR">O modo privado para de registrar até você desligá-lo de novo.</li>
+      <li xml:lang="pt-BR">O histórico nunca sai do seu computador, e só você consegue ler o arquivo onde ele fica.</li>
+      <li xml:lang="pt-BR">Copiar continua instantâneo, por maior que seja o que você copiou.</li>
     </ul>
-    <p xml:lang="ru">Захват использует протокол data-control композитора COSMIC, и данные остаются на локальном компьютере.</p>
-    <p xml:lang="uk">Clip Keep — це аплет історії буфера обміну для стільниці COSMIC. Він зберігає скопійований вміст у списку з пошуком, доступному через кнопку на панелі, щоб фрагмент, скопійований двадцять хвилин тому, залишався під рукою, коли знадобиться. Вводьте текст, щоб відфільтрувати список, і натисніть Enter, щоб знову помістити попередній елемент у буфер обміну.</p>
-    <p xml:lang="uk">Під час першого запуску Clip Keep намагається зареєструвати <code>Super+V</code> як глобальне сполучення клавіш. Він ніколи не замінює наявне сполучення: якщо ця комбінація вже використовується, виберіть будь-яке сполучення в Налаштуваннях COSMIC і призначте йому команду <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. Сполучення, створене автоматично або вручну, можна згодом змінити в Налаштуваннях COSMIC.</p>
-    <p xml:lang="uk">Менеджер буфера обміну стоїть між усіма застосунками стільниці, і йому доводиться довіряти все, що через нього проходить. Clip Keep побудовано так, щоб уникати трьох можливих проблем:</p>
+    <p xml:lang="ru">Clip Keep запоминает то, что вы копируете. Он живёт в панели COSMIC и по одному щелчку открывает список с поиском по всему, что побывало в буфере обмена, — ссылка, скопированная двадцать минут назад, всё ещё на месте, когда она понадобится. Начните печатать, чтобы сузить список, нажмите Enter — и запись снова в буфере обмена.</p>
+    <p xml:lang="ru">Закрепите записи, которыми пользуетесь каждый день, и они останутся наверху. Откройте любую, чтобы увидеть, откуда она, когда вы скопировали её впервые и сколько раз использовали с тех пор. Изображения тоже сохраняются — в списке с миниатюрой.</p>
+    <p xml:lang="ru">При первом запуске Clip Keep пытается занять <code>Super+V</code>. Он никогда не перехватывает уже занятое сочетание: если оно занято, выберите своё в настройках COSMIC и назначьте ему команду <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. В любом случае его можно изменить позже в настройках COSMIC.</p>
+    <p xml:lang="ru">Буфер обмена видит всё, что вы копируете, поэтому Clip Keep обращается с этим бережно:</p>
     <ul>
-      <li xml:lang="uk">Читання виділеного вмісту ніколи не має затримувати застосунок, якому він належить. Запитуються лише формати, які варто зберігати, кожне передавання має обмеження часу й розміру, а читання виконується паралельно з циклом подій, не блокуючи його. Тому копіювання великого зображення з браузера не може спричинити зависання браузера.</li>
-      <li xml:lang="uk">Історія має займати мало пам’яті. Список утримує в пам’яті лише те, що відображає, зображення зберігаються як заздалегідь зменшені мініатюри, а повне зображення завантажується для попереднього перегляду й звільняється, коли більше не показується.</li>
-      <li xml:lang="uk">Деякі дані ніколи не слід записувати. Елементи з позначкою менеджера паролів можна відкидати, приватний режим призупиняє захоплення, а файл історії доступний для читання лише вам.</li>
+      <li xml:lang="ru">То, что менеджер паролей помечает как пароль, пропускается.</li>
+      <li xml:lang="ru">Приватный режим останавливает запись, пока вы его не выключите.</li>
+      <li xml:lang="ru">История никогда не покидает ваш компьютер, а файл с ней можете прочитать только вы.</li>
+      <li xml:lang="ru">Копирование остаётся мгновенным, каким бы большим ни было скопированное.</li>
     </ul>
-    <p xml:lang="uk">Захоплення використовує протокол data-control композитора COSMIC, і дані залишаються на локальному комп’ютері.</p>
-    <p xml:lang="zh-CN">Clip Keep 是 COSMIC 桌面的剪贴板历史小程序。它将复制的内容保存在一个可搜索的列表中，通过面板按钮即可访问，让二十分钟前复制的片段在需要时仍然可用。输入文字可以筛选列表，按 Enter 键即可将先前的条目重新放回剪贴板。</p>
-    <p xml:lang="zh-CN">首次启动时，Clip Keep 会尝试将 <code>Super+V</code> 注册为全局快捷键。它绝不会替换现有快捷键：如果该组合已被占用，请在 COSMIC 设置中选择任意组合，并为其指定命令 <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>。无论快捷键是自动创建还是手动创建，都可以之后在 COSMIC 设置中修改。</p>
-    <p xml:lang="zh-CN">剪贴板管理器处于桌面上所有应用之间，必须能够可靠地处理流经它的内容。Clip Keep 的设计着重避免三类潜在问题：</p>
+    <p xml:lang="uk">Clip Keep запам’ятовує те, що ви копіюєте. Він живе на панелі COSMIC і одним клацанням відкриває список із пошуком по всьому, що побувало в буфері обміну, — посилання, скопійоване двадцять хвилин тому, усе ще там, коли воно знадобиться. Почніть набирати, щоб звузити список, натисніть Enter — і запис знову в буфері обміну.</p>
+    <p xml:lang="uk">Закріпіть записи, якими користуєтеся щодня, і вони залишаться вгорі. Відкрийте будь-який, щоб побачити, звідки він, коли ви скопіювали його вперше та скільки разів використали відтоді. Зображення теж зберігаються — у списку з мініатюрою.</p>
+    <p xml:lang="uk">Під час першого запуску Clip Keep намагається зайняти <code>Super+V</code>. Він ніколи не перехоплює вже зайняте поєднання: якщо воно зайняте, оберіть своє в налаштуваннях COSMIC і призначте йому команду <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>. У будь-якому разі його можна змінити пізніше в налаштуваннях COSMIC.</p>
+    <p xml:lang="uk">Буфер обміну бачить усе, що ви копіюєте, тож Clip Keep поводиться з цим обережно:</p>
     <ul>
-      <li xml:lang="zh-CN">读取选中内容绝不能拖慢拥有该内容的应用。只请求值得保存的格式，每次传输都有超时和大小上限，读取与事件循环并行执行，而不会阻塞它，因此从浏览器复制大型图像不会导致浏览器卡死。</li>
-      <li xml:lang="zh-CN">历史记录必须保持较低的内存占用。列表仅保留当前显示的内容，图像以预先缩小的缩略图存储，完整图像仅在预览时加载，并在不再显示时释放。</li>
-      <li xml:lang="zh-CN">有些内容永远不应被记录。带有密码管理器提示的条目可以被丢弃，隐私模式会暂停捕获，而历史记录文件只有您本人可以读取。</li>
+      <li xml:lang="uk">Те, що менеджер паролів позначає як пароль, пропускається.</li>
+      <li xml:lang="uk">Приватний режим спиняє запис, доки ви його не вимкнете.</li>
+      <li xml:lang="uk">Історія ніколи не залишає ваш комп’ютер, а файл із нею можете прочитати лише ви.</li>
+      <li xml:lang="uk">Копіювання лишається миттєвим, хоч би яким великим було скопійоване.</li>
     </ul>
-    <p xml:lang="zh-CN">捕获使用 COSMIC 合成器的 data-control 协议，数据始终留在本机。</p>
+    <p xml:lang="zh-CN">Clip Keep 会记住你复制过的东西。它位于 COSMIC 面板上，点一下就能打开一份可搜索的剪贴板记录，二十分钟前复制的链接依然在那里等你。输入关键字缩小范围，按下回车，这一条便重新回到剪贴板。</p>
+    <p xml:lang="zh-CN">把每天都要用的条目固定住，它们会一直留在顶部。打开任意一条，可以看到它来自哪个应用、第一次复制的时间，以及此后用过多少次。图片同样会被保存，并在列表中显示缩略图。</p>
+    <p xml:lang="zh-CN">首次运行时，Clip Keep 会尝试占用 <code>Super+V</code>。它绝不会抢占已被占用的快捷键：如果该组合已被使用，请在 COSMIC 设置中自选一组，并为其指定命令 <code>flatpak run io.github.marcelogomes90.cosmic-ext-applet-clip-keep --toggle</code>。无论哪种方式，之后都可以在 COSMIC 设置中修改。</p>
+    <p xml:lang="zh-CN">剪贴板会看到你复制的一切，因此 Clip Keep 格外小心：</p>
+    <ul>
+      <li xml:lang="zh-CN">密码管理器标记为密码的内容会被跳过。</li>
+      <li xml:lang="zh-CN">私密模式会暂停记录，直到你再次关闭它。</li>
+      <li xml:lang="zh-CN">历史记录始终留在你的电脑上，保存它的文件也只有你能读取。</li>
+      <li xml:lang="zh-CN">无论复制的内容多大，复制都保持即时。</li>
+    </ul>
   </description>
   <screenshots>
     <screenshot type="default">
