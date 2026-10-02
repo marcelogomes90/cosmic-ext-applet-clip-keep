@@ -6,12 +6,16 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{UnixListener, UnixStream};
 
 pub const TOGGLE: &str = "--toggle";
+pub const PRIVATE: &str = "--private";
+pub const CLEAR: &str = "--clear";
 
 const DIRECTORY: &str = "clip-keep-control";
 const EXTENSION: &str = "sock";
 
 const ASK: u8 = b't';
 const FORCE: u8 = b'T';
+const PRIVATE_REQUEST: u8 = b'p';
+const CLEAR_REQUEST: u8 = b'c';
 const TAKEN: u8 = b'1';
 const DECLINED: u8 = b'0';
 
@@ -27,12 +31,16 @@ pub fn panel_output() -> Option<String> {
 }
 
 pub fn toggle() {
+    send(Action::Toggle);
+}
+
+pub fn send(action: Action) {
     let Some(directory) = directory() else {
         tracing::warn!("XDG_RUNTIME_DIR is not set, so no running applet can be reached");
         return;
     };
 
-    if !toggle_in(&directory) {
+    if !invoke_in(&directory, action) {
         tracing::warn!(
             directory = %directory.display(),
             "no running applet answered the toggle"
@@ -48,6 +56,33 @@ pub struct Listener {
 pub struct Request {
     stream: UnixStream,
     forced: bool,
+    action: Action,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Action {
+    Toggle,
+    Private,
+    Clear,
+}
+
+impl Action {
+    fn request(self) -> u8 {
+        match self {
+            Self::Toggle => ASK,
+            Self::Private => PRIVATE_REQUEST,
+            Self::Clear => CLEAR_REQUEST,
+        }
+    }
+
+    pub fn from_argument(argument: &str) -> Option<Self> {
+        match argument {
+            TOGGLE => Some(Self::Toggle),
+            PRIVATE => Some(Self::Private),
+            CLEAR => Some(Self::Clear),
+            _ => None,
+        }
+    }
 }
 
 impl Listener {
@@ -111,6 +146,10 @@ impl Request {
         self.forced
     }
 
+    pub fn action(&self) -> Action {
+        self.action
+    }
+
     pub async fn answer(mut self, taken: bool) {
         let reply = [if taken { TAKEN } else { DECLINED }];
         let _ = tokio::time::timeout(REQUEST, self.stream.write_all(&reply)).await;
@@ -121,11 +160,17 @@ fn directory() -> Option<PathBuf> {
     std::env::var_os("XDG_RUNTIME_DIR").map(|runtime| PathBuf::from(runtime).join(DIRECTORY))
 }
 
-fn toggle_in(directory: &Path) -> bool {
+fn invoke_in(directory: &Path, action: Action) -> bool {
+    if action != Action::Toggle {
+        return sockets(directory)
+            .into_iter()
+            .any(|path| matches!(ask(&path, action.request()), Answer::Taken));
+    }
+
     let mut answered = Vec::new();
 
     for path in sockets(directory) {
-        match ask(&path, ASK) {
+        match ask(&path, action.request()) {
             Answer::Taken => return true,
             Answer::Declined => answered.push(path),
             Answer::Gone => {
@@ -224,17 +269,19 @@ async fn read(mut stream: UnixStream) -> Option<Request> {
         .ok()?
         .ok()?;
 
-    match request {
-        ASK => Some(Request {
-            stream,
-            forced: false,
-        }),
-        FORCE => Some(Request {
-            stream,
-            forced: true,
-        }),
-        _ => None,
-    }
+    let (action, forced) = match request {
+        ASK => (Action::Toggle, false),
+        FORCE => (Action::Toggle, true),
+        PRIVATE_REQUEST => (Action::Private, false),
+        CLEAR_REQUEST => (Action::Clear, false),
+        _ => return None,
+    };
+
+    Some(Request {
+        stream,
+        forced,
+        action,
+    })
 }
 
 fn token() -> String {
@@ -265,6 +312,13 @@ mod tests {
     #[test]
     fn two_instances_never_pick_the_same_socket_name() {
         assert_ne!(token(), token());
+    }
+
+    #[test]
+    fn global_action_arguments_are_distinct() {
+        assert_eq!(Action::from_argument(TOGGLE), Some(Action::Toggle));
+        assert_eq!(Action::from_argument(PRIVATE), Some(Action::Private));
+        assert_eq!(Action::from_argument(CLEAR), Some(Action::Clear));
     }
 
     #[test]
@@ -300,7 +354,7 @@ mod tests {
 
         let asked = {
             let directory = directory.clone();
-            tokio::task::spawn_blocking(move || toggle_in(&directory))
+            tokio::task::spawn_blocking(move || invoke_in(&directory, Action::Toggle))
                 .await
                 .unwrap()
         };
@@ -335,7 +389,7 @@ mod tests {
 
         let asked = {
             let directory = directory.clone();
-            tokio::task::spawn_blocking(move || toggle_in(&directory))
+            tokio::task::spawn_blocking(move || invoke_in(&directory, Action::Toggle))
                 .await
                 .unwrap()
         };

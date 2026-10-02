@@ -4,11 +4,11 @@ use cosmic_ext_applet_clip_keep::{APP_ID, applet, clip, control, i18n, init_trac
 fn main() -> cosmic::iced::Result {
     init_tracing();
 
-    if std::env::args()
+    if let Some(action) = std::env::args()
         .skip(1)
-        .any(|argument| argument == control::TOGGLE)
+        .find_map(|argument| control::Action::from_argument(&argument))
     {
-        control::toggle();
+        control::send(action);
         return Ok(());
     }
 

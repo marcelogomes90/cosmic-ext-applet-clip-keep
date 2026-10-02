@@ -170,6 +170,7 @@ impl cosmic::Application for ClipKeep {
             Message::Relayout | Message::CloseRowMenu => Task::none(),
             Message::TogglePopup => self.toggle_popup(),
             Message::ShowPopup => self.open_popup(),
+            Message::Control(action) => self.control_action(action),
             Message::SurfaceOpened(id) => self.opened(id),
             Message::SurfaceClosed(id) => self.closed(id),
             Message::SurfaceFocused(id) => self.surface_focused(id),
@@ -810,6 +811,18 @@ impl ClipKeep {
             paste: self.settings.paste_on_use,
         });
         self.dismiss_popup()
+    }
+
+    fn control_action(&mut self, action: crate::control::Action) -> Task<Message> {
+        match action {
+            crate::control::Action::Toggle => self.open_popup(),
+            crate::control::Action::Private => {
+                let mut settings = self.settings.clone();
+                settings.private_mode = !settings.private_mode;
+                self.apply_settings(settings)
+            }
+            crate::control::Action::Clear => self.clear(),
+        }
     }
 
     fn toggle_pin(&mut self, id: EntryId) -> Task<Message> {
