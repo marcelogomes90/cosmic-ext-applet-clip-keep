@@ -240,7 +240,10 @@ fn clearing_spares_pins_unless_asked_not_to() {
     assert_eq!(labels(&db, &Settings::default()), ["kept"]);
 
     db.clear(true).unwrap();
-    assert!(labels(&db, &Settings::default()).is_empty());
+    assert!(
+        labels(&db, &Settings::default()).is_empty(),
+        "clearing leaves nothing behind but the pins"
+    );
 }
 
 #[test]
@@ -291,7 +294,10 @@ fn deleting_an_entry_takes_its_content_thumbnail_and_pin_with_it() {
 
     db.delete(id).unwrap();
 
-    assert!(db.list(&Settings::default()).unwrap().is_empty());
+    assert!(
+        db.list(&Settings::default()).unwrap().is_empty(),
+        "every entry aged out"
+    );
     assert!(db.load(id, None).unwrap().is_none());
     assert!(db.thumbnail(id).unwrap().is_none());
 
@@ -304,7 +310,10 @@ fn an_unknown_entry_answers_with_nothing_rather_than_failing() {
     let missing = EntryId(999);
 
     assert!(db.load(missing, None).unwrap().is_none());
-    assert!(db.load_all(missing).unwrap().is_empty());
+    assert!(
+        db.load_all(missing).unwrap().is_empty(),
+        "an entry that was never stored holds no flavours"
+    );
     assert!(db.thumbnail(missing).unwrap().is_none());
     assert!(db.kind(missing).unwrap().is_none());
 

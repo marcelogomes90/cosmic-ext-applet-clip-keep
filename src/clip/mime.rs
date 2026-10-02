@@ -304,9 +304,18 @@ mod tests {
 
     #[test]
     fn nothing_is_invented_for_an_entry_that_is_not_plain_text() {
-        assert!(text_aliases(&offered(&["image/png"])).is_empty());
-        assert!(text_aliases(&offered(&["text/uri-list"])).is_empty());
-        assert!(text_aliases(&[]).is_empty());
+        assert!(
+            text_aliases(&offered(&["image/png"])).is_empty(),
+            "an image is not served under text names"
+        );
+        assert!(
+            text_aliases(&offered(&["text/uri-list"])).is_empty(),
+            "a file list is not served under text names"
+        );
+        assert!(
+            text_aliases(&[]).is_empty(),
+            "an entry offering nothing gets no aliases invented for it"
+        );
     }
 
     #[test]

@@ -71,7 +71,10 @@ mod tests {
         let thumbnail = generate(&png_4x2()).unwrap();
 
         assert_eq!((thumbnail.width, thumbnail.height), (4, 2));
-        assert!(!thumbnail.png.is_empty());
+        assert!(
+            !thumbnail.png.is_empty(),
+            "the thumbnail carries encoded bytes"
+        );
     }
 
     #[test]

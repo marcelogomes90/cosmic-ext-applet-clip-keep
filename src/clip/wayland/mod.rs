@@ -92,7 +92,10 @@ mod tests {
     #[test]
     fn a_missing_runtime_dir_yields_no_candidates() {
         temp_env(&[("XDG_RUNTIME_DIR", None)], || {
-            assert!(candidates().is_empty());
+            assert!(
+                candidates().is_empty(),
+                "without a runtime directory there is nowhere to look for a socket"
+            );
         });
     }
 

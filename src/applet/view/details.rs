@@ -372,7 +372,10 @@ mod tests {
 
     #[test]
     fn an_entry_whose_formats_have_not_arrived_shows_no_row() {
-        assert!(format_names(&[]).is_empty());
+        assert!(
+            format_names(&[]).is_empty(),
+            "formats are asked for when the page opens, so the first draw has none"
+        );
     }
 
     #[test]

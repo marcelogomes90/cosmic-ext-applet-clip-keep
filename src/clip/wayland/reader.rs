@@ -136,7 +136,10 @@ mod tests {
 
         let (buffer, outcome) = drain(&reader, 1024);
 
-        assert!(buffer.is_empty());
+        assert!(
+            buffer.is_empty(),
+            "nothing was offered, so nothing was read"
+        );
         assert_eq!(outcome, "finished");
     }
 
@@ -162,6 +165,6 @@ mod tests {
             pump(&reader, &mut buffer, 1024),
             Progress::Reading
         ));
-        assert!(buffer.is_empty());
+        assert!(buffer.is_empty(), "nothing was ready to read yet");
     }
 }

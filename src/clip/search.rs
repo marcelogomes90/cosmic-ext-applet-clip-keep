@@ -35,6 +35,9 @@ mod tests {
     #[test]
     fn matches_keep_their_place_in_the_history() {
         assert_eq!(filter(ROWS, "GITHUB"), vec![0, 3]);
-        assert!(filter(ROWS, "zzzz").is_empty());
+        assert!(
+            filter(ROWS, "zzzz").is_empty(),
+            "a query nothing matches narrows the list to nothing"
+        );
     }
 }
