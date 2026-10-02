@@ -328,6 +328,16 @@
     <keyword xml:lang="zh-CN">面板</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.5.7" date="2026-10-01">
+      <description>
+        <p>This patch makes the popup answer the first key press, and gives the back button the hover it was missing.</p>
+        <ul>
+          <li>Closes the popup on the first Escape, and uses the selected entry on the first Enter. A press made while the shortcut that opened the popup is still held, or before the popup owns the keyboard, was reaching the applet as a release alone and being discarded; the two actions that end the popup are now taken when the key comes back up, which also stops holding either key from repeating it.</li>
+          <li>Keeps a dismissal from being swallowed by a row menu that closed without ever being drawn, or by the press the panel synthesises when the pointer rests on the applet's button.</li>
+          <li>Gives the back button the hover and press shading the rest of the popup's buttons have, following the theme's roundness and holding the height of the controls beside it.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.5.6" date="2026-09-22">
       <description>
         <p>This patch keeps the formatting a copy came with, lets you choose how large images are drawn, and quiets the system log.</p>
