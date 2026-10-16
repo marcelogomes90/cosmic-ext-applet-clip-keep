@@ -328,6 +328,14 @@
     <keyword xml:lang="zh-CN">面板</keyword>
   </keywords>
   <releases>
+    <release type="stable" version="1.5.8" date="2026-10-16">
+      <description>
+        <p>This patch restores automatic paste on current COSMIC, where it had started typing a bare letter instead of the shortcut.</p>
+        <ul>
+          <li>Holds the real Control and Shift keys around the paste instead of only announcing them. The compositor now reads the modifiers off the keys it sees rather than from what the virtual keyboard declares, so choosing an entry with automatic paste enabled was reaching the window as a plain v, and the entry had to be pasted by hand afterwards.</li>
+        </ul>
+      </description>
+    </release>
     <release type="stable" version="1.5.7" date="2026-10-01">
       <description>
         <p>This patch makes the popup answer the first key press, and gives the back button the hover it was missing.</p>
