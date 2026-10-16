@@ -116,12 +116,14 @@ Choosing an entry makes Clip Keep the clipboard owner and closes the popup. A te
 advertised under the names a destination may ask for instead — `text/plain`, `UTF8_STRING`,
 `STRING` and `TEXT` — each served from the body already stored rather than a copy of it, so the
 destination picks the flavour it wants and an entry recorded before any of this reaches the same
-places a new one does. If automatic paste is
-enabled, the backend waits for the surfaces to disappear, reactivates the previously focused
-toplevel and sends Ctrl+V through the virtual-keyboard protocol. Normalized IDs for known standalone
-terminals use Ctrl+Shift+V, while the XTerm family uses Shift+Insert. IDEs stay on Ctrl+V because
-their editor and embedded terminal share one application ID. Dismissing the popup never types
-anything.
+places a new one does. If automatic paste is enabled, the backend waits for the surfaces to
+disappear, reactivates the previously focused toplevel and sends Ctrl+V through the virtual-keyboard
+protocol. The modifier is both announced with the protocol's `modifiers` request and pressed as a
+real key from the keymap we hand the compositor, because a compositor that runs virtual keys through
+its own keyboard handling reads the modifier state off the keys it sees and ignores the announcement
+— announcing alone delivers a bare `v`. Normalized IDs for known standalone terminals use
+Ctrl+Shift+V, while the XTerm family uses Shift+Insert. IDEs stay on Ctrl+V because their editor and
+embedded terminal share one application ID. Dismissing the popup never types anything.
 
 ## Settings and presentation
 

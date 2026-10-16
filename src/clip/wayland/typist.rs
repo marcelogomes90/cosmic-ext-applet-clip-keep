@@ -37,6 +37,8 @@ const XKB_V1: u32 = 1;
 
 const PASTE_KEY: u32 = 47;
 const INSERT_KEY: u32 = 110;
+const CONTROL_KEY: u32 = 29;
+const SHIFT_KEY: u32 = 42;
 
 const CONTROL: u32 = 1 << 2;
 const SHIFT: u32 = 1;
@@ -97,11 +99,7 @@ impl Typist {
     }
 
     pub fn paste(&self, shortcut: PasteShortcut, connection: &Connection) {
-        let (key, modifiers) = match shortcut {
-            PasteShortcut::ControlV => (PASTE_KEY, CONTROL),
-            PasteShortcut::ControlShiftV => (PASTE_KEY, CONTROL | SHIFT),
-            PasteShortcut::ShiftInsert => (INSERT_KEY, SHIFT),
-        };
+        let chord = chord(shortcut);
 
         let mut at = moment();
         let mut next = || {
@@ -109,9 +107,18 @@ impl Typist {
             at
         };
 
-        self.keyboard.modifiers(modifiers, 0, 0, 0);
-        self.keyboard.key(next(), key, PRESSED);
-        self.keyboard.key(next(), key, RELEASED);
+        for &holder in chord.held {
+            self.keyboard.key(next(), holder, PRESSED);
+        }
+
+        self.keyboard.modifiers(chord.modifiers, 0, 0, 0);
+        self.keyboard.key(next(), chord.key, PRESSED);
+        self.keyboard.key(next(), chord.key, RELEASED);
+
+        for &holder in chord.held.iter().rev() {
+            self.keyboard.key(next(), holder, RELEASED);
+        }
+
         self.keyboard.modifiers(0, 0, 0, 0);
 
         if let Err(error) = connection.flush() {
@@ -123,6 +130,26 @@ impl Typist {
 impl Drop for Typist {
     fn drop(&mut self) {
         self.keyboard.destroy();
+    }
+}
+
+struct Chord {
+    key: u32,
+    modifiers: u32,
+    held: &'static [u32],
+}
+
+fn chord(shortcut: PasteShortcut) -> Chord {
+    let (key, modifiers, held): (u32, u32, &'static [u32]) = match shortcut {
+        PasteShortcut::ControlV => (PASTE_KEY, CONTROL, &[CONTROL_KEY]),
+        PasteShortcut::ControlShiftV => (PASTE_KEY, CONTROL | SHIFT, &[CONTROL_KEY, SHIFT_KEY]),
+        PasteShortcut::ShiftInsert => (INSERT_KEY, SHIFT, &[SHIFT_KEY]),
+    };
+
+    Chord {
+        key,
+        modifiers,
+        held,
     }
 }
 
@@ -362,5 +389,42 @@ mod tests {
         assert!(KEYMAP.contains("<INS>"), "the Insert key must be defined");
         assert!(KEYMAP.contains("modifier_map Control"));
         assert!(KEYMAP.contains("modifier_map Shift"));
+    }
+
+    #[test]
+    fn the_keymap_agrees_with_the_keycodes_the_paste_sends() {
+        for (name, key) in [
+            ("<LCTL>", CONTROL_KEY),
+            ("<LFSH>", SHIFT_KEY),
+            ("<AB05>", PASTE_KEY),
+            ("<INS>", INSERT_KEY),
+        ] {
+            let declared = format!("{name} = {};", key + 8);
+            assert!(
+                KEYMAP.contains(&declared),
+                "the keymap must declare {declared}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_paste_holds_the_modifier_keys_it_announces() {
+        for shortcut in [
+            PasteShortcut::ControlV,
+            PasteShortcut::ControlShiftV,
+            PasteShortcut::ShiftInsert,
+        ] {
+            let chord = chord(shortcut);
+            let announced = (chord.modifiers & CONTROL != 0, chord.modifiers & SHIFT != 0);
+            let held = (
+                chord.held.contains(&CONTROL_KEY),
+                chord.held.contains(&SHIFT_KEY),
+            );
+
+            assert_eq!(
+                announced, held,
+                "{shortcut:?} must press the keys behind the modifiers it announces"
+            );
+        }
     }
 }
