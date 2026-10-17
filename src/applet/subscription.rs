@@ -79,6 +79,7 @@ fn requests(
 
             loop {
                 let request = listener.next().await;
+                let action = request.action();
                 let forced = request.forced();
                 let ours = forced || claims(&handle, output.as_deref()).await;
                 request.answer(ours).await;
@@ -89,7 +90,7 @@ fn requests(
                         forced,
                         "taking the global shortcut"
                     );
-                    return Some((Message::ShowPopup, Some(listener)));
+                    return Some((Message::Control(action), Some(listener)));
                 }
 
                 tracing::debug!(

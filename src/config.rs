@@ -5,6 +5,8 @@ use crate::clip::settings::Settings;
 pub const CONFIG_VERSION: u64 = 1;
 
 pub const SHORTCUT_REGISTERED: &str = "shortcut_registered";
+pub const PRIVATE_SHORTCUT_REGISTERED: &str = "private_shortcut_registered";
+pub const CLEAR_SHORTCUT_REGISTERED: &str = "clear_shortcut_registered";
 
 macro_rules! settings_entry {
     ($($field:ident),+ $(,)?) => {

@@ -10,6 +10,7 @@ use crate::clip::settings::Settings;
 pub enum Message {
     TogglePopup,
     ShowPopup,
+    Control(crate::control::Action),
     SurfaceOpened(window::Id),
     SurfaceClosed(window::Id),
     SurfaceFocused(window::Id),

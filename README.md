@@ -83,6 +83,23 @@ sudo just install      # /usr
 
 Then add **Clip Keep** in Settings → Desktop → Panel → Applets.
 
+Clip Keep registers these global shortcuts when they are available:
+
+```text
+Super+V       open or close clipboard history
+Super+Alt+V   toggle private mode
+Super+Delete  clear unpinned history
+```
+
+If a binding is already used, Clip Keep leaves it unchanged. Change the bindings in COSMIC
+Settings → Keyboard → Custom Shortcuts, using these commands:
+
+```text
+cosmic-ext-applet-clip-keep --toggle
+cosmic-ext-applet-clip-keep --private
+cosmic-ext-applet-clip-keep --clear
+```
+
 ## Contributing
 
 [ARCHITECTURE.md](ARCHITECTURE.md) explains how the capture backend and the applet fit together,
